@@ -66,6 +66,9 @@ jobs:
       packages: write
     strategy:
       fail-fast: false
+      # Build one architecture at a time to reduce concurrent downloads
+      # of home-assistant/builder from codeload.github.com.
+      max-parallel: 1
       matrix: ${{ fromJSON(needs.prepare.outputs.build_matrix) }}
     steps:
       - name: Check out the repository
