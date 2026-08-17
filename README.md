@@ -2,18 +2,31 @@
 
 Repositorio de distribución de **Smart Home Suite** para Home Assistant OS sin HACS.
 
-## Smart Home Suite 1.0.0
+## Smart Home Suite 1.1.0
 
-**Smart Home Suite 1.0.0** es la primera línea base estable de la Suite.
+**Smart Home Suite 1.1.0** incorpora Smart Automations como quinto módulo oficial de la Suite.
 
-- Smart Home Suite / Manager: **1.0.0**
+- Smart Home Suite / Manager: **1.1.0**
 - Smart Home: Panel **2.0.5** + Native Dashboard Bridge **1.3.0**
 - Smart Lighting: **1.0.3**
-- Smart Energy Advanced: **1.3.0**
+- Smart Energy Advanced: **1.3.1**
+- Smart Automations: **1.0.0**
 - Smart Support: **1.1.2**
 
-Todos los módulos se instalan bajo `custom_components/smart_home_suite`.
-Los frontends productivos conservan sus versiones previamente validadas.
+Todos los módulos se instalan bajo `custom_components/smart_home_suite` y se administran desde una sola Config Entry.
+
+## Smart Automations
+
+Smart Automations ofrece una interfaz sencilla para automatizaciones frecuentes sin crear un motor paralelo. Home Assistant conserva la ejecución y las automatizaciones generadas son nativas.
+
+Recetas iniciales:
+
+- iluminación por amanecer/anochecer;
+- apagado de luces por ausencia;
+- notificación por potencia elevada;
+- notificación por límite de kWh.
+
+El panel incluye editor responsive, Guardar/Cancelar, Importar/Exportar/Restablecer, selector de entidades e iconos MDI, navegación configurable, persistencia propia y vista previa visual en tiempo real durante la personalización.
 
 ## Distribución
 
@@ -28,41 +41,11 @@ No requiere HACS.
 
 ## Robustez
 
-Smart Home Suite incluye:
-
-- instalación mediante staging;
-- validación antes y después del reemplazo;
-- rollback automático;
-- backups verificados;
-- restauración del último backup;
-- `validate_only` para validar sin modificar la instalación;
-- validación CI antes de construir imágenes;
-- aislamiento de fallos entre módulos;
-- Home Assistant Repairs;
-- diagnósticos descargables;
-- sensor de versión y sensor de salud de la Suite.
+Smart Home Suite incluye instalación mediante staging, validación previa/posterior, rollback automático, backups verificados, restauración, `validate_only`, validación CI, aislamiento de fallos entre módulos, Home Assistant Repairs y diagnósticos descargables.
 
 ## Smart Support
 
-Smart Support continúa utilizando las acciones:
-
-- `homeassistant.enable_user`
-- `homeassistant.disable_user`
-
-proporcionadas actualmente por **Spook**.
-
-La versión 1.0.0 supervisa esta dependencia sin sustituirla ni utilizar APIs
-internas de autenticación de Home Assistant. Si Smart Support está configurado
-y las acciones dejan de estar disponibles:
-
-- se genera un aviso en **Ajustes → Reparaciones**;
-- `binary_sensor.smart_home_suite_health` refleja el problema;
-- los diagnósticos indican qué acción falta;
-- los demás módulos continúan funcionando;
-- el aviso se elimina automáticamente cuando el proveedor vuelve a estar listo.
-
-Si Smart Support no tiene un usuario configurado o está deshabilitado, la
-dependencia no se considera requerida y no se genera un aviso innecesario.
+Smart Support continúa utilizando las acciones `homeassistant.enable_user` y `homeassistant.disable_user` proporcionadas actualmente por Spook. La Suite supervisa esa dependencia sin sustituirla ni utilizar APIs internas de autenticación.
 
 ## Instalación
 
