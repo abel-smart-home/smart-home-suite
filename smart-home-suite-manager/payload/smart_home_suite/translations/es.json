@@ -4,7 +4,7 @@
     "step": {
       "user": {
         "title": "Configurar Smart Home Suite",
-        "description": "Crea la entrada central de Smart Home Suite. Smart Lighting se instala como módulo piloto."
+        "description": "Crea la entrada central de Smart Home Suite y permite administrar sus módulos."
       }
     },
     "abort": {
@@ -23,6 +23,12 @@
           "smart_support": "Soporte remoto"
         }
       }
+    }
+  },
+  "issues": {
+    "module_setup_failed": {
+      "title": "Un módulo de Smart Home Suite no pudo iniciar",
+      "description": "El módulo {module} está habilitado pero no pudo cargarse. Los demás módulos permanecen aislados y pueden seguir funcionando. Revisa los diagnósticos de Smart Home Suite y los registros de Home Assistant."
     }
   }
 }

@@ -47,6 +47,8 @@ async def async_get_config_entry_diagnostics(
             "domain": DOMAIN,
             "config_entry_version": entry.version,
             "config_entry_minor_version": entry.minor_version,
+            "module_count": len(MODULE_CATALOG),
+            "repair_integration": True,
         },
         "home_assistant": {
             "version": HA_VERSION,

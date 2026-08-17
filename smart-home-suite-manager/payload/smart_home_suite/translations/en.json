@@ -4,7 +4,7 @@
     "step": {
       "user": {
         "title": "Set up Smart Home Suite",
-        "description": "Creates the central Smart Home Suite entry. Smart Lighting is installed as the pilot module."
+        "description": "Creates the central Smart Home Suite entry and manages its modules."
       }
     },
     "abort": {
@@ -23,6 +23,12 @@
           "smart_support": "Remote Support"
         }
       }
+    }
+  },
+  "issues": {
+    "module_setup_failed": {
+      "title": "A Smart Home Suite module failed to start",
+      "description": "The {module} module is enabled but could not load. Other modules remain isolated and can continue working. Review Smart Home Suite diagnostics and the Home Assistant logs."
     }
   }
 }

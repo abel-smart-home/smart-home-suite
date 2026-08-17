@@ -25,7 +25,7 @@ WEB_COMPONENT = "smart-energy-advanced-panel"
 STATIC_URL = "/smart_home_suite_static"
 FRONTEND_FILE = "smart-energy-advanced-panel.js"
 MODULE_VERSION = "1.3.0"
-SUITE_VERSION = "0.4.0"
+SUITE_VERSION = "0.5.0"
 
 
 def _data(hass: HomeAssistant) -> dict[str, Any]:
@@ -70,7 +70,7 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         webcomponent_name=WEB_COMPONENT,
         sidebar_title="Energía avanzada",
         sidebar_icon="mdi:lightning-bolt-circle",
-        module_url=f"{STATIC_URL}/{FRONTEND_FILE}?v=130-suite040",
+        module_url=f"{STATIC_URL}/{FRONTEND_FILE}?v=130-suite050",
         require_admin=False,
         handle_safe_area=True,
         config={
