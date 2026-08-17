@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.1 - 2026-08-17 · TEST
+
+- Smart Home V2.0.5 ahora está incluido de forma autocontenida.
+- Smart Home se crea como dashboard Lovelace storage persistente y visible en Ajustes → Dashboards.
+- Eliminada la captura obligatoria desde instalaciones anteriores.
+- Smart Support conserva `smart_support_panel.*` y registra descripciones de servicios sin integración separada.
+- Limpieza explícita de módulos desactivados para evitar dashboards persistentes huérfanos.
+
 ## 0.3.0 - 2026-08-17 · TEST
 
 - Conserva Smart Lighting Panel V1.0.3 exacto.

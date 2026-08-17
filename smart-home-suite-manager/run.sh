@@ -6,14 +6,13 @@ HA_CONFIG="/homeassistant"
 CUSTOM_COMPONENTS="${HA_CONFIG}/custom_components"
 TARGET="${CUSTOM_COMPONENTS}/smart_home_suite"
 BACKUP_DIR="/data/backups"
-SOURCE_CACHE="/data/source-cache"
 
 ACTION="$(bashio::config 'action')"
 CREATE_BACKUP="$(bashio::config 'create_backup')"
 KEEP_BACKUPS="$(bashio::config 'keep_backups')"
 
 log_header() {
-  bashio::log.info "Smart Home Suite Manager 0.3.0 TEST"
+  bashio::log.info "Smart Home Suite Manager 0.3.1 TEST"
   bashio::log.info "Action: ${ACTION}"
 }
 
@@ -28,6 +27,10 @@ validate_component() {
   test -f "${path}/frontend/smart-energy-advanced-panel.js"
   test -f "${path}/frontend/smart-support-panel.js"
   test -f "${path}/frontend/smart-home-native.js"
+  test -f "${path}/frontend/smart-home-panel.js"
+  grep -Fq 'PANEL_VERSION = "2.0.5"' "${path}/frontend/smart-home-panel.js"
+  test -f "${path}/legacy/smart_home_panel/__init__.py"
+  test -f "${path}/legacy/smart_home_panel/const.py"
   test -f "${path}/translations/en.json"
   test -f "${path}/translations/es.json"
 }
@@ -58,58 +61,6 @@ create_backup() {
   prune_backups
 }
 
-is_exact_smart_home_205() {
-  local file="$1"
-  test -f "${file}" && grep -Fq 'PANEL_VERSION = "2.0.5"' "${file}"
-}
-
-capture_smart_home_205() {
-  local staged="$1"
-  local dst="${staged}/frontend/smart-home-panel.js"
-  local backend_dst="${staged}/legacy/smart_home_panel"
-  local source=""
-  local backend_source=""
-
-  mkdir -p "${SOURCE_CACHE}" "${staged}/legacy"
-
-  # Prefer an already captured exact source on Suite upgrades.
-  if is_exact_smart_home_205 "${TARGET}/frontend/smart-home-panel.js"; then
-    source="${TARGET}/frontend/smart-home-panel.js"
-  elif is_exact_smart_home_205 "${SOURCE_CACHE}/smart-home-panel-v2.0.5.js"; then
-    source="${SOURCE_CACHE}/smart-home-panel-v2.0.5.js"
-  elif is_exact_smart_home_205 "${HA_CONFIG}/www/smart-home-panel/smart-home-panel.js"; then
-    source="${HA_CONFIG}/www/smart-home-panel/smart-home-panel.js"
-  fi
-
-  if [ -n "${source}" ]; then
-    cp -a "${source}" "${dst}"
-    cp -a "${source}" "${SOURCE_CACHE}/smart-home-panel-v2.0.5.js"
-    bashio::log.info "Captured exact Smart Home Panel V2.0.5 frontend."
-    bashio::log.info "Smart Home V2.0.5 SHA256: $(sha256sum "${dst}" | awk '{print $1}')"
-  else
-    bashio::log.warning "Exact Smart Home Panel V2.0.5 frontend was not found."
-    bashio::log.warning "Smart Home module will remain unavailable; other modules can still load."
-  fi
-
-  # Preserve the exact legacy backend package when available.
-  if [ -f "${TARGET}/legacy/smart_home_panel/__init__.py" ]; then
-    backend_source="${TARGET}/legacy/smart_home_panel"
-  elif [ -f "${SOURCE_CACHE}/smart_home_panel/__init__.py" ]; then
-    backend_source="${SOURCE_CACHE}/smart_home_panel"
-  elif [ -f "${CUSTOM_COMPONENTS}/smart_home_panel/__init__.py" ]; then
-    backend_source="${CUSTOM_COMPONENTS}/smart_home_panel"
-  fi
-
-  if [ -n "${backend_source}" ]; then
-    rm -rf "${backend_dst}" "${SOURCE_CACHE}/smart_home_panel"
-    mkdir -p "${backend_dst}" "${SOURCE_CACHE}/smart_home_panel"
-    cp -a "${backend_source}/." "${backend_dst}/"
-    cp -a "${backend_source}/." "${SOURCE_CACHE}/smart_home_panel/"
-    bashio::log.info "Captured Smart Home legacy backend package."
-  else
-    bashio::log.warning "Smart Home legacy backend was not found; Suite compatibility backend will be used."
-  fi
-}
 
 atomic_replace() {
   local source="$1"
@@ -119,10 +70,6 @@ atomic_replace() {
   rm -rf "${new_path}" "${previous_path}"
   mkdir -p "${new_path}"
   cp -a "${source}/." "${new_path}/"
-
-  # The bridge package intentionally does not contain Smart Home Panel V2.0.5.
-  # Capture the exact validated deployment before replacing the Suite.
-  capture_smart_home_205 "${new_path}"
 
   if ! validate_component "${new_path}"; then
     bashio::log.error "Staged component failed validation. Existing installation was not changed."
@@ -171,8 +118,8 @@ install_repair() {
   atomic_replace "${PAYLOAD}"
   sync
 
-  bashio::log.info "Installed Smart Home Suite 0.3.0 TEST at ${TARGET}."
-  bashio::log.info "Restart Home Assistant after removing legacy YAML registrations listed in MIGRATION-STEPS-0.3.0.md."
+  bashio::log.info "Installed Smart Home Suite 0.3.1 TEST at ${TARGET}."
+  bashio::log.info "Restart Home Assistant after removing legacy YAML registrations listed in MIGRATION-STEPS-0.3.1.md."
   bashio::log.info "INSTALLATION_OK"
 }
 
