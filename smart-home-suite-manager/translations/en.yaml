@@ -1,0 +1,10 @@
+configuration:
+  action:
+    name: Action
+    description: Install/repair the bundled Suite or restore the most recent backup.
+  create_backup:
+    name: Create backup
+    description: Save a copy of the existing integration before replacing it.
+  keep_backups:
+    name: Backups to keep
+    description: Maximum number of automatic backups retained by the Manager.

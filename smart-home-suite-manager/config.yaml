@@ -1,0 +1,23 @@
+name: Smart Home Suite Manager
+version: "0.1.0"
+slug: smart_home_suite_manager
+description: Instala, repara y restaura Smart Home Suite en Home Assistant OS sin HACS.
+url: https://github.com/abel-smart-home/smart-home-suite
+arch:
+  - aarch64
+  - amd64
+startup: once
+boot: manual_only
+init: false
+map:
+  - type: homeassistant_config
+    read_only: false
+image: ghcr.io/abel-smart-home/smart-home-suite-manager
+options:
+  action: install_repair
+  create_backup: true
+  keep_backups: 3
+schema:
+  action: "list(install_repair|restore_latest)"
+  create_backup: bool
+  keep_backups: "int(1,10)"
