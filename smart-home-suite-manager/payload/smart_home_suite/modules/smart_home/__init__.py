@@ -42,7 +42,7 @@ PANEL_FILE = "smart-home-panel.js"
 
 MODULE_VERSION = "1.3.0"
 BASE_PANEL_VERSION = "2.0.5"
-SUITE_VERSION = "0.3.3"
+SUITE_VERSION = "0.4.0"
 
 DASHBOARD_TITLE = "Smart Home"
 DASHBOARD_ICON = "mdi:home-lightning-bolt"
@@ -111,7 +111,7 @@ async def _ensure_bridge_resource(hass: HomeAssistant) -> None:
         raise HomeAssistantError("Lovelace is not available")
 
     resource_collection = lovelace_data.resources
-    bridge_url = f"{STATIC_URL}/{BRIDGE_FILE}?v=130-suite033"
+    bridge_url = f"{STATIC_URL}/{BRIDGE_FILE}?v=130-suite040"
 
     # ResourceStorageCollection loads lazily. async_get_info() forces its store
     # to be loaded without relying on private attributes.
@@ -201,7 +201,7 @@ async def _ensure_native_dashboard(hass: HomeAssistant) -> None:
                         {
                             "type": "custom:smart-home-dashboard-card",
                             "panel_module_url": (
-                                f"{STATIC_URL}/{PANEL_FILE}?v=205-suite033"
+                                f"{STATIC_URL}/{PANEL_FILE}?v=205-suite040"
                             ),
                             "hide_ha_header": True,
                             "mobile_menu_access": "admins",
