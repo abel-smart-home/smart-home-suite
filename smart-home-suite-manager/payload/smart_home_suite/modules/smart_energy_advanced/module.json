@@ -9,6 +9,6 @@
   "sidebar_icon": "mdi:lightning-bolt-circle",
   "storage_key": "smart_energy_advanced_panel.config",
   "storage_version": 1,
-  "suite_version": "0.3.2",
+  "suite_version": "0.3.3",
   "frontend_source": "exact Smart Energy Advanced Panel V1.3.0"
 }

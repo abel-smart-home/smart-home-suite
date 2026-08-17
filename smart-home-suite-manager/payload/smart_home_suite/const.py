@@ -3,7 +3,7 @@
 from typing import Final
 
 DOMAIN: Final = "smart_home_suite"
-VERSION: Final = "0.3.2"
+VERSION: Final = "0.3.3"
 
 MODULE_SMART_HOME: Final = "smart_home"
 MODULE_SMART_LIGHTING: Final = "smart_lighting"

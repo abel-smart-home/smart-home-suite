@@ -12,7 +12,6 @@ from pathlib import Path
 from typing import Any
 
 from homeassistant.components import frontend
-from homeassistant.components.frontend import add_extra_js_url
 from homeassistant.components.lovelace import dashboard
 from homeassistant.components.lovelace.const import (
     CONF_ALLOW_SINGLE_WORD,
@@ -21,11 +20,13 @@ from homeassistant.components.lovelace.const import (
     CONF_SHOW_IN_SIDEBAR,
     CONF_TITLE,
     CONF_URL_PATH,
+    CONF_RESOURCE_TYPE_WS,
     LOVELACE_DATA,
     MODE_STORAGE,
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.const import CONF_URL
 from homeassistant.exceptions import HomeAssistantError
 
 from ...legacy import smart_home_panel as exact_backend
@@ -41,7 +42,7 @@ PANEL_FILE = "smart-home-panel.js"
 
 MODULE_VERSION = "1.3.0"
 BASE_PANEL_VERSION = "2.0.5"
-SUITE_VERSION = "0.3.2"
+SUITE_VERSION = "0.3.3"
 
 DASHBOARD_TITLE = "Smart Home"
 DASHBOARD_ICON = "mdi:home-lightning-bolt"
@@ -98,6 +99,48 @@ async def _persist_collection(
     await collection.store.async_save({"items": list(collection.data.values())})
 
 
+async def _ensure_bridge_resource(hass: HomeAssistant) -> None:
+    """Persist the Smart Home bridge as a Lovelace module resource.
+
+    Custom dashboard strategies depend on registration timing. A normal Lovelace
+    resource is loaded by the dashboard frontend before custom cards are rendered,
+    so the Suite uses the bridge as a resource and mounts its card directly.
+    """
+    lovelace_data = hass.data.get(LOVELACE_DATA)
+    if lovelace_data is None:
+        raise HomeAssistantError("Lovelace is not available")
+
+    resource_collection = lovelace_data.resources
+    bridge_url = f"{STATIC_URL}/{BRIDGE_FILE}?v=130-suite033"
+
+    # ResourceStorageCollection loads lazily. async_get_info() forces its store
+    # to be loaded without relying on private attributes.
+    await resource_collection.async_get_info()
+    items = resource_collection.async_items() or []
+
+    for item in items:
+        if item.get(CONF_URL) == bridge_url:
+            return
+
+    if not hasattr(resource_collection, "async_create_item"):
+        raise HomeAssistantError(
+            "Smart Home requires Lovelace resources in storage mode."
+        )
+
+    await resource_collection.async_create_item(
+        {
+            CONF_RESOURCE_TYPE_WS: "module",
+            CONF_URL: bridge_url,
+        }
+    )
+
+    # Flush immediately so a browser reload right after setup sees the resource.
+    store = getattr(resource_collection, "store", None)
+    data = getattr(resource_collection, "data", None)
+    if store is not None and data is not None:
+        await store.async_save({"items": list(data.values())})
+
+
 async def _ensure_native_dashboard(hass: HomeAssistant) -> None:
     """Create/attach Smart Home as a real Lovelace storage dashboard."""
     lovelace_data = hass.data.get(LOVELACE_DATA)
@@ -143,16 +186,29 @@ async def _ensure_native_dashboard(hass: HomeAssistant) -> None:
             ll_config = dashboard.LovelaceStorage(hass, item)
             lovelace_data.dashboards[PANEL_PATH] = ll_config
 
-    # The actual visual dashboard is only a strategy wrapper around the exact
-    # Smart Home Panel V2.0.5 frontend.
+    # Use a normal Lovelace panel view instead of a custom dashboard strategy.
+    # The bridge resource registers smart-home-dashboard-card before Lovelace
+    # resolves this card, eliminating strategy-element registration races.
     await ll_config.async_save(
         {
-            "strategy": {
-                "type": "custom:smart-home",
-                "panel_module_url": f"{STATIC_URL}/{PANEL_FILE}?v=205-suite032",
-                "hide_ha_header": True,
-                "mobile_menu_access": "admins",
-            }
+            "title": DASHBOARD_TITLE,
+            "views": [
+                {
+                    "title": "Inicio",
+                    "path": "inicio",
+                    "type": "panel",
+                    "cards": [
+                        {
+                            "type": "custom:smart-home-dashboard-card",
+                            "panel_module_url": (
+                                f"{STATIC_URL}/{PANEL_FILE}?v=205-suite033"
+                            ),
+                            "hide_ha_header": True,
+                            "mobile_menu_access": "admins",
+                        }
+                    ],
+                }
+            ],
         }
     )
 
@@ -188,14 +244,12 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     await _ensure_exact_backend(hass)
 
-    # Bridge V1.3.0 registers custom:smart-home as a Lovelace strategy.
+    # Register the bridge through Lovelace's persistent resource collection.
+    # This is deterministic across reloads, restarts and default-dashboard use.
+    await _ensure_bridge_resource(hass)
+
     data = _data(hass)
-    if not data.get("suite_bridge_registered"):
-        add_extra_js_url(
-            hass,
-            f"{STATIC_URL}/{BRIDGE_FILE}?v=130-suite032",
-        )
-        data["suite_bridge_registered"] = True
+    data["suite_bridge_registered"] = True
 
     await _ensure_native_dashboard(hass)
 

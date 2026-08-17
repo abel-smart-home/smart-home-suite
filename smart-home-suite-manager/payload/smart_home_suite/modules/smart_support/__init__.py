@@ -40,7 +40,7 @@ WEB_COMPONENT = "smart-support-panel"
 STATIC_URL = "/smart_home_suite_static"
 FRONTEND_FILE = "smart-support-panel.js"
 MODULE_VERSION = "1.1.2"
-SUITE_VERSION = "0.3.2"
+SUITE_VERSION = "0.3.3"
 
 HOURS_SCHEMA = vol.Schema(
     {vol.Optional("hours"): vol.All(
@@ -177,7 +177,7 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         webcomponent_name=WEB_COMPONENT,
         sidebar_title="Soporte",
         sidebar_icon="mdi:headset",
-        module_url=f"{STATIC_URL}/{FRONTEND_FILE}?v=112-suite032",
+        module_url=f"{STATIC_URL}/{FRONTEND_FILE}?v=112-suite033",
         require_admin=False,
         handle_safe_area=True,
         config={
@@ -227,10 +227,10 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 "Reconcile Smart Support startup",
             )
         else:
-            remove_listener = hass.bus.async_listen_once(
-                EVENT_HOMEASSISTANT_STARTED, _started
-            )
-            entry.async_on_unload(remove_listener)
+            # A one-time listener removes itself after firing. Do not add its
+            # remover to ConfigEntry unload, otherwise a later options reload tries
+            # to remove an already-consumed listener and logs an unknown-job error.
+            hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, _started)
         data["suite_startup_registered"] = True
     return True
 
