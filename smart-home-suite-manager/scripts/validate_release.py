@@ -180,7 +180,6 @@ def validate() -> None:
                 f"{descriptor['id']}: catalog/descriptor panel_path mismatch"
             )
 
-        # Smart Home exposes the base panel version as its user-facing module version.
         expected_version = (
             descriptor.get("base_panel_version")
             if descriptor["id"] == "smart_home"
@@ -192,7 +191,6 @@ def validate() -> None:
                 f"!= descriptor effective version {expected_version}"
             )
 
-    # Translation integrity for module failures and Smart Support dependency health.
     required_issues = (
         "module_setup_failed",
         "smart_support_provider_unavailable",
@@ -217,12 +215,12 @@ def validate() -> None:
         if required_token not in support_health_source:
             fail(f"support_health.py is missing required token {required_token!r}")
 
-    # Productive frontend artifacts must all exist and be non-empty.
     for filename in (
         "smart-home-panel.js",
         "smart-home-native.js",
         "smart-lighting-panel.js",
         "smart-energy-advanced-panel.js",
+        "smart-automations-panel.js",
         "smart-support-panel.js",
     ):
         path = PAYLOAD / "frontend" / filename
