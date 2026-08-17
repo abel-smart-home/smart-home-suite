@@ -1,47 +1,32 @@
 # Abel Smart Home Suite
 
-Repositorio de Home Assistant Apps para instalar y mantener **Smart Home Suite** sin HACS.
+Repositorio público de distribución para **Smart Home Suite** en Home Assistant OS.
 
-> Estado: **0.1.0 / infraestructura inicial**. Esta versión instala una integración mínima de prueba. Los paneles reales se incorporarán después de validar el proceso completo de instalación.
+## Versión de prueba actual
 
-## Objetivo
+- Smart Home Suite Manager: `0.2.0`
+- Smart Home Suite: `0.2.0`
+- Módulo piloto: Smart Lighting `1.0.3`
 
-- Un solo repositorio para HAOS.
-- Un solo **Smart Home Suite Manager**.
-- Instalación/reparación automática de `/config/custom_components/smart_home_suite`.
-- Sin copiar archivos uno por uno con File Editor.
-- Preparado para módulos/paneles futuros.
-- Backup del componente anterior antes de reemplazarlo.
+## Instalación
 
-## Añadir a Home Assistant OS
+Agrega este repositorio en **Ajustes → Apps → App Store → Repositorios**:
 
-En Home Assistant:
+`https://github.com/abel-smart-home/smart-home-suite`
 
-1. Ajustes → Apps → App Store.
-2. Menú de repositorios.
-3. Agregar:
+Después instala o actualiza **Smart Home Suite Manager** y ejecuta `install_repair`.
 
-   `https://github.com/abel-smart-home/smart-home-suite`
+La Suite se instala en:
 
-4. Recargar el App Store.
-5. Instalar **Smart Home Suite Manager**.
+`/config/custom_components/smart_home_suite`
 
-## Primera prueba 0.1.0
-
-1. Verificar que GitHub Actions terminó correctamente y que la imagen publicada es accesible.
-2. Instalar Smart Home Suite Manager.
-3. En Configuración del Manager dejar `Instalar / reparar`.
-4. Iniciar el Manager una vez.
-5. Revisar el log. Debe terminar con `INSTALLATION_OK`.
-6. Reiniciar Home Assistant.
-7. Ajustes → Dispositivos y servicios → Añadir integración → buscar `Smart Home Suite`.
-8. Completar el flujo de configuración.
+No usa HACS.
 
 ## Arquitecturas
 
-- amd64
-- aarch64
+- `amd64`
+- `aarch64`
 
-## Versionado
+## Estado
 
-El Manager y el payload de la Suite tienen versionado explícito. En esta etapa ambos usan `0.1.0`.
+`0.2.0` es una versión de prueba para validar el primer módulo real dentro de la arquitectura modular: **Smart Lighting**.
