@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.4.0 - 2026-08-17 · TEST
+
+- Añade icono y logo propios a Smart Home Suite Manager.
+- Añade branding local a la integración Smart Home Suite (Home Assistant 2026.3+).
+- Añade diagnóstico descargable nativo.
+- Añade sensor de versión de Suite.
+- Añade binary sensor de salud de módulos.
+- Centraliza el registro de módulos en `module_catalog.py`.
+- El Config Flow y Module Manager consumen el catálogo central.
+- Facilita agregar futuros paneles sin duplicar listas en varios archivos.
+- No modifica el comportamiento funcional de los cuatro paneles actuales.
+
 ## 0.3.3 - 2026-08-17 · TEST
 
 - Smart Home bridge persistido como recurso Lovelace.
