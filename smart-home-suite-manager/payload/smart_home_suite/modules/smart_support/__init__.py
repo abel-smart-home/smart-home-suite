@@ -17,7 +17,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_HOMEASSISTANT_STARTED
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import HomeAssistantError
-from homeassistant.helpers.service import async_register_admin_service
+from homeassistant.helpers.service import async_register_admin_service, async_set_service_schema
 from homeassistant.helpers.storage import Store
 
 from .const import (
@@ -40,7 +40,7 @@ WEB_COMPONENT = "smart-support-panel"
 STATIC_URL = "/smart_home_suite_static"
 FRONTEND_FILE = "smart-support-panel.js"
 MODULE_VERSION = "1.1.2"
-SUITE_VERSION = "0.3.0"
+SUITE_VERSION = "0.3.1"
 
 HOURS_SCHEMA = vol.Schema(
     {vol.Optional("hours"): vol.All(
@@ -69,6 +69,80 @@ def _enabled(hass: HomeAssistant) -> bool:
     return bool(_data(hass).get("suite_enabled", False))
 
 
+def _register_service_descriptions(hass: HomeAssistant) -> None:
+    """Describe legacy smart_support_panel.* services without a standalone integration."""
+    async_set_service_schema(
+        hass,
+        DOMAIN,
+        SERVICE_START_SUPPORT,
+        {
+            "name": "Iniciar soporte remoto",
+            "description": "Activa temporalmente el usuario de soporte configurado.",
+            "fields": {
+                "hours": {
+                    "name": "Duración",
+                    "description": "Horas de autorización. Si se omite, usa la duración predeterminada.",
+                    "required": False,
+                    "example": 4,
+                    "selector": {
+                        "number": {
+                            "min": 2,
+                            "max": 168,
+                            "step": 1,
+                            "unit_of_measurement": "h",
+                        }
+                    },
+                }
+            },
+        },
+    )
+    async_set_service_schema(
+        hass,
+        DOMAIN,
+        SERVICE_STOP_SUPPORT,
+        {
+            "name": "Detener soporte remoto",
+            "description": "Desactiva inmediatamente el usuario de soporte y cancela la autorización temporal.",
+            "fields": {},
+        },
+    )
+    async_set_service_schema(
+        hass,
+        DOMAIN,
+        SERVICE_EXTEND_SUPPORT,
+        {
+            "name": "Extender soporte remoto",
+            "description": "Amplía una sesión activa sin superar el máximo configurado.",
+            "fields": {
+                "hours": {
+                    "name": "Extensión",
+                    "description": "Horas adicionales. Si se omite, usa la extensión predeterminada.",
+                    "required": False,
+                    "example": 2,
+                    "selector": {
+                        "number": {
+                            "min": 2,
+                            "max": 168,
+                            "step": 1,
+                            "unit_of_measurement": "h",
+                        }
+                    },
+                }
+            },
+        },
+    )
+    async_set_service_schema(
+        hass,
+        DOMAIN,
+        SERVICE_VERIFY_SUPPORT,
+        {
+            "name": "Verificar soporte remoto",
+            "description": "Comprueba que el usuario configurado exista y que el mecanismo de activación esté disponible.",
+            "fields": {},
+        },
+    )
+
+
 async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Register Smart Support V1.1.2 while preserving its legacy contract."""
     data = _data(hass)
@@ -82,6 +156,37 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         manager = data["manager"]
 
     data["suite_enabled"] = True
+
+    # Register the visual panel early so service metadata problems can never hide
+    # the Support UI.
+    if frontend.async_panel_exists(hass, PANEL_PATH):
+        existing = hass.data.get("frontend_panels", {}).get(PANEL_PATH, {})
+        if existing and existing.get("component_name") != "custom":
+            _LOGGER.error(
+                "Cannot register Smart Support: /%s is already in use", PANEL_PATH
+            )
+            return False
+        try:
+            frontend.async_remove_panel(hass, PANEL_PATH)
+        except (KeyError, ValueError):
+            pass
+
+    await panel_custom.async_register_panel(
+        hass,
+        frontend_url_path=PANEL_PATH,
+        webcomponent_name=WEB_COMPONENT,
+        sidebar_title="Soporte",
+        sidebar_icon="mdi:headset",
+        module_url=f"{STATIC_URL}/{FRONTEND_FILE}?v=112-suite031",
+        require_admin=False,
+        handle_safe_area=True,
+        config={
+            "suite_version": SUITE_VERSION,
+            "module_id": "smart_support",
+            "module_version": MODULE_VERSION,
+        },
+    )
+    data["suite_panel_registered"] = True
 
     if not data.get("suite_websocket_registered"):
         websocket_api.async_register_command(hass, websocket_get_config)
@@ -109,6 +214,8 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         )
         data["suite_services_registered"] = True
 
+    _register_service_descriptions(hass)
+
     if not data.get("suite_startup_registered"):
         async def _started(_event) -> None:
             if _enabled(hass):
@@ -125,35 +232,6 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             )
             entry.async_on_unload(remove_listener)
         data["suite_startup_registered"] = True
-
-    if frontend.async_panel_exists(hass, PANEL_PATH):
-        existing = hass.data.get("frontend_panels", {}).get(PANEL_PATH, {})
-        if existing and existing.get("component_name") != "custom":
-            _LOGGER.error(
-                "Cannot register Smart Support: /%s is already in use", PANEL_PATH
-            )
-            return False
-        try:
-            frontend.async_remove_panel(hass, PANEL_PATH)
-        except (KeyError, ValueError):
-            pass
-
-    await panel_custom.async_register_panel(
-        hass,
-        frontend_url_path=PANEL_PATH,
-        webcomponent_name=WEB_COMPONENT,
-        sidebar_title="Soporte",
-        sidebar_icon="mdi:headset",
-        module_url=f"{STATIC_URL}/{FRONTEND_FILE}?v=112-suite030",
-        require_admin=False,
-        handle_safe_area=True,
-        config={
-            "suite_version": SUITE_VERSION,
-            "module_id": "smart_support",
-            "module_version": MODULE_VERSION,
-        },
-    )
-    data["suite_panel_registered"] = True
     return True
 
 

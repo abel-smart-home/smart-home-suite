@@ -31,7 +31,7 @@ STATIC_URL = "/smart_home_suite_static"
 FRONTEND_FILE = "smart-lighting-panel.js"
 
 MODULE_VERSION = "1.0.3"
-SUITE_VERSION = "0.3.0"
+SUITE_VERSION = "0.3.1"
 
 
 def _data(hass: HomeAssistant) -> dict[str, Any]:
@@ -89,7 +89,7 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         webcomponent_name=WEB_COMPONENT,
         sidebar_title="Iluminación",
         sidebar_icon="mdi:lightbulb-group",
-        module_url=f"{STATIC_URL}/{FRONTEND_FILE}?v=103-suite030",
+        module_url=f"{STATIC_URL}/{FRONTEND_FILE}?v=103-suite031",
         require_admin=False,
         handle_safe_area=True,
         config={

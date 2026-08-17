@@ -1,7 +1,7 @@
 {
   "domain": "smart_home_suite",
   "name": "Smart Home Suite",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "config_flow": true,
   "single_config_entry": true,
   "integration_type": "service",

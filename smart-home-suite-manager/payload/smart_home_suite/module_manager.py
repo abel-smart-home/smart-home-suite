@@ -57,6 +57,12 @@ async def async_setup_modules(hass: HomeAssistant, entry: ConfigEntry) -> dict[s
     states: dict[str, bool] = {}
     for module_id, label, setup, _unload in _MODULES:
         if not module_enabled(entry, module_id):
+            # Persistent modules such as Smart Home may have a dashboard stored
+            # from a previous enabled state. Clean their runtime/storage registration.
+            try:
+                await _unload(hass, entry)
+            except Exception:
+                _LOGGER.exception("Unable to clean disabled %s module", label)
             states[module_id] = False
             continue
         try:
