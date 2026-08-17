@@ -12,7 +12,7 @@ CREATE_BACKUP="$(bashio::config 'create_backup')"
 KEEP_BACKUPS="$(bashio::config 'keep_backups')"
 
 log_header() {
-  bashio::log.info "Smart Home Suite Manager 0.5.0 TEST"
+  bashio::log.info "Smart Home Suite Manager 1.0.0"
   bashio::log.info "Action: ${ACTION}"
 }
 
@@ -53,6 +53,17 @@ validate_component() {
 
   version="$(component_version "${path}")"
   test -n "${version}"
+
+  # Smart Support provider supervision was introduced in Suite 1.0.0.
+  # Keep structural validation backward-compatible so a verified 0.x backup
+  # can still be inspected/restored by a 1.x Manager.
+  case "${version}" in
+    0.*)
+      ;;
+    *)
+      test -f "${path}/support_health.py"
+      ;;
+  esac
 
   module_count=0
   : > /tmp/smart-home-suite-panel-paths.$$
@@ -219,6 +230,8 @@ validate_only() {
 }
 
 install_repair() {
+  local installed_version
+
   if [ ! -d "${HA_CONFIG}" ] || [ ! -w "${HA_CONFIG}" ]; then
     bashio::log.error "Home Assistant configuration is not mounted read/write at ${HA_CONFIG}."
     exit 20
@@ -241,7 +254,8 @@ install_repair() {
   atomic_replace "${PAYLOAD}"
   sync
 
-  bashio::log.info "Installed Smart Home Suite 0.5.0 TEST at ${TARGET}."
+  installed_version="$(component_version "${TARGET}")"
+  bashio::log.info "Installed Smart Home Suite ${installed_version} at ${TARGET}."
   bashio::log.info "Restart Home Assistant to load the installed version."
   bashio::log.info "INSTALLATION_OK"
 }

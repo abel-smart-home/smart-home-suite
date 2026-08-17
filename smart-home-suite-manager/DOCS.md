@@ -1,27 +1,51 @@
-# Smart Home Suite Manager 0.2.0
+# Smart Home Suite Manager 1.0.0
 
 ## Instalar / actualizar / reparar
 
 1. Selecciona `install_repair`.
 2. Mantén `create_backup: true`.
 3. Inicia la App una vez.
-4. Confirma `INSTALLATION_OK`.
-5. Reinicia Home Assistant.
+4. Confirma `PAYLOAD_VALIDATION_OK`.
+5. Confirma `STAGED_VALIDATION_OK`.
+6. Confirma `POST_INSTALL_VALIDATION_OK`.
+7. Confirma `INSTALLATION_OK`.
+8. Reinicia Home Assistant.
 
-La actualización desde 0.1.0 crea un backup antes de instalar 0.2.0.
+Si ya existe una instalación, el Manager crea un backup antes del reemplazo y
+conserva temporalmente la instalación anterior hasta que la nueva versión supere
+la validación final.
 
-Después del reinicio, la integración existente **Smart Home Suite** debe seguir configurada y aparecerá el módulo **Smart Lighting** en `/lighting`.
+## Validar sin modificar
+
+Selecciona `validate_only` para comprobar la integridad estructural del payload
+y, si existe, de la Suite instalada.
+
+Esta acción no reemplaza archivos ni crea un nuevo backup.
+
+Resultado correcto:
+
+`VALIDATION_OK`
 
 ## Restaurar
 
-Selecciona `restore_latest` y ejecuta la App. Un resultado correcto termina en `RESTORE_OK`.
+Selecciona `restore_latest` y ejecuta la App.
 
-## Importante para el piloto
+El Manager verifica el archivo de backup y su contenido antes de activarlo.
 
-No instales el componente standalone `smart_lighting_panel` al mismo tiempo en la VM de prueba. La Suite 0.2.0 ya incorpora su backend y panel.
+Resultado correcto:
 
-## Validación sin modificar
+`RESTORE_OK`
 
-Selecciona `validate_only` para comprobar la integridad estructural del payload
-incluido y de la Suite instalada. Esta acción no reemplaza archivos ni crea
-backups. Una validación correcta termina en `VALIDATION_OK`.
+Después reinicia Home Assistant.
+
+## Smart Support
+
+Smart Home Suite 1.0.0 supervisa la disponibilidad de las acciones de cuenta
+utilizadas por Smart Support. Esta supervisión vive en la integración instalada;
+el Manager únicamente valida que el archivo correspondiente forme parte del
+payload antes de instalarlo.
+
+## Importante
+
+No instales simultáneamente las versiones standalone de los paneles ya incluidos
+en Smart Home Suite, porque podrían competir por rutas, servicios o almacenamiento.

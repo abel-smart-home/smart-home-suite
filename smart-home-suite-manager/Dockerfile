@@ -15,6 +15,7 @@ LABEL \
 COPY run.sh /run.sh
 COPY payload /opt/smart-home-suite
 
-RUN chmod a+x /run.sh
+RUN find /opt/smart-home-suite -type d -name '__pycache__' -prune -exec rm -rf {} + \
+  && chmod a+x /run.sh
 
 CMD [ "/run.sh" ]

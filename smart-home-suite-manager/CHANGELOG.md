@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.0.0 - 2026-08-17 · STABLE
+
+- Primera línea base estable de Smart Home Suite.
+- Supervisa las acciones `homeassistant.enable_user` y `homeassistant.disable_user` utilizadas por Smart Support.
+- Añade Repair automático si Smart Support requiere el proveedor y alguna acción no está disponible.
+- El Repair desaparece automáticamente cuando el proveedor vuelve a estar listo o deja de ser requerido.
+- Añade estado detallado y no sensible de la dependencia de Smart Support a los diagnósticos.
+- Suite Health incorpora dependencias de runtime únicamente cuando realmente son necesarias.
+- La pérdida de Spook no descarga ni bloquea Smart Home, Smart Lighting o Smart Energy Advanced.
+- Conserva intacto el mecanismo de activación/desactivación de usuario de Smart Support.
+- No utiliza APIs internas de autenticación de Home Assistant como reemplazo de Spook.
+- Los wrappers de módulos consumen la versión central de la Suite para evitar desalineaciones futuras.
+- Conserva los cache-busters de frontend de la base 0.5.0 porque los assets visuales no cambiaron, evitando recursos Lovelace duplicados.
+- Conserva sin cambios los frontends productivos.
+- El contenedor elimina `__pycache__`/bytecode heredado del payload antes de instalarlo.
+- Mantiene instalación con staging, rollback, backups verificados, restore, `validate_only`, Repairs de módulos y CI multi-arquitectura de 0.5.0.
+
 ## 0.5.0 - 2026-08-17 · TEST
 
 - Añade validación CI antes de construir cualquier imagen.
