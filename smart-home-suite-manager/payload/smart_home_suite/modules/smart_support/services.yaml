@@ -1,0 +1,39 @@
+start_support:
+  name: Iniciar soporte remoto
+  description: Activa temporalmente el usuario de soporte configurado mediante Spook.
+  fields:
+    hours:
+      name: Duración
+      description: Horas de autorización. Si se omite, usa la duración predeterminada del panel.
+      required: false
+      example: 4
+      selector:
+        number:
+          min: 2
+          max: 168
+          step: 1
+          unit_of_measurement: h
+
+stop_support:
+  name: Detener soporte remoto
+  description: Desactiva inmediatamente el usuario de soporte y cancela la autorización temporal.
+
+extend_support:
+  name: Extender soporte remoto
+  description: Amplía una sesión activa sin superar el máximo configurado.
+  fields:
+    hours:
+      name: Extensión
+      description: Horas adicionales. Si se omite, usa la extensión predeterminada del panel.
+      required: false
+      example: 2
+      selector:
+        number:
+          min: 2
+          max: 168
+          step: 1
+          unit_of_measurement: h
+
+verify_support:
+  name: Verificar soporte remoto
+  description: Comprueba que Spook esté disponible y que el usuario configurado exista y pertenezca a Administradores.

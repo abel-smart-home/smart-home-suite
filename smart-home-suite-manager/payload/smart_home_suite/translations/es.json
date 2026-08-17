@@ -14,10 +14,13 @@
   "options": {
     "step": {
       "init": {
-        "title": "Módulos",
-        "description": "Activa o desactiva módulos de Smart Home Suite.",
+        "title": "Módulos de Smart Home Suite",
+        "description": "Activa solo los módulos que utilizará esta instalación.",
         "data": {
-          "smart_lighting": "Smart Lighting"
+          "smart_home": "Smart Home",
+          "smart_lighting": "Smart Lighting",
+          "smart_energy_advanced": "Energía avanzada",
+          "smart_support": "Soporte remoto"
         }
       }
     }

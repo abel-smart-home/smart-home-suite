@@ -2,11 +2,36 @@
 
 from __future__ import annotations
 
+import logging
+from pathlib import Path
+
+from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN, VERSION
 from .module_manager import async_setup_modules, async_unload_modules
+
+_LOGGER = logging.getLogger(__name__)
+PLATFORMS = [Platform.BINARY_SENSOR, Platform.SENSOR]
+STATIC_URL = "/smart_home_suite_static"
+
+
+async def _async_register_static_frontend(hass: HomeAssistant) -> None:
+    """Serve Suite-owned exact frontend sources from the integration folder."""
+    data = hass.data.setdefault(DOMAIN, {})
+    if data.get("static_registered"):
+        return
+    frontend_dir = Path(__file__).resolve().parent / "frontend"
+    try:
+        await hass.http.async_register_static_paths(
+            [StaticPathConfig(STATIC_URL, str(frontend_dir), False)]
+        )
+    except RuntimeError:
+        # A config-entry reload leaves the HTTP static route registered.
+        _LOGGER.debug("Smart Home Suite static route is already registered")
+    data["static_registered"] = True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -14,7 +39,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
 
+    await _async_register_static_frontend(hass)
     module_states = await async_setup_modules(hass, entry)
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+
     hass.data[DOMAIN][entry.entry_id] = {
         "version": VERSION,
         "modules": module_states,
@@ -23,13 +51,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Unload a Smart Home Suite config entry."""
+    """Unload the Suite while keeping persistent module configuration."""
+    platforms_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     await async_unload_modules(hass, entry)
+
     domain_data = hass.data.get(DOMAIN, {})
     domain_data.pop(entry.entry_id, None)
-    if not domain_data:
-        hass.data.pop(DOMAIN, None)
-    return True
+    # Keep shared runtime flags such as the registered static route.
+    return platforms_ok
 
 
 async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:

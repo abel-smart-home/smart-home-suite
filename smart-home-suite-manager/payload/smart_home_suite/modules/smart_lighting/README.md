@@ -1,9 +1,9 @@
 # Smart Lighting module
 
-Migración de Smart Lighting Panel V1.0.3 a Smart Home Suite.
+Migración exacta de **Smart Lighting Panel V1.0.3**.
 
-- Panel: `/lighting`
-- Backend storage: `.storage/smart_lighting_panel`
-- Frontend: servido por la Suite
-- Sin YAML `panel_custom`
-- Sin `/config/www`
+- Ruta: `/lighting`
+- Frontend original byte por byte
+- WebSocket original: `smart_lighting_panel/config/*`
+- Storage original: `.storage/smart_lighting_panel.config`
+- Instalado y registrado por Smart Home Suite

@@ -1,7 +1,7 @@
 {
   "domain": "smart_home_suite",
   "name": "Smart Home Suite",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "config_flow": true,
   "single_config_entry": true,
   "integration_type": "service",
@@ -10,7 +10,8 @@
   "dependencies": [
     "frontend",
     "http",
-    "panel_custom"
+    "panel_custom",
+    "lovelace"
   ],
   "requirements": []
 }

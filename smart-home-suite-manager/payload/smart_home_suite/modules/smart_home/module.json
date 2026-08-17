@@ -1,0 +1,14 @@
+{
+  "id": "smart_home",
+  "name": "Smart Home",
+  "version": "1.3.0",
+  "base_panel_version": "2.0.5",
+  "source": "Smart Home Native Dashboard Bridge V1.3.0 exact + captured exact V2.0.5 base",
+  "enabled_by_default": true,
+  "panel_path": "smart-home",
+  "sidebar_title": "Smart Home",
+  "sidebar_icon": "mdi:home-lightning-bolt",
+  "suite_version": "0.3.0",
+  "bridge_source": "exact Smart Home Native Dashboard Bridge V1.3.0",
+  "base_frontend_source": "captured from validated existing V2.0.5 installation during Manager migration"
+}

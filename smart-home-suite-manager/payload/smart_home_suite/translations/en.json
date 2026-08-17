@@ -14,10 +14,13 @@
   "options": {
     "step": {
       "init": {
-        "title": "Modules",
-        "description": "Enable or disable Smart Home Suite modules.",
+        "title": "Smart Home Suite modules",
+        "description": "Enable only the modules used by this installation.",
         "data": {
-          "smart_lighting": "Smart Lighting"
+          "smart_home": "Smart Home",
+          "smart_lighting": "Smart Lighting",
+          "smart_energy_advanced": "Advanced Energy",
+          "smart_support": "Remote Support"
         }
       }
     }
