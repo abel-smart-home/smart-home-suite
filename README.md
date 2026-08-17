@@ -4,7 +4,7 @@ Repositorio de distribución de **Smart Home Suite** para Home Assistant OS sin 
 
 ## Versión de prueba actual
 
-- Smart Home Suite / Manager: **0.3.2 TEST**
+- Smart Home Suite / Manager: **0.3.3 TEST**
 - Smart Home: Bridge **1.3.0** + base exacta **V2.0.5** capturada de la instalación validada
 - Smart Lighting: **1.0.3**
 - Smart Energy Advanced: **1.3.0**
@@ -14,5 +14,5 @@ Todos los módulos se instalan bajo `custom_components/smart_home_suite`.
 Los frontends de Lighting, Energy Advanced, Support y Smart Home Bridge se
 conservan byte por byte respecto a sus paquetes fuente.
 
-La 0.3.2 es un candidato de laboratorio. No publicar release hasta completar
-`TEST-CHECKLIST-0.3.2.md`.
+La 0.3.3 es un candidato de laboratorio. No publicar release hasta completar
+`TEST-CHECKLIST-0.3.3.md`.
