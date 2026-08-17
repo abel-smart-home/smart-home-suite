@@ -79,6 +79,14 @@ def validate() -> None:
             f"Version mismatch: app={version} integration={manifest.get('version')}"
         )
 
+    const_source = (PAYLOAD / "const.py").read_text(encoding="utf-8")
+    if not re.search(
+        rf'^VERSION:\s*Final\s*=\s*"{re.escape(version)}"\s*$',
+        const_source,
+        re.MULTILINE,
+    ):
+        fail(f"Core VERSION in const.py does not match app version {version}")
+
     required_root = [
         PAYLOAD / "__init__.py",
         PAYLOAD / "config_flow.py",
@@ -88,6 +96,7 @@ def validate() -> None:
         PAYLOAD / "module_manager.py",
         PAYLOAD / "sensor.py",
         PAYLOAD / "binary_sensor.py",
+        PAYLOAD / "support_health.py",
         PAYLOAD / "translations" / "en.json",
         PAYLOAD / "translations" / "es.json",
         PAYLOAD / "brand" / "icon.png",
@@ -140,6 +149,12 @@ def validate() -> None:
         source = init_path.read_text(encoding="utf-8")
         if "async_setup_module" not in source or "async_unload_module" not in source:
             fail(f"{module_id}: module lifecycle functions are missing")
+        if "from ...const import VERSION as SUITE_VERSION" not in source:
+            fail(
+                f"{module_id}: runtime wrapper must consume the central Suite VERSION"
+            )
+        if re.search(r'^SUITE_VERSION\s*=\s*["\']', source, re.MULTILINE):
+            fail(f"{module_id}: hard-coded SUITE_VERSION is not allowed")
 
         descriptor_ids.append(module_id)
         descriptor_paths.append(panel_path)
@@ -177,12 +192,30 @@ def validate() -> None:
                 f"!= descriptor effective version {expected_version}"
             )
 
-    # Translation integrity and repair issue text.
+    # Translation integrity for module failures and Smart Support dependency health.
+    required_issues = (
+        "module_setup_failed",
+        "smart_support_provider_unavailable",
+    )
     for language in ("en", "es"):
         translation = read_json(PAYLOAD / "translations" / f"{language}.json")
-        issue = translation.get("issues", {}).get("module_setup_failed", {})
-        if not issue.get("title") or not issue.get("description"):
-            fail(f"{language}: module_setup_failed repair translation is incomplete")
+        for issue_key in required_issues:
+            issue = translation.get("issues", {}).get(issue_key, {})
+            if not issue.get("title") or not issue.get("description"):
+                fail(f"{language}: {issue_key} repair translation is incomplete")
+
+    support_health_source = (PAYLOAD / "support_health.py").read_text(
+        encoding="utf-8"
+    )
+    for required_token in (
+        "enable_user",
+        "disable_user",
+        "EVENT_SERVICE_REGISTERED",
+        "EVENT_SERVICE_REMOVED",
+        "smart_support_provider_unavailable",
+    ):
+        if required_token not in support_health_source:
+            fail(f"support_health.py is missing required token {required_token!r}")
 
     # Productive frontend artifacts must all exist and be non-empty.
     for filename in (
