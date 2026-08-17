@@ -1,32 +1,18 @@
 # Abel Smart Home Suite
 
-Repositorio público de distribución para **Smart Home Suite** en Home Assistant OS.
+Repositorio de distribución de **Smart Home Suite** para Home Assistant OS sin HACS.
 
 ## Versión de prueba actual
 
-- Smart Home Suite Manager: `0.2.1`
-- Smart Home Suite: `0.2.1`
-- Módulo piloto: Smart Lighting `1.0.3`
+- Smart Home Suite / Manager: **0.3.0 TEST**
+- Smart Home: Bridge **1.3.0** + base exacta **V2.0.5** capturada de la instalación validada
+- Smart Lighting: **1.0.3**
+- Smart Energy Advanced: **1.3.0**
+- Smart Support: **1.1.2**
 
-## Instalación
+Todos los módulos se instalan bajo `custom_components/smart_home_suite`.
+Los frontends de Lighting, Energy Advanced, Support y Smart Home Bridge se
+conservan byte por byte respecto a sus paquetes fuente.
 
-Agrega este repositorio en **Ajustes → Apps → App Store → Repositorios**:
-
-`https://github.com/abel-smart-home/smart-home-suite`
-
-Después instala o actualiza **Smart Home Suite Manager** y ejecuta `install_repair`.
-
-La Suite se instala en:
-
-`/config/custom_components/smart_home_suite`
-
-No usa HACS.
-
-## Arquitecturas
-
-- `amd64`
-- `aarch64`
-
-## Estado
-
-`0.2.1` es una versión de prueba corregida para validar el primer módulo real dentro de la arquitectura modular: **Smart Lighting**.
+La 0.3.0 es un candidato de laboratorio. No publicar release hasta completar
+`TEST-CHECKLIST-0.3.0.md`.
