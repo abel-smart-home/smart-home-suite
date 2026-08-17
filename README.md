@@ -4,8 +4,8 @@ Repositorio público de distribución para **Smart Home Suite** en Home Assistan
 
 ## Versión de prueba actual
 
-- Smart Home Suite Manager: `0.2.0`
-- Smart Home Suite: `0.2.0`
+- Smart Home Suite Manager: `0.2.1`
+- Smart Home Suite: `0.2.1`
 - Módulo piloto: Smart Lighting `1.0.3`
 
 ## Instalación
@@ -29,4 +29,4 @@ No usa HACS.
 
 ## Estado
 
-`0.2.0` es una versión de prueba para validar el primer módulo real dentro de la arquitectura modular: **Smart Lighting**.
+`0.2.1` es una versión de prueba corregida para validar el primer módulo real dentro de la arquitectura modular: **Smart Lighting**.
