@@ -1,0 +1,12 @@
+{
+  "id": "smart_lighting",
+  "name": "Smart Lighting",
+  "version": "1.0.3",
+  "source": "Smart Lighting Panel V1.0.3",
+  "enabled_by_default": true,
+  "panel_path": "lighting",
+  "sidebar_title": "Iluminación",
+  "sidebar_icon": "mdi:lightbulb-group",
+  "storage_key": "smart_lighting_panel",
+  "storage_version": 1
+}

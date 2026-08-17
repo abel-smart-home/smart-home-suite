@@ -1,11 +1,16 @@
 {
   "domain": "smart_home_suite",
   "name": "Smart Home Suite",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "config_flow": true,
   "single_config_entry": true,
   "integration_type": "service",
   "documentation": "https://github.com/abel-smart-home/smart-home-suite",
   "issue_tracker": "https://github.com/abel-smart-home/smart-home-suite/issues",
+  "dependencies": [
+    "frontend",
+    "http",
+    "panel_custom"
+  ],
   "requirements": []
 }

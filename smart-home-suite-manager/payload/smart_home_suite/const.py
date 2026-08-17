@@ -1,4 +1,8 @@
 """Constants for Smart Home Suite."""
 
-DOMAIN = "smart_home_suite"
-VERSION = "0.1.0"
+from typing import Final
+
+DOMAIN: Final = "smart_home_suite"
+VERSION: Final = "0.2.0"
+MODULE_SMART_LIGHTING: Final = "smart_lighting"
+DEFAULT_MODULES: Final = {MODULE_SMART_LIGHTING: True}

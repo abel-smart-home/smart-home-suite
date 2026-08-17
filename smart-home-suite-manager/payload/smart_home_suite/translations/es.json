@@ -4,11 +4,22 @@
     "step": {
       "user": {
         "title": "Configurar Smart Home Suite",
-        "description": "Crea la entrada central de Smart Home Suite. Los módulos y paneles se agregarán después de validar la infraestructura de instalación."
+        "description": "Crea la entrada central de Smart Home Suite. Smart Lighting se instala como módulo piloto."
       }
     },
     "abort": {
       "already_configured": "Smart Home Suite ya está configurada."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Módulos",
+        "description": "Activa o desactiva módulos de Smart Home Suite.",
+        "data": {
+          "smart_lighting": "Smart Lighting"
+        }
+      }
     }
   }
 }
