@@ -19,3 +19,9 @@ Selecciona `restore_latest` y ejecuta la App. Un resultado correcto termina en `
 ## Importante para el piloto
 
 No instales el componente standalone `smart_lighting_panel` al mismo tiempo en la VM de prueba. La Suite 0.2.0 ya incorpora su backend y panel.
+
+## Validación sin modificar
+
+Selecciona `validate_only` para comprobar la integridad estructural del payload
+incluido y de la Suite instalada. Esta acción no reemplaza archivos ni crea
+backups. Una validación correcta termina en `VALIDATION_OK`.

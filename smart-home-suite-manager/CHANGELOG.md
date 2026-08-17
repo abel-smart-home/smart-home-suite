@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.5.0 - 2026-08-17 · TEST
+
+- Añade validación CI antes de construir cualquier imagen.
+- Añade validador de integridad para versiones, módulos, rutas, traducciones y archivos.
+- Las compilaciones amd64/aarch64 dependen de que la validación termine correctamente.
+- Refuerza `install_repair` con validación previa y posterior.
+- Conserva la instalación anterior hasta completar la validación final.
+- Restaura automáticamente la versión anterior si falla la validación posterior.
+- Detecta y recupera una sustitución interrumpida.
+- Verifica la integridad del archivo de backup antes de conservarlo/restaurarlo.
+- Añade acción segura `validate_only`.
+- Crea un Repair de Home Assistant cuando un módulo habilitado no puede cargar.
+- El Repair desaparece automáticamente cuando el módulo se recupera o se deshabilita.
+- No modifica los frontends productivos.
+
 ## 0.4.0 - 2026-08-17 · TEST
 
 - Añade icono y logo propios a Smart Home Suite Manager.
