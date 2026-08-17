@@ -17,6 +17,10 @@ from collections.abc import Awaitable, Callable
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
+from .modules.smart_automations import (
+    async_setup_module as setup_smart_automations,
+    async_unload_module as unload_smart_automations,
+)
 from .modules.smart_energy_advanced import (
     async_setup_module as setup_smart_energy_advanced,
     async_unload_module as unload_smart_energy_advanced,
@@ -84,6 +88,17 @@ MODULE_CATALOG: tuple[ModuleSpec, ...] = (
         enabled_by_default=True,
         setup=setup_smart_energy_advanced,
         unload=unload_smart_energy_advanced,
+    ),
+    ModuleSpec(
+        module_id="smart_automations",
+        name="Smart Automations",
+        option_label="Automatizaciones",
+        version="1.0.0",
+        panel_path="smart-automations",
+        enabled_by_default=True,
+        setup=setup_smart_automations,
+        unload=unload_smart_automations,
+        notes="Creates and manages native Home Assistant automations",
     ),
     ModuleSpec(
         module_id="smart_support",
