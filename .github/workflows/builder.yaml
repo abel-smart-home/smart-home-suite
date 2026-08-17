@@ -1,81 +1,175 @@
 name: Builder
 
-env:
-  MONITORED_FILES: "config.json config.yaml config.yml Dockerfile run.sh payload rootfs"
-
 on:
-  pull_request:
-    branches:
-      - main
   push:
     branches:
       - main
+    paths:
+      - "smart-home-suite-manager/**"
+      - ".github/workflows/builder.yaml"
+  workflow_dispatch:
 
 permissions:
   contents: read
+  packages: write
+
+env:
+  IMAGE: ghcr.io/abel-smart-home/smart-home-suite-manager
+  APP_DIR: smart-home-suite-manager
 
 jobs:
-  init:
-    name: Initialize builds
-    runs-on: ubuntu-latest
+  build-amd64:
+    name: Build amd64
+    runs-on: ubuntu-24.04
     outputs:
-      changed: ${{ steps.filter.outputs.changed }}
-      changed_apps: ${{ steps.filter.outputs.changed_apps }}
+      version: ${{ steps.version.outputs.version }}
     steps:
-      - name: Check out the repository
-        uses: actions/checkout@v7.0.1
-
-      - name: Get changed files
-        id: changed_files
-        uses: tj-actions/changed-files@v47
-
-      - name: Find app directories
-        id: apps
-        uses: home-assistant/actions/helpers/find-addons@master
-
-      - name: Filter changed apps
-        id: filter
+      - name: Checkout repository without external Actions
         shell: bash
         env:
-          APPS: ${{ steps.apps.outputs.addons }}
-          CHANGED_FILES: ${{ steps.changed_files.outputs.all_changed_files }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          changed_apps=()
-          if [[ "${CHANGED_FILES}" =~ \.github/workflows/(builder|build-app)\.yaml ]]; then
-            changed_apps=(${APPS})
-          else
-            for app in ${APPS}; do
-              for file in ${MONITORED_FILES}; do
-                if [[ "${CHANGED_FILES}" =~ ${app}/${file} ]]; then
-                  changed_apps+=("${app}")
-                  break
-                fi
-              done
-            done
-          fi
+          set -euo pipefail
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${GITHUB_SHA}"
+          git checkout --detach FETCH_HEAD
+          git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
 
-          if [[ ${#changed_apps[@]} -gt 0 ]]; then
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-            echo "changed_apps=$(jq -nc '$ARGS.positional' --args "${changed_apps[@]}")" >> "$GITHUB_OUTPUT"
-          else
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            echo 'changed_apps=[]' >> "$GITHUB_OUTPUT"
-          fi
+      - name: Read app version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(sed -n 's/^version:[[:space:]]*"\([^"]*\)".*/\1/p' "${APP_DIR}/config.yaml")"
+          test -n "${VERSION}"
+          echo "version=${VERSION}" >> "${GITHUB_OUTPUT}"
+          echo "VERSION=${VERSION}" >> "${GITHUB_ENV}"
+          echo "Building Smart Home Suite Manager ${VERSION} for amd64"
 
-  build-app:
-    name: Build ${{ matrix.app }}
-    needs: init
-    if: needs.init.outputs.changed == 'true'
-    permissions:
-      contents: read
-      id-token: write
-      packages: write
-    strategy:
-      fail-fast: false
-      matrix:
-        app: ${{ fromJSON(needs.init.outputs.changed_apps) }}
-    uses: ./.github/workflows/build-app.yaml
-    with:
-      app: ${{ matrix.app }}
-      publish: ${{ github.event_name == 'push' }}
-    secrets: inherit
+      - name: Log in to GHCR
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          echo "${GH_TOKEN}" | docker login ghcr.io -u "${GITHUB_ACTOR}" --password-stdin
+
+      - name: Build and push amd64
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker build \
+            --pull \
+            --build-arg BUILD_VERSION="${VERSION}" \
+            --build-arg BUILD_ARCH="amd64" \
+            --tag "${IMAGE}:${VERSION}-amd64" \
+            --tag "${IMAGE}:latest-amd64" \
+            "${APP_DIR}"
+
+          docker push "${IMAGE}:${VERSION}-amd64"
+          docker push "${IMAGE}:latest-amd64"
+
+  build-aarch64:
+    name: Build aarch64
+    runs-on: ubuntu-24.04-arm
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Checkout repository without external Actions
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${GITHUB_SHA}"
+          git checkout --detach FETCH_HEAD
+          git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
+
+      - name: Read app version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(sed -n 's/^version:[[:space:]]*"\([^"]*\)".*/\1/p' "${APP_DIR}/config.yaml")"
+          test -n "${VERSION}"
+          echo "version=${VERSION}" >> "${GITHUB_OUTPUT}"
+          echo "VERSION=${VERSION}" >> "${GITHUB_ENV}"
+          echo "Building Smart Home Suite Manager ${VERSION} for aarch64"
+
+      - name: Log in to GHCR
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          echo "${GH_TOKEN}" | docker login ghcr.io -u "${GITHUB_ACTOR}" --password-stdin
+
+      - name: Build and push aarch64
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker build \
+            --pull \
+            --build-arg BUILD_VERSION="${VERSION}" \
+            --build-arg BUILD_ARCH="aarch64" \
+            --tag "${IMAGE}:${VERSION}-aarch64" \
+            --tag "${IMAGE}:latest-aarch64" \
+            "${APP_DIR}"
+
+          docker push "${IMAGE}:${VERSION}-aarch64"
+          docker push "${IMAGE}:latest-aarch64"
+
+  publish-manifest:
+    name: Publish multi-arch manifest
+    runs-on: ubuntu-24.04
+    needs:
+      - build-amd64
+      - build-aarch64
+    steps:
+      - name: Verify matching versions
+        shell: bash
+        env:
+          AMD64_VERSION: ${{ needs.build-amd64.outputs.version }}
+          AARCH64_VERSION: ${{ needs.build-aarch64.outputs.version }}
+        run: |
+          set -euo pipefail
+          test -n "${AMD64_VERSION}"
+          test "${AMD64_VERSION}" = "${AARCH64_VERSION}"
+          echo "VERSION=${AMD64_VERSION}" >> "${GITHUB_ENV}"
+
+      - name: Log in to GHCR
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          echo "${GH_TOKEN}" | docker login ghcr.io -u "${GITHUB_ACTOR}" --password-stdin
+
+      - name: Publish version manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker manifest create "${IMAGE}:${VERSION}" \
+            "${IMAGE}:${VERSION}-amd64" \
+            "${IMAGE}:${VERSION}-aarch64"
+          docker manifest push "${IMAGE}:${VERSION}"
+
+      - name: Publish latest manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker manifest create "${IMAGE}:latest" \
+            "${IMAGE}:latest-amd64" \
+            "${IMAGE}:latest-aarch64"
+          docker manifest push "${IMAGE}:latest"
+
+      - name: Verify published manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker manifest inspect "${IMAGE}:${VERSION}"
+          docker manifest inspect "${IMAGE}:latest"
+          echo "MULTIARCH_PUBLISH_OK"
