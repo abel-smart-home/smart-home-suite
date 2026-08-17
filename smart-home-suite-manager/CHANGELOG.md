@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.3 - 2026-08-17 · TEST
+
+- Smart Home bridge persistido como recurso Lovelace.
+- Smart Home deja de depender de una custom dashboard strategy.
+- Dashboard Smart Home usa una vista panel normal con la tarjeta del bridge.
+- Corrige listener one-shot de Smart Support al recargar la Config Entry.
+
 ## 0.3.2 - 2026-08-17 · TEST
 
 - Corrige la carga del backend exacto Smart Home Panel V2.0.5.
