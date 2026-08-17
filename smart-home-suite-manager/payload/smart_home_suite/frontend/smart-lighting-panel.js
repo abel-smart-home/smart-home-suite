@@ -1,92 +1,940 @@
-const SMART_LIGHTING_VERSION = "1.0.3";
-const STORAGE_API = "smart_lighting_panel";
-const LONG_PRESS_MS = 550;
+/**
+ * Smart Lighting Panel V1.0.3
+ * Mobile-first lighting/switch control panel for Home Assistant.
+ *
+ * Defaults:
+ * - Two unassigned device slots.
+ * - Tap toggles the entity.
+ * - Hold (550 ms) opens Home Assistant native more-info.
+ * - Areas and devices are created/edited from the built-in admin editor.
+ * - switch.* entities can be visually represented as lights.
+ */
 
-const clone = (v) => JSON.parse(JSON.stringify(v));
-const esc = (v) => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+const PANEL_VERSION = "1.0.3";
+const DOMAIN = "smart_lighting_panel";
+const HOLD_MS = 550;
+const MOVE_TOLERANCE = 12;
 
-function defaultDevice(name) {
+const deepClone = (obj) => JSON.parse(JSON.stringify(obj));
+
+function deepMerge(base, custom) {
+  if (Array.isArray(base)) return Array.isArray(custom) ? deepClone(custom) : deepClone(base);
+  if (base && typeof base === "object") {
+    const out = { ...base };
+    if (custom && typeof custom === "object" && !Array.isArray(custom)) {
+      for (const [key, value] of Object.entries(custom)) out[key] = deepMerge(base[key], value);
+    }
+    return out;
+  }
+  return custom !== undefined ? custom : base;
+}
+
+function newId(prefix) {
+  return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function defaultDevice(name = "Nueva luz") {
   return {
-    id: `dev_${Math.random().toString(36).slice(2,10)}`, name, entity: "", visible: true,
-    representation: "light", icon_on: "mdi:lightbulb", icon_off: "mdi:lightbulb-outline",
-    color_on: "#ffd54f", color_off: "#8b98a5", bg_on: "rgba(255,213,79,.14)", bg_off: "rgba(255,255,255,.035)",
-    border_on: "rgba(255,213,79,.40)", border_off: "rgba(255,255,255,.10)", show_state: true,
-    tap_action: "toggle", hold_action: "more-info"
+    id: newId("device"),
+    show: true,
+    entity: "",
+    name,
+    appearance: "light",
+    icon_on: "mdi:lightbulb-on",
+    icon_off: "mdi:lightbulb-outline",
+    color_on: "#ffd66b",
+    color_off: "#7e8b96",
+    background_on: "rgba(255,214,107,.12)",
+    background_off: "rgba(255,255,255,.025)",
+    border_on: "rgba(255,214,107,.34)",
+    border_off: "#26323a",
+    show_state: true,
+    tap_action: "toggle",
+    hold_action: "more-info",
   };
 }
-function defaults() {
-  return {
-    schema_version: 1,
-    header: {show:true,title:"Iluminación",subtitle:"Control de luces y apagadores",icon:"mdi:lightbulb-group",icon_color:"#53d8d0"},
-    layout: {mobile_cols:2,tablet_cols:3,desktop_cols:4,max_width:760,gap:12},
-    navigation: {show:false,items:[]},
-    areas: [{id:"area_main",name:"Área principal",icon:"mdi:home-lightbulb",color:"#53d8d0",visible:true,devices:[defaultDevice("Luz 1"),defaultDevice("Luz 2")]}]
-  };
-}
-function mergeDefaults(saved) {
-  const d = defaults();
-  if (!saved || typeof saved !== "object" || !Object.keys(saved).length) return d;
-  const out = {...d, ...saved};
-  out.header = {...d.header, ...(saved.header||{})};
-  out.layout = {...d.layout, ...(saved.layout||{})};
-  out.navigation = {...d.navigation, ...(saved.navigation||{})};
-  out.areas = Array.isArray(saved.areas) && saved.areas.length ? saved.areas : d.areas;
-  return out;
-}
+
+const DEFAULTS = {
+  locale: "es-MX",
+  header: {
+    show: true,
+    title: "Iluminación",
+    subtitle: "Luces y apagadores",
+    icon: "mdi:lightbulb-group",
+    icon_color: "#ffd66b",
+    title_color: "#f5f7fa",
+    subtitle_color: "#89949f",
+    title_size: 27,
+    subtitle_size: 14,
+    icon_size: 31,
+    align: "left",
+  },
+  design: {
+    background: "#080d11",
+    background_secondary: "#11181e",
+    panel_max_width: 760,
+    panel_padding: 12,
+    area_gap: 20,
+    card_gap: 10,
+    columns_mobile: 2,
+    columns_tablet: 3,
+    columns_desktop: 4,
+    card_min_height: 142,
+    card_radius: 20,
+    card_padding: 15,
+    card_shadow: "0 10px 30px rgba(0,0,0,.18)",
+    card_background: "#11181e",
+    card_border: "#26323a",
+    text_color: "#f5f7fa",
+    muted_color: "#8e9aa4",
+    accent_color: "#ffd66b",
+    area_title_color: "#eef2f5",
+    unavailable_color: "#ef6461",
+    font_family: "Roboto, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+  },
+  navigation: {
+    show: false,
+    position: "bottom",
+    columns: 4,
+    gap: 8,
+    button_height: 58,
+    radius: 16,
+    background: "#11181e",
+    border_color: "#26323a",
+    text_color: "#aeb7be",
+    active_color: "#ffd66b",
+    icon_size: 24,
+    font_size: 11,
+    show_labels: true,
+    buttons: [
+      { show: true, label: "Inicio", icon: "mdi:home", path: "/smart-home", color: "#35ddd5" },
+      { show: true, label: "Luces", icon: "mdi:lightbulb-group", path: "/lighting", color: "#ffd66b" },
+      { show: false, label: "Energía", icon: "mdi:flash", path: "/smart-energy-advanced", color: "#35ddd5" },
+    ],
+  },
+  areas: [
+    {
+      id: "area-main",
+      show: true,
+      name: "Área principal",
+      icon: "mdi:home-outline",
+      icon_color: "#ffd66b",
+      devices: [
+        { ...defaultDevice("Luz 1"), id: "device-1" },
+        { ...defaultDevice("Luz 2"), id: "device-2" },
+      ],
+    },
+  ],
+};
 
 class SmartLightingPanel extends HTMLElement {
-  constructor(){ super(); this.attachShadow({mode:"open"}); this._hass=null; this._panel=null; this._config=defaults(); this._draft=null; this._loaded=false; this._editorOpen=false; this._tab="areas"; this._selector=null; this._iconPicker=null; this._press=null; this._lastSig=""; }
-  set panel(v){ this._panel=v; }
-  get panel(){ return this._panel; }
-  set hass(v){ this._hass=v; if(!this._loaded){ this._load(); return; } const sig=this._entitySignature(); if(sig!==this._lastSig){this._lastSig=sig; this._renderMainOnly();} if(!this._editorOpen && this._queryWantsSettings()) this._openEditor(); }
-  get hass(){return this._hass;}
-  connectedCallback(){ if(this._hass && !this._loaded) this._load(); }
-  _isAdmin(){ return !!this._hass?.user?.is_admin; }
-  _queryWantsSettings(){ const q=new URLSearchParams(location.search); return this._isAdmin() && (q.get("settings")==="1"||q.get("configure")==="1"); }
-  async _load(){ if(!this._hass||this._loading)return; this._loading=true; try{ const r=await this._hass.connection.sendMessagePromise({type:`${STORAGE_API}/config/get`}); this._config=mergeDefaults(r?.config); }catch(e){ console.warn("Smart Lighting config load failed",e); this._config=defaults(); } this._loaded=true; this._loading=false; this._lastSig=this._entitySignature(); this._renderShell(); if(this._queryWantsSettings()) this._openEditor(); }
-  _allEntities(){ return Object.values(this._hass?.states||{}); }
-  _entitySignature(){ const ids=[]; for(const a of this._config.areas||[]) for(const d of a.devices||[]) if(d.entity) ids.push(d.entity); return ids.map(id=>`${id}:${this._hass?.states?.[id]?.state||"?"}`).join("|"); }
-  _stateLabel(s){ if(!s)return"Sin configurar"; if(s.state==="unavailable")return"No disponible"; if(s.state==="unknown")return"Desconocido"; return s.state==="on"?"Encendida":s.state==="off"?"Apagada":s.state; }
-  _deviceVisual(d){ const s=d.entity?this._hass?.states?.[d.entity]:null; const missing=!!d.entity&&!s; const on=s?.state==="on"; let icon=on?d.icon_on:d.icon_off; if(d.representation==="switch"){icon=on?"mdi:toggle-switch":"mdi:toggle-switch-off-outline";} if(d.representation==="auto"&&d.entity?.startsWith("switch.")){icon=on?"mdi:toggle-switch":"mdi:toggle-switch-off-outline";} if(missing) icon="mdi:alert-circle-outline"; return {s,missing,on,icon}; }
-  _renderShell(){ this.shadowRoot.innerHTML=`<style>${this._css()}</style><div id="main"></div><div id="drawerHost"></div><div id="modalHost"></div>`; this._renderMainOnly(); }
-  _renderMainOnly(){ const host=this.shadowRoot?.getElementById("main"); if(!host||!this._loaded)return; const c=this._config; const areas=(c.areas||[]).filter(a=>a.visible!==false); host.innerHTML=`<div class="page"><div class="wrap">${c.header?.show!==false?`<header><div class="head-icon" style="color:${esc(c.header.icon_color)}"><ha-icon icon="${esc(c.header.icon)}"></ha-icon></div><div class="head-txt"><h1>${esc(c.header.title)}</h1><p>${esc(c.header.subtitle)}</p></div>${this._isAdmin()?`<button class="gear" data-act="settings" title="Personalización"><ha-icon icon="mdi:cog"></ha-icon></button>`:""}</header>`:""}${c.navigation?.show?this._navHtml(c.navigation):""}<div class="areas">${areas.map(a=>this._areaHtml(a)).join("")}</div></div></div>`; host.querySelector('[data-act="settings"]')?.addEventListener("click",()=>this._openEditor()); host.querySelectorAll(".device").forEach(el=>this._wireDevice(el)); host.querySelectorAll("[data-nav]").forEach(el=>el.addEventListener("click",()=>this._navigate(el.dataset.nav))); }
-  _navHtml(n){ return `<nav>${(n.items||[]).filter(i=>i.visible!==false).map(i=>`<button data-nav="${esc(i.path)}"><ha-icon icon="${esc(i.icon||"mdi:circle-small")}"></ha-icon><span>${esc(i.label||i.path)}</span></button>`).join("")}</nav>`; }
-  _areaHtml(a){ const devices=(a.devices||[]).filter(d=>d.visible!==false); return `<section class="area"><div class="area-title"><ha-icon icon="${esc(a.icon||"mdi:home-outline")}" style="color:${esc(a.color||"#53d8d0")}"></ha-icon><h2>${esc(a.name)}</h2></div><div class="grid">${devices.map(d=>this._deviceHtml(d)).join("")}</div></section>`; }
-  _deviceHtml(d){ const v=this._deviceVisual(d); const name=d.name || v.s?.attributes?.friendly_name || d.entity || "Sin configurar"; const state=v.missing?"Entidad no encontrada":this._stateLabel(v.s); const bg=v.on?d.bg_on:d.bg_off, border=v.on?d.border_on:d.border_off, color=v.on?d.color_on:d.color_off; return `<button class="device ${v.on?"on":"off"} ${v.missing?"missing":""}" data-device="${esc(d.id)}" style="--tile-bg:${esc(bg)};--tile-border:${esc(border)};--tile-color:${esc(color)}"><span class="dev-icon"><ha-icon icon="${esc(v.icon)}"></ha-icon></span><span class="dev-name">${esc(name)}</span>${d.show_state!==false?`<span class="dev-state">${esc(state)}</span>`:""}</button>`; }
-  _findDevice(id){ for(const a of this._config.areas||[]){const d=(a.devices||[]).find(x=>x.id===id);if(d)return d;} return null; }
-  _wireDevice(el){ let startX=0,startY=0,moved=false,longDone=false,timer=null; const cancel=()=>{if(timer)clearTimeout(timer);timer=null}; el.addEventListener("pointerdown",ev=>{const d=this._findDevice(el.dataset.device);if(!d?.entity)return;startX=ev.clientX;startY=ev.clientY;moved=false;longDone=false;timer=setTimeout(()=>{if(!moved){longDone=true;this._doAction(d,d.hold_action)}},LONG_PRESS_MS)}); el.addEventListener("pointermove",ev=>{if(Math.hypot(ev.clientX-startX,ev.clientY-startY)>10){moved=true;cancel();}}); el.addEventListener("pointerup",()=>{const d=this._findDevice(el.dataset.device);cancel();if(d?.entity&&!moved&&!longDone)this._doAction(d,d.tap_action)}); el.addEventListener("pointercancel",cancel); el.addEventListener("contextmenu",ev=>ev.preventDefault()); }
-  _doAction(d,action){ if(!action||action==="none"||!d.entity)return; if(action==="more-info"){this.dispatchEvent(new CustomEvent("hass-more-info",{detail:{entityId:d.entity},bubbles:true,composed:true}));return;} if(action==="toggle") this._hass.callService("homeassistant","toggle",{entity_id:d.entity}); }
-  _navigate(path){ if(!path)return; history.pushState(null,"",path); window.dispatchEvent(new Event("location-changed")); }
+  constructor() {
+    super();
+    this.attachShadow({ mode: "open" });
+    this._hass = null;
+    this._panel = null;
+    this._narrow = false;
+    this._storedConfig = {};
+    this._loaded = false;
+    this._loading = false;
+    this._backendOk = true;
+    this._editorOpen = false;
+    this._editorTab = "areas";
+    this._editConfig = null;
+    this._renderQueued = false;
+    this._lastSignature = "";
+    this._toastMessage = "";
+    this._toastType = "ok";
+    this._gesture = null;
+    this._entityPicker = null;
+    this._iconPicker = null;
 
-  _openEditor(){ if(!this._isAdmin())return; this._draft=clone(this._config); this._editorOpen=true; this._renderEditor(); }
-  _closeEditor(){ this._editorOpen=false;this._draft=null;this.shadowRoot.getElementById("drawerHost").innerHTML=""; }
-  _renderEditor(preserve=true){ const host=this.shadowRoot.getElementById("drawerHost"); if(!host)return; const old=host.querySelector(".drawer-body"); const scroll=preserve?old?.scrollTop||0:0; const active=this.shadowRoot.activeElement; const focusKey=active?.dataset?.focuskey; const selStart=active?.selectionStart; host.innerHTML=`<div class="scrim" data-close></div><aside class="drawer"><div class="drawer-head"><div><strong>Personalización</strong><small>Smart Lighting ${SMART_LIGHTING_VERSION} · Suite 0.2.0</small></div><button data-close><ha-icon icon="mdi:close"></ha-icon></button></div><div class="tabs"><button data-tab="general" class="${this._tab==="general"?"sel":""}">General</button><button data-tab="areas" class="${this._tab==="areas"?"sel":""}">Áreas y dispositivos</button><button data-tab="nav" class="${this._tab==="nav"?"sel":""}">Navegación</button></div><div class="drawer-body">${this._editorTabHtml()}</div><div class="drawer-foot"><div class="foot-secondary"><button data-exp>Exportar</button><button data-imp>Importar</button><button data-reset>Restablecer</button></div><div class="foot-primary"><button data-cancel>Cancelar</button><button class="save" data-save>Guardar</button></div></div></aside>`; const body=host.querySelector(".drawer-body"); body.scrollTop=scroll; host.querySelectorAll("[data-close],[data-cancel]").forEach(b=>b.addEventListener("click",()=>this._closeEditor())); host.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>{this._tab=b.dataset.tab;this._renderEditor(false)})); host.querySelector("[data-save]").addEventListener("click",()=>this._saveDraft()); host.querySelector("[data-reset]").addEventListener("click",()=>this._resetDraft()); host.querySelector("[data-exp]").addEventListener("click",()=>this._export()); host.querySelector("[data-imp]").addEventListener("click",()=>this._import()); this._wireEditorControls(); if(focusKey){const f=host.querySelector(`[data-focuskey="${CSS.escape(focusKey)}"]`); if(f){f.focus(); if(typeof selStart==="number"&&f.setSelectionRange)try{f.setSelectionRange(selStart,selStart)}catch(_){}}} }
-  _editorTabHtml(){ return this._tab==="general"?this._generalHtml():this._tab==="nav"?this._navEditorHtml():this._areasEditorHtml(); }
-  _row(label,inner,help=""){return `<label class="field"><span>${label}</span>${inner}${help?`<small>${help}</small>`:""}</label>`;}
-  _mdiInput(value,key,kind,path){ return `<div class="mdi-row"><input data-focuskey="${key}" data-bind="${kind}" data-path="${path}" value="${esc(value||"")}" placeholder="mdi:icon"><button type="button" data-iconpick="${path}">Buscar icono</button></div>`; }
-  _generalHtml(){const h=this._draft.header,l=this._draft.layout;return `<div class="editor-section"><h3>Encabezado</h3>${this._row("Mostrar encabezado",`<input type="checkbox" data-bind="bool" data-path="header.show" ${h.show!==false?"checked":""}>`)}${this._row("Título",`<input data-bind="text" data-path="header.title" value="${esc(h.title)}">`)}${this._row("Subtítulo",`<input data-bind="text" data-path="header.subtitle" value="${esc(h.subtitle)}">`)}${this._row("Icono",this._mdiInput(h.icon,"header-icon","text","header.icon"))}${this._row("Color de icono",`<input type="color" data-bind="text" data-path="header.icon_color" value="${esc(h.icon_color)}">`)}</div><div class="editor-section"><h3>Distribución</h3>${this._row("Columnas móvil",`<input type="number" min="1" max="6" data-bind="number" data-path="layout.mobile_cols" value="${l.mobile_cols}">`)}${this._row("Columnas tablet",`<input type="number" min="1" max="8" data-bind="number" data-path="layout.tablet_cols" value="${l.tablet_cols}">`)}${this._row("Columnas escritorio",`<input type="number" min="1" max="10" data-bind="number" data-path="layout.desktop_cols" value="${l.desktop_cols}">`)}${this._row("Ancho máximo (px)",`<input type="number" min="320" max="1600" data-bind="number" data-path="layout.max_width" value="${l.max_width}">`)}</div>`;}
-  _areasEditorHtml(){return `<div class="editor-section"><div class="section-title"><h3>Áreas y dispositivos</h3><button data-add-area>+ Agregar área</button></div>${(this._draft.areas||[]).map((a,ai)=>this._areaEditor(a,ai)).join("")}</div>`;}
-  _areaEditor(a,ai){return `<div class="edit-card area-edit"><div class="edit-card-head"><strong>Área ${ai+1}</strong><button data-del-area="${ai}" ${this._draft.areas.length<=1?"disabled":""}><ha-icon icon="mdi:delete-outline"></ha-icon></button></div>${this._row("Visible",`<input type="checkbox" data-bind="bool" data-path="areas.${ai}.visible" ${a.visible!==false?"checked":""}>`)}${this._row("Nombre",`<input data-bind="text" data-path="areas.${ai}.name" value="${esc(a.name)}">`)}${this._row("Icono",this._mdiInput(a.icon,`area-${ai}-icon`,"text",`areas.${ai}.icon`))}${this._row("Color",`<input type="color" data-bind="text" data-path="areas.${ai}.color" value="${esc(a.color||"#53d8d0")}">`)}<div class="devices-edit">${(a.devices||[]).map((d,di)=>this._deviceEditor(d,ai,di)).join("")}</div><button class="wide" data-add-device="${ai}">+ Agregar dispositivo</button></div>`;}
-  _deviceEditor(d,ai,di){ const p=`areas.${ai}.devices.${di}`; return `<div class="edit-card device-edit"><div class="edit-card-head"><strong>${esc(d.name||`Dispositivo ${di+1}`)}</strong><button data-del-device="${ai}:${di}" ${this._totalDevices()<=2?"disabled":""}><ha-icon icon="mdi:delete-outline"></ha-icon></button></div>${this._row("Visible",`<input type="checkbox" data-bind="bool" data-path="${p}.visible" ${d.visible!==false?"checked":""}>`)}${this._row("Nombre",`<input data-bind="text" data-path="${p}.name" value="${esc(d.name)}">`)}${this._row("Entidad",`<div class="entity-row"><input data-bind="text" data-path="${p}.entity" value="${esc(d.entity)}" placeholder="light.sala"><button data-entitypick="${p}.entity">Seleccionar</button></div>`)}${this._row("Representación",`<select data-bind="text" data-path="${p}.representation"><option value="light" ${d.representation==="light"?"selected":""}>Como luz</option><option value="switch" ${d.representation==="switch"?"selected":""}>Como apagador</option><option value="auto" ${d.representation==="auto"?"selected":""}>Automático por dominio</option><option value="custom" ${d.representation==="custom"?"selected":""}>Personalizada</option></select>`)}${this._row("Icono encendido",this._mdiInput(d.icon_on,`dev-${ai}-${di}-on`,"text",`${p}.icon_on`))}${this._row("Icono apagado",this._mdiInput(d.icon_off,`dev-${ai}-${di}-off`,"text",`${p}.icon_off`))}<div class="two">${this._row("Color ON",`<input type="color" data-bind="text" data-path="${p}.color_on" value="${esc(d.color_on||"#ffd54f")}">`)}${this._row("Color OFF",`<input type="color" data-bind="text" data-path="${p}.color_off" value="${esc(d.color_off||"#8b98a5")}">`)}</div>${this._row("Mostrar estado",`<input type="checkbox" data-bind="bool" data-path="${p}.show_state" ${d.show_state!==false?"checked":""}>`)}<div class="two">${this._row("Un toque",this._actionSelect(d.tap_action,`${p}.tap_action`))}${this._row("Mantener",this._actionSelect(d.hold_action,`${p}.hold_action`))}</div></div>`; }
-  _actionSelect(val,path){return `<select data-bind="text" data-path="${path}"><option value="toggle" ${val==="toggle"?"selected":""}>Alternar entidad</option><option value="more-info" ${val==="more-info"?"selected":""}>Más información</option><option value="none" ${val==="none"?"selected":""}>No hacer nada</option></select>`;}
-  _navEditorHtml(){const n=this._draft.navigation;return `<div class="editor-section"><h3>Navegación</h3>${this._row("Mostrar navegación",`<input type="checkbox" data-bind="bool" data-path="navigation.show" ${n.show?"checked":""}>`)}${(n.items||[]).map((i,ix)=>`<div class="edit-card"><div class="edit-card-head"><strong>Botón ${ix+1}</strong><button data-del-nav="${ix}"><ha-icon icon="mdi:delete-outline"></ha-icon></button></div>${this._row("Texto",`<input data-bind="text" data-path="navigation.items.${ix}.label" value="${esc(i.label||"")}">`)}${this._row("Ruta",`<input data-bind="text" data-path="navigation.items.${ix}.path" value="${esc(i.path||"")}" placeholder="/smart-home">`)}${this._row("Icono",this._mdiInput(i.icon,`nav-${ix}-icon`,"text",`navigation.items.${ix}.icon`))}</div>`).join("")}<button class="wide" data-add-nav>+ Agregar botón</button></div>`;}
-  _totalDevices(){return (this._draft.areas||[]).reduce((n,a)=>n+(a.devices||[]).length,0);}
-  _getPath(path){return path.split('.').reduce((o,k)=>o?.[isNaN(k)?k:Number(k)],this._draft);}
-  _setPath(path,val){const parts=path.split('.');let o=this._draft;for(let i=0;i<parts.length-1;i++){const k=isNaN(parts[i])?parts[i]:Number(parts[i]);o=o[k];}const lk=isNaN(parts.at(-1))?parts.at(-1):Number(parts.at(-1));o[lk]=val;}
-  _wireEditorControls(){const host=this.shadowRoot.getElementById("drawerHost"); host.querySelectorAll("[data-bind]").forEach(el=>el.addEventListener("change",()=>{let v=el.type==="checkbox"?el.checked:el.value;if(el.dataset.bind==="number")v=Number(v);this._setPath(el.dataset.path,v)})); host.querySelectorAll("[data-bind='text']").forEach(el=>el.addEventListener("input",()=>this._setPath(el.dataset.path,el.value))); host.querySelector("[data-add-area]")?.addEventListener("click",()=>{this._draft.areas.push({id:`area_${Date.now()}`,name:`Área ${this._draft.areas.length+1}`,icon:"mdi:home-outline",color:"#53d8d0",visible:true,devices:[]});this._renderEditor()}); host.querySelectorAll("[data-del-area]").forEach(b=>b.addEventListener("click",()=>{if(this._draft.areas.length>1){this._draft.areas.splice(Number(b.dataset.delArea),1);this._renderEditor()}})); host.querySelectorAll("[data-add-device]").forEach(b=>b.addEventListener("click",()=>{this._draft.areas[Number(b.dataset.addDevice)].devices.push(defaultDevice(`Luz ${this._totalDevices()+1}`));this._renderEditor()})); host.querySelectorAll("[data-del-device]").forEach(b=>b.addEventListener("click",()=>{if(this._totalDevices()<=2)return;const[ai,di]=b.dataset.delDevice.split(':').map(Number);this._draft.areas[ai].devices.splice(di,1);this._renderEditor()})); host.querySelector("[data-add-nav]")?.addEventListener("click",()=>{this._draft.navigation.items.push({label:"Inicio",path:"/smart-home",icon:"mdi:home",visible:true});this._renderEditor()}); host.querySelectorAll("[data-del-nav]").forEach(b=>b.addEventListener("click",()=>{this._draft.navigation.items.splice(Number(b.dataset.delNav),1);this._renderEditor()})); host.querySelectorAll("[data-entitypick]").forEach(b=>b.addEventListener("click",()=>this._openEntityPicker(b.dataset.entitypick))); host.querySelectorAll("[data-iconpick]").forEach(b=>b.addEventListener("click",()=>this._openIconPicker(b.dataset.iconpick))); }
-  async _saveDraft(){ try{await this._hass.connection.sendMessagePromise({type:`${STORAGE_API}/config/save`,config:this._draft}); this._config=mergeDefaults(clone(this._draft));this._closeEditor();this._lastSig=this._entitySignature();this._renderMainOnly();}catch(e){this._notify(`No se pudo guardar: ${e.message||e}`)} }
-  async _resetDraft(){ if(!confirm("¿Restablecer Smart Lighting a su configuración inicial?"))return; try{await this._hass.connection.sendMessagePromise({type:`${STORAGE_API}/config/reset`});this._draft=defaults();this._renderEditor(false);}catch(e){this._notify(`No se pudo restablecer: ${e.message||e}`)} }
-  _export(){const blob=new Blob([JSON.stringify(this._draft,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="smart-lighting-panel-config.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
-  _import(){const i=document.createElement("input");i.type="file";i.accept="application/json,.json";i.onchange=async()=>{try{const data=JSON.parse(await i.files[0].text());this._draft=mergeDefaults(data);this._renderEditor(false);}catch(e){this._notify("El archivo JSON no es válido")}};i.click();}
-  _notify(message){this.dispatchEvent(new CustomEvent("hass-notification",{detail:{message},bubbles:true,composed:true}));}
+    this.shadowRoot.addEventListener("click", (ev) => this._onClick(ev));
+    this.shadowRoot.addEventListener("change", (ev) => this._onChange(ev));
+    this.shadowRoot.addEventListener("input", (ev) => this._onInput(ev));
+    this.shadowRoot.addEventListener("pointerdown", (ev) => this._onPointerDown(ev));
+    this.shadowRoot.addEventListener("pointermove", (ev) => this._onPointerMove(ev));
+    this.shadowRoot.addEventListener("pointerup", (ev) => this._onPointerUp(ev));
+    this.shadowRoot.addEventListener("pointercancel", (ev) => this._onPointerCancel(ev));
+    this.shadowRoot.addEventListener("contextmenu", (ev) => {
+      if (ev.target.closest?.(".device-tile")) ev.preventDefault();
+    });
+  }
 
-  _openEntityPicker(path){this._selector={path,all:false,query:""};this._renderEntityPicker();}
-  _renderEntityPicker(){const m=this.shadowRoot.getElementById("modalHost");const s=this._selector;if(!s)return;let entities=this._allEntities();if(!s.all)entities=entities.filter(x=>x.entity_id.startsWith("light.")||x.entity_id.startsWith("switch."));const q=s.query.toLowerCase();if(q)entities=entities.filter(x=>x.entity_id.toLowerCase().includes(q)||(x.attributes?.friendly_name||"").toLowerCase().includes(q));entities=entities.slice(0,300);m.innerHTML=`<div class="modal-scrim"><div class="modal"><div class="modal-head"><strong>Seleccionar entidad</strong><button data-modal-close><ha-icon icon="mdi:close"></ha-icon></button></div><input class="search" placeholder="Buscar por nombre o entity_id" value="${esc(s.query)}"><label class="check"><input type="checkbox" data-all ${s.all?"checked":""}> Mostrar todas las entidades</label><div class="entity-list">${entities.map(e=>`<button data-eid="${esc(e.entity_id)}"><ha-icon icon="${esc(e.attributes?.icon|| (e.entity_id.startsWith('light.')?'mdi:lightbulb':'mdi:toggle-switch'))}"></ha-icon><span><b>${esc(e.attributes?.friendly_name||e.entity_id)}</b><small>${esc(e.entity_id)} · ${esc(e.state)}</small></span></button>`).join("")}</div></div></div>`;m.querySelector("[data-modal-close]").onclick=()=>this._closeModal();m.querySelector(".search").oninput=e=>{s.query=e.target.value;this._renderEntityPicker();const x=this.shadowRoot.getElementById("modalHost").querySelector('.search');x.focus();x.setSelectionRange(x.value.length,x.value.length)};m.querySelector("[data-all]").onchange=e=>{s.all=e.target.checked;this._renderEntityPicker()};m.querySelectorAll("[data-eid]").forEach(b=>b.onclick=()=>{this._setPath(path,b.dataset.eid);const parts=path.split('.');const di=Number(parts[3]);const ai=Number(parts[1]);const d=this._draft.areas[ai].devices[di];const st=this._hass.states[b.dataset.eid];if(/^Luz \d+$/.test(d.name||""))d.name=st?.attributes?.friendly_name||d.name;this._closeModal();this._renderEditor()});}
-  _openIconPicker(path){const m=this.shadowRoot.getElementById("modalHost");const current=this._getPath(path)||"";m.innerHTML=`<div class="modal-scrim"><div class="modal icon-modal"><div class="modal-head"><strong>Buscar icono</strong><button data-modal-close><ha-icon icon="mdi:close"></ha-icon></button></div><div id="nativeIconHost"></div><div class="fallback"><small>También puedes escribir manualmente cualquier icono MDI.</small><input value="${esc(current)}" placeholder="mdi:lightbulb"><button data-apply>Aplicar</button></div></div></div>`;m.querySelector("[data-modal-close]").onclick=()=>this._closeModal();const h=m.querySelector("#nativeIconHost");let picker=null;try{picker=document.createElement("ha-selector");picker.hass=this._hass;picker.selector={icon:{}};picker.value=current;picker.label="Icono";picker.addEventListener("value-changed",ev=>{const val=ev.detail?.value;if(val){this._setPath(path,val);this._closeModal();this._renderEditor();}});h.appendChild(picker);}catch(e){try{picker=document.createElement("ha-icon-picker");picker.hass=this._hass;picker.value=current;picker.addEventListener("value-changed",ev=>{const val=ev.detail?.value;if(val){this._setPath(path,val);this._closeModal();this._renderEditor();}});h.appendChild(picker);}catch(_){h.innerHTML="<p>Selector visual no disponible en esta versión de Home Assistant.</p>";}}m.querySelector("[data-apply]").onclick=()=>{const val=m.querySelector(".fallback input").value.trim();this._setPath(path,val);this._closeModal();this._renderEditor()};}
-  _closeModal(){this._selector=null;this.shadowRoot.getElementById("modalHost").innerHTML="";}
+  set hass(value) {
+    this._hass = value;
+    if (!this._loaded && !this._loading) this._loadConfig();
+    // Preserve editor scroll/focus during frequent HA state updates.
+    if (!this._editorOpen && !this._entityPicker && !this._iconPicker) this._queueRender();
+  }
+  get hass() { return this._hass; }
 
-  _css(){ const l=this._config.layout||{};return `:host{display:block;min-height:100%;color:var(--primary-text-color,#eaf1f6);background:var(--primary-background-color,#0c151d);font-family:var(--paper-font-body1_-_font-family,Roboto,Arial,sans-serif);box-sizing:border-box}*{box-sizing:border-box}.page{min-height:100vh;padding:calc(18px + env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) calc(28px + env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));background:radial-gradient(circle at 20% 0%,rgba(83,216,208,.08),transparent 32%),var(--primary-background-color,#0c151d)}.wrap{width:min(100%,${Number(l.max_width||760)}px);margin:auto}header{display:flex;align-items:center;gap:12px;margin:2px 0 20px}.head-icon{width:46px;height:46px;border-radius:14px;background:rgba(255,255,255,.05);display:grid;place-items:center}.head-icon ha-icon{--mdc-icon-size:27px}.head-txt{min-width:0;flex:1}.head-txt h1{font-size:25px;margin:0;font-weight:700}.head-txt p{margin:3px 0 0;color:var(--secondary-text-color,#97a7b5);font-size:13px}.gear,header button{border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.04);color:inherit;border-radius:12px;width:42px;height:42px;cursor:pointer}nav{display:flex;gap:8px;overflow:auto;margin:-4px 0 18px;padding-bottom:2px}nav button{border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.04);color:inherit;border-radius:12px;padding:9px 12px;display:flex;align-items:center;gap:7px;white-space:nowrap}.area{margin:0 0 22px}.area-title{display:flex;align-items:center;gap:8px;margin-bottom:10px}.area-title h2{font-size:16px;margin:0}.grid{display:grid;grid-template-columns:repeat(${Number(l.mobile_cols||2)},minmax(0,1fr));gap:${Number(l.gap||12)}px}.device{min-height:128px;text-align:left;border:1px solid var(--tile-border);background:var(--tile-bg);color:inherit;border-radius:18px;padding:15px;display:flex;flex-direction:column;align-items:flex-start;cursor:pointer;touch-action:pan-y;user-select:none;transition:transform .12s,border-color .15s}.device:active{transform:scale(.985)}.dev-icon{width:42px;height:42px;border-radius:13px;background:rgba(0,0,0,.14);display:grid;place-items:center;color:var(--tile-color);margin-bottom:13px}.dev-icon ha-icon{--mdc-icon-size:26px}.dev-name{font-size:15px;font-weight:600;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dev-state{font-size:12px;color:var(--secondary-text-color,#9aa8b4);margin-top:4px}.device.missing{border-style:dashed}.scrim{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:90}.drawer{position:fixed;z-index:91;right:0;top:0;bottom:0;width:min(520px,100vw);background:var(--card-background-color,#111d27);box-shadow:-20px 0 60px rgba(0,0,0,.35);display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;border-left:1px solid rgba(255,255,255,.08)}.drawer-head{padding:17px 18px 12px;display:flex;justify-content:space-between;gap:10px;align-items:center}.drawer-head strong{display:block;font-size:18px}.drawer-head small{color:var(--secondary-text-color,#91a1ae)}.drawer-head button,.modal-head button{width:38px;height:38px;border:0;border-radius:10px;background:rgba(255,255,255,.05);color:inherit}.tabs{display:flex;gap:4px;padding:0 12px;border-bottom:1px solid rgba(255,255,255,.08);overflow:auto}.tabs button{background:transparent;color:var(--secondary-text-color,#9cacb8);border:0;border-bottom:2px solid transparent;padding:12px 9px;white-space:nowrap}.tabs button.sel{color:#63ded7;border-color:#53d8d0}.drawer-body{overflow:auto;padding:16px 17px 30px;overscroll-behavior:contain}.drawer-foot{display:flex;gap:9px;justify-content:space-between;flex-wrap:wrap;padding:12px 15px calc(12px + env(safe-area-inset-bottom));border-top:1px solid rgba(255,255,255,.08);background:var(--card-background-color,#111d27)}.drawer-foot button,.section-title button,.wide,.field button{border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.05);color:inherit;border-radius:10px;padding:9px 11px}.drawer-foot .save{background:#1d8580;border-color:#35afa9}.foot-secondary,.foot-primary{display:flex;gap:7px}.editor-section>h3,.section-title h3{margin:2px 0 12px;font-size:15px}.section-title{display:flex;align-items:center;justify-content:space-between;gap:8px}.field{display:grid;gap:6px;margin:10px 0}.field>span{font-size:12px;color:var(--secondary-text-color,#a2aeb8)}.field small{font-size:11px;color:var(--secondary-text-color,#82909d)}input,select{width:100%;background:rgba(0,0,0,.16);border:1px solid rgba(255,255,255,.11);color:inherit;border-radius:9px;padding:9px 10px;outline:none}input:focus,select:focus{border-color:#45c8c1}.field input[type=checkbox]{width:18px;height:18px}.field input[type=color]{height:38px;padding:3px}.mdi-row,.entity-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px}.edit-card{border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);border-radius:13px;padding:12px;margin:11px 0}.area-edit{background:rgba(83,216,208,.025)}.device-edit{margin-left:8px}.edit-card-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.edit-card-head button{width:34px;height:34px;border:0;border-radius:9px;background:rgba(255,255,255,.04);color:inherit}.edit-card-head button:disabled{opacity:.25}.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.wide{width:100%}.modal-scrim{position:fixed;inset:0;z-index:120;background:rgba(0,0,0,.6);display:grid;place-items:center;padding:16px}.modal{width:min(560px,100%);max-height:min(720px,90vh);background:var(--card-background-color,#12202a);border:1px solid rgba(255,255,255,.1);border-radius:18px;display:flex;flex-direction:column;overflow:hidden}.modal-head{padding:14px 15px;display:flex;align-items:center;justify-content:space-between}.search{margin:0 14px 8px;width:calc(100% - 28px)}.check{padding:2px 15px 9px;font-size:12px;display:flex;gap:8px;align-items:center}.check input{width:16px}.entity-list{overflow:auto;padding:5px 9px 12px}.entity-list button{width:100%;display:flex;gap:11px;align-items:center;text-align:left;padding:10px;border:0;border-radius:11px;background:transparent;color:inherit}.entity-list button:hover{background:rgba(255,255,255,.05)}.entity-list span{display:grid;min-width:0}.entity-list b{overflow:hidden;text-overflow:ellipsis}.entity-list small{color:var(--secondary-text-color,#91a0ad);overflow:hidden;text-overflow:ellipsis}.icon-modal #nativeIconHost{padding:8px 15px 12px;min-height:90px}.fallback{border-top:1px solid rgba(255,255,255,.08);padding:13px 15px 16px;display:grid;grid-template-columns:1fr auto;gap:8px}.fallback small{grid-column:1/-1;color:var(--secondary-text-color,#91a0ad)}.fallback button{border:0;background:#1d8580;color:white;border-radius:9px;padding:8px 12px}@media(min-width:650px){.grid{grid-template-columns:repeat(${Number(l.tablet_cols||3)},minmax(0,1fr))}}@media(min-width:980px){.grid{grid-template-columns:repeat(${Number(l.desktop_cols||4)},minmax(0,1fr))}}@media(max-width:600px){.drawer{width:100vw}.scrim{display:none}.drawer-head{padding-top:calc(14px + env(safe-area-inset-top))}.two{grid-template-columns:1fr}.drawer-foot{display:grid}.foot-secondary,.foot-primary{justify-content:stretch}.foot-primary button{flex:1}.device-edit{margin-left:0}}`; }
+  set panel(value) { this._panel = value; this._queueRender(); }
+  get panel() { return this._panel; }
+
+  set narrow(value) { this._narrow = Boolean(value); this._queueRender(); }
+  get narrow() { return this._narrow; }
+
+  connectedCallback() {
+    if (this._hass && !this._loaded && !this._loading) this._loadConfig();
+    this._queueRender();
+  }
+
+  async _loadConfig() {
+    if (!this._hass || this._loading || this._loaded) return;
+    this._loading = true;
+    try {
+      const result = await this._hass.callWS({ type: `${DOMAIN}/config/get` });
+      this._storedConfig = result?.config || {};
+      this._backendOk = true;
+    } catch (err) {
+      console.error("Smart Lighting Panel: persistent backend unavailable", err);
+      this._storedConfig = {};
+      this._backendOk = false;
+    } finally {
+      this._loaded = true;
+      this._loading = false;
+      try {
+        const params = new URLSearchParams(window.location.search);
+        if (this._hass?.user?.is_admin && (params.get("settings") === "1" || params.get("configure") === "1")) {
+          this._editConfig = deepClone(this._config());
+          this._editorOpen = true;
+          this._editorTab = "areas";
+        }
+      } catch (_) {}
+      this._lastSignature = "";
+      this._queueRender();
+    }
+  }
+
+  _config() {
+    const source = this._editorOpen && this._editConfig ? this._editConfig : this._storedConfig;
+    const cfg = deepMerge(DEFAULTS, source || {});
+    if (!Array.isArray(cfg.areas) || !cfg.areas.length) cfg.areas = deepClone(DEFAULTS.areas);
+    return cfg;
+  }
+
+  _queueRender(preserve = false) {
+    if (!this.isConnected || this._renderQueued) return;
+    this._renderQueued = true;
+    requestAnimationFrame(() => {
+      this._renderQueued = false;
+      this._render(preserve);
+    });
+  }
+
+  _escape(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  _num(value, fallback = 0) {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : fallback;
+  }
+
+  _cssSize(value, fallback = "") {
+    if (value === "" || value === null || value === undefined) return fallback;
+    return typeof value === "number" ? `${value}px` : String(value);
+  }
+
+  _getPath(obj, path) {
+    return path.split(".").reduce((acc, key) => acc?.[key], obj);
+  }
+
+  _setPath(obj, path, value) {
+    const parts = path.split(".");
+    let cursor = obj;
+    for (let i = 0; i < parts.length - 1; i++) {
+      const part = parts[i];
+      const next = parts[i + 1];
+      if (cursor[part] === undefined || cursor[part] === null) cursor[part] = /^\d+$/.test(next) ? [] : {};
+      cursor = cursor[part];
+    }
+    cursor[parts.at(-1)] = value;
+  }
+
+  _icon(icon, size, color) {
+    if (!icon) return "";
+    return `<ha-icon icon="${this._escape(icon)}" style="--mdc-icon-size:${this._cssSize(size, "26px")};color:${this._escape(color || "currentColor")}"></ha-icon>`;
+  }
+
+  _entityState(device) {
+    const entity = device?.entity || "";
+    const stateObj = entity ? this._hass?.states?.[entity] : null;
+    if (!entity) return { kind: "unconfigured", on: false, stateObj: null, label: "Sin configurar" };
+    if (!stateObj) return { kind: "missing", on: false, stateObj: null, label: "No encontrada" };
+    const raw = String(stateObj.state || "").toLowerCase();
+    if (["unavailable", "unknown", "none"].includes(raw)) return { kind: "unavailable", on: false, stateObj, label: "No disponible" };
+    const on = raw === "on" || raw === "open" || raw === "active" || raw === "true";
+    return { kind: on ? "on" : "off", on, stateObj, label: on ? "Encendida" : "Apagada" };
+  }
+
+  _deviceAppearance(device, state) {
+    const appearance = device.appearance || "light";
+    let iconOn = device.icon_on || "mdi:lightbulb-on";
+    let iconOff = device.icon_off || "mdi:lightbulb-outline";
+    if (appearance === "switch") {
+      iconOn = device.icon_on || "mdi:toggle-switch";
+      iconOff = device.icon_off || "mdi:toggle-switch-off-outline";
+    } else if (appearance === "auto") {
+      const domain = String(device.entity || "").split(".")[0];
+      if (domain === "switch") {
+        iconOn = device.icon_on || "mdi:toggle-switch";
+        iconOff = device.icon_off || "mdi:toggle-switch-off-outline";
+      }
+    }
+    return {
+      icon: state.on ? iconOn : iconOff,
+      color: state.on ? (device.color_on || "#ffd66b") : (device.color_off || "#7e8b96"),
+      background: state.on ? (device.background_on || "rgba(255,214,107,.12)") : (device.background_off || "rgba(255,255,255,.025)"),
+      border: state.on ? (device.border_on || "rgba(255,214,107,.34)") : (device.border_off || "#26323a"),
+    };
+  }
+
+  _deviceCard(device, areaIndex, deviceIndex, cfg) {
+    if (!device?.show) return "";
+    const state = this._entityState(device);
+    const ap = this._deviceAppearance(device, state);
+    const unavailable = state.kind === "unavailable" || state.kind === "missing";
+    const statusColor = unavailable ? cfg.design.unavailable_color : ap.color;
+    const disabledClass = state.kind === "unconfigured" ? " unconfigured" : "";
+    const title = device.name || state.stateObj?.attributes?.friendly_name || device.entity || "Dispositivo";
+    return `
+      <button class="device-tile state-${state.kind}${disabledClass}" data-device-tile="1" data-area-index="${areaIndex}" data-device-index="${deviceIndex}"
+        style="--tile-bg:${this._escape(ap.background)};--tile-border:${this._escape(ap.border)};--device-color:${this._escape(statusColor)}"
+        aria-label="${this._escape(`${title}: ${state.label}`)}">
+        <span class="device-icon-wrap">${this._icon(ap.icon, 38, statusColor)}</span>
+        <span class="device-text">
+          <span class="device-name">${this._escape(title)}</span>
+          ${device.show_state !== false ? `<span class="device-state"><span class="state-dot"></span>${this._escape(state.label)}</span>` : ""}
+          ${state.kind === "missing" ? `<span class="entity-hint">${this._escape(device.entity)}</span>` : ""}
+        </span>
+      </button>`;
+  }
+
+  _area(area, areaIndex, cfg) {
+    if (!area?.show) return "";
+    const devices = (area.devices || []).map((d, i) => this._deviceCard(d, areaIndex, i, cfg)).join("");
+    if (!devices) return "";
+    return `
+      <section class="area-section">
+        <div class="area-heading">
+          <div class="area-heading-main">${this._icon(area.icon || "mdi:home-outline", 24, area.icon_color || cfg.design.accent_color)}<span>${this._escape(area.name || "Área")}</span></div>
+          <span class="area-count">${(area.devices || []).filter((d) => d.show).length}</span>
+        </div>
+        <div class="device-grid">${devices}</div>
+      </section>`;
+  }
+
+  _navigation(cfg) {
+    const nav = cfg.navigation;
+    if (!nav?.show) return "";
+    const buttons = (nav.buttons || []).filter((b) => b.show);
+    if (!buttons.length) return "";
+    const current = window.location.pathname;
+    return `<nav class="nav-grid" style="--nav-cols:${Math.max(1, this._num(nav.columns, 4))};--nav-gap:${this._cssSize(nav.gap, "8px")};--nav-h:${this._cssSize(nav.button_height, "58px")};--nav-radius:${this._cssSize(nav.radius, "16px")};--nav-bg:${this._escape(nav.background)};--nav-border:${this._escape(nav.border_color)};--nav-text:${this._escape(nav.text_color)};--nav-active:${this._escape(nav.active_color)};--nav-font:${this._cssSize(nav.font_size, "11px")}">
+      ${buttons.map((b) => {
+        const active = current === b.path || (b.path !== "/" && current.startsWith(`${b.path}/`));
+        return `<button class="nav-button ${active ? "active" : ""}" data-nav-path="${this._escape(b.path || "/")}">${this._icon(b.icon, nav.icon_size, b.color || (active ? nav.active_color : nav.text_color))}${nav.show_labels ? `<span>${this._escape(b.label || "")}</span>` : ""}</button>`;
+      }).join("")}
+    </nav>`;
+  }
+
+  _header(cfg) {
+    const h = cfg.header;
+    if (!h?.show && !this._hass?.user?.is_admin) return "";
+    if (!h?.show) {
+      return `<div class="settings-only"><button class="settings-button" data-action="open-editor" title="Personalización">${this._icon("mdi:cog", 25, cfg.design.muted_color)}</button></div>`;
+    }
+    return `<header class="panel-header align-${this._escape(h.align || "left")}">
+      <div class="header-main">
+        <div class="header-icon">${this._icon(h.icon, h.icon_size, h.icon_color)}</div>
+        <div class="header-copy"><div class="header-title" style="color:${this._escape(h.title_color)};font-size:${this._cssSize(h.title_size)}">${this._escape(h.title)}</div><div class="header-subtitle" style="color:${this._escape(h.subtitle_color)};font-size:${this._cssSize(h.subtitle_size)}">${this._escape(h.subtitle)}</div></div>
+      </div>
+      ${this._hass?.user?.is_admin ? `<button class="settings-button" data-action="open-editor" title="Personalización">${this._icon("mdi:cog", 25, cfg.design.muted_color)}</button>` : ""}
+    </header>`;
+  }
+
+  _signature(cfg) {
+    const states = [];
+    for (const area of cfg.areas || []) for (const device of area.devices || []) {
+      if (device.entity) states.push(`${device.entity}:${this._hass?.states?.[device.entity]?.state || "missing"}`);
+    }
+    return JSON.stringify([cfg, states]);
+  }
+
+  _captureEditorState() {
+    if (!this._editorOpen) return null;
+    const overlay = this.shadowRoot.querySelector(".editor-overlay");
+    const body = this.shadowRoot.querySelector(".editor-body");
+    const active = this.shadowRoot.activeElement;
+    return {
+      overlayTop: overlay?.scrollTop || 0,
+      bodyTop: body?.scrollTop || 0,
+      key: active?.dataset?.setting || active?.dataset?.entitySearch || active?.id || null,
+      start: typeof active?.selectionStart === "number" ? active.selectionStart : null,
+      end: typeof active?.selectionEnd === "number" ? active.selectionEnd : null,
+    };
+  }
+
+  _restoreEditorState(snapshot) {
+    if (!snapshot) return;
+    requestAnimationFrame(() => {
+      const overlay = this.shadowRoot.querySelector(".editor-overlay");
+      const body = this.shadowRoot.querySelector(".editor-body");
+      if (overlay) overlay.scrollTop = snapshot.overlayTop;
+      if (body) body.scrollTop = snapshot.bodyTop;
+      if (snapshot.key) {
+        let el = this.shadowRoot.querySelector(`[data-setting="${CSS.escape(snapshot.key)}"]`);
+        if (!el) el = this.shadowRoot.querySelector(`[data-entity-search="${CSS.escape(snapshot.key)}"]`);
+        if (!el) el = this.shadowRoot.getElementById(snapshot.key);
+        if (el) {
+          el.focus({ preventScroll: true });
+          if (snapshot.start !== null && typeof el.setSelectionRange === "function") {
+            try { el.setSelectionRange(snapshot.start, snapshot.end); } catch (_) {}
+          }
+        }
+      }
+    });
+  }
+
+  _render(preserve = false) {
+    if (!this.shadowRoot) return;
+    if (!this._hass || !this._panel || !this._loaded) {
+      this.shadowRoot.innerHTML = `<style>:host{display:block;min-height:100vh;background:#080d11;color:#fff;font-family:system-ui,sans-serif}.loading{padding:32px;text-align:center;opacity:.7}</style><div class="loading">Cargando iluminación…</div>`;
+      return;
+    }
+    const snapshot = preserve ? this._captureEditorState() : null;
+    const cfg = this._config();
+    const sig = this._signature(cfg);
+    if (sig === this._lastSignature && !this._editorOpen && !this._entityPicker && !this._iconPicker) return;
+    this._lastSignature = sig;
+    const navTop = cfg.navigation?.show && cfg.navigation.position === "top";
+    const navBottom = cfg.navigation?.show && cfg.navigation.position === "bottom";
+    this.shadowRoot.innerHTML = `
+      <style>${this._styles(cfg)}</style>
+      <main class="page">
+        ${this._header(cfg)}
+        ${!this._backendOk ? `<div class="warning-badge">Backend no disponible · revisa smart_lighting_panel</div>` : ""}
+        ${navTop ? this._navigation(cfg) : ""}
+        <div class="areas">${(cfg.areas || []).map((a, i) => this._area(a, i, cfg)).join("")}</div>
+        ${navBottom ? this._navigation(cfg) : ""}
+        <div class="version">v${PANEL_VERSION}</div>
+      </main>
+      ${this._editorOpen ? this._editor(cfg) : ""}
+      ${this._entityPicker ? this._entityPickerHtml() : ""}
+      ${this._iconPicker ? this._iconPickerHtml() : ""}
+      ${this._toastMessage ? `<div class="toast ${this._toastType}">${this._escape(this._toastMessage)}</div>` : ""}
+    `;
+    if (snapshot) this._restoreEditorState(snapshot);
+    if (this._iconPicker) this._mountNativeIconPicker();
+  }
+
+  _styles(cfg) {
+    const d = cfg.design;
+    const mobile = Math.max(1, Math.round(this._num(d.columns_mobile, 2)));
+    const tablet = Math.max(1, Math.round(this._num(d.columns_tablet, 3)));
+    const desktop = Math.max(1, Math.round(this._num(d.columns_desktop, 4)));
+    return `
+      :host{display:block;min-height:100vh;min-height:100dvh;background:radial-gradient(circle at 50% -20%,${d.background_secondary} 0%,transparent 42%),${d.background};color:${d.text_color};font-family:${d.font_family};-webkit-font-smoothing:antialiased}
+      *{box-sizing:border-box}button,input,select,textarea{font:inherit}button{-webkit-tap-highlight-color:transparent}
+      .page{width:100%;min-height:100vh;min-height:100dvh;max-width:${this._cssSize(d.panel_max_width,"760px")};margin:0 auto;padding:max(${this._cssSize(d.panel_padding,"12px")},env(safe-area-inset-top)) max(${this._cssSize(d.panel_padding,"12px")},env(safe-area-inset-right)) max(${this._cssSize(d.panel_padding,"12px")},env(safe-area-inset-bottom)) max(${this._cssSize(d.panel_padding,"12px")},env(safe-area-inset-left))}
+      .panel-header{min-height:76px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:3px 3px 13px;position:relative}.header-main{display:flex;align-items:center;gap:12px;min-width:0;max-width:calc(100% - 56px)}.header-copy{min-width:0}.header-title{font-weight:700;line-height:1.08;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.header-subtitle{margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.header-icon{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;background:rgba(255,214,107,.08);flex:none}.align-center{justify-content:center}.align-center .header-main{position:absolute;left:50%;transform:translateX(-50%);text-align:center;max-width:calc(100% - 112px)}.align-center .settings-button{position:absolute;right:0}.align-right .header-main{margin-left:auto;text-align:right}.align-right .settings-button{order:-1}.settings-only{display:flex;justify-content:flex-end;padding:4px 0 10px}
+      .settings-button{width:44px;height:44px;border-radius:14px;border:1px solid ${d.card_border};background:${d.card_background};display:grid;place-items:center;cursor:pointer;flex:none;color:${d.muted_color}}
+      .warning-badge{margin:0 2px 12px;padding:9px 11px;border:1px solid rgba(239,100,97,.35);background:rgba(239,100,97,.09);color:#ef8a88;border-radius:13px;font-size:12px}
+      .areas{display:flex;flex-direction:column;gap:${this._cssSize(d.area_gap,"20px")}}.area-section{min-width:0}.area-heading{display:flex;align-items:center;justify-content:space-between;padding:0 4px 9px}.area-heading-main{display:flex;align-items:center;gap:8px;color:${d.area_title_color};font-size:16px;font-weight:650}.area-count{min-width:24px;height:24px;padding:0 7px;border-radius:999px;background:rgba(255,255,255,.055);display:grid;place-items:center;color:${d.muted_color};font-size:11px}
+      .device-grid{display:grid;grid-template-columns:repeat(${mobile},minmax(0,1fr));gap:${this._cssSize(d.card_gap,"10px")}}
+      @media (min-width:560px){.device-grid{grid-template-columns:repeat(${tablet},minmax(0,1fr))}}
+      @media (min-width:820px){.device-grid{grid-template-columns:repeat(${desktop},minmax(0,1fr))}}
+      .device-tile{position:relative;min-width:0;min-height:${this._cssSize(d.card_min_height,"142px")};border:${1}px solid var(--tile-border);border-radius:${this._cssSize(d.card_radius,"20px")};padding:${this._cssSize(d.card_padding,"15px")};background:var(--tile-bg);box-shadow:${d.card_shadow};color:${d.text_color};display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;text-align:left;cursor:pointer;touch-action:pan-y;user-select:none;transition:transform .12s ease,background .18s ease,border-color .18s ease,box-shadow .18s ease;overflow:hidden}.device-tile:active{transform:scale(.985)}.device-tile.holding{transform:scale(.975);box-shadow:0 0 0 2px color-mix(in srgb,var(--device-color) 34%,transparent),${d.card_shadow}}.device-tile.state-on:before{content:"";position:absolute;inset:-45% 18% 35% -15%;background:radial-gradient(circle,var(--device-color) 0%,transparent 68%);opacity:.09;pointer-events:none}.device-icon-wrap{width:54px;height:54px;border-radius:17px;background:color-mix(in srgb,var(--device-color) 13%,transparent);display:grid;place-items:center;position:relative;z-index:1}.device-text{display:flex;flex-direction:column;gap:5px;min-width:0;width:100%;position:relative;z-index:1}.device-name{font-size:15px;font-weight:650;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.device-state{display:flex;align-items:center;gap:6px;color:${d.muted_color};font-size:12px}.state-dot{width:7px;height:7px;border-radius:50%;background:var(--device-color);box-shadow:0 0 10px color-mix(in srgb,var(--device-color) 55%,transparent)}.state-on .device-state{color:var(--device-color)}.state-unavailable .state-dot,.state-missing .state-dot{background:${d.unavailable_color}}.unconfigured{cursor:default;opacity:.72}.entity-hint{font-size:10px;color:${d.unavailable_color};white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .nav-grid{display:grid;grid-template-columns:repeat(var(--nav-cols),minmax(0,1fr));gap:var(--nav-gap);margin:13px 0}.nav-button{height:var(--nav-h);border-radius:var(--nav-radius);border:1px solid var(--nav-border);background:var(--nav-bg);color:var(--nav-text);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:var(--nav-font);cursor:pointer}.nav-button.active{border-color:color-mix(in srgb,var(--nav-active) 45%,var(--nav-border));color:var(--nav-active)}
+      .version{text-align:center;color:${d.muted_color};opacity:.52;font-size:10px;padding:18px 0 3px}
+      .editor-overlay{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.72);display:flex;align-items:stretch;justify-content:flex-end;overflow:hidden;padding:0}.editor{width:min(620px,100%);height:100%;max-height:100vh;max-height:100dvh;min-height:0;background:#0b1116;color:#f5f7fa;border:0;border-left:1px solid #26323a;border-radius:0;display:flex;flex-direction:column;overflow:hidden;box-shadow:-20px 0 60px rgba(0,0,0,.35);animation:lightingDrawerIn .18s ease-out}.editor-header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:max(14px,env(safe-area-inset-top)) 14px 10px;border-bottom:1px solid #202b32;background:#0b1116;flex:0 0 auto}.editor-title{font-size:20px;font-weight:700}.editor-subtitle{font-size:11px;color:#71808a;margin-top:3px;line-height:1.4}.editor-actions,.row-actions{display:flex;gap:8px;flex-wrap:wrap}.editor-btn,.tiny-btn,.icon-btn{border:1px solid #2b3942;background:#111a20;color:#e8edf1;border-radius:12px;padding:9px 12px;cursor:pointer}.editor-btn.primary{border-color:#247f7a;background:#123b3a;color:#55e6df;font-weight:700}.editor-btn:hover,.tiny-btn:hover,.icon-btn:hover{background:#172229}.editor-btn.primary:hover{background:#164846}.tiny-btn{padding:7px 9px;font-size:11px}.tiny-btn.danger{border-color:#703332;color:#ef8a87}.icon-btn{width:38px;height:38px;padding:0;display:grid;place-items:center}.editor-tabs{display:flex;gap:5px;overflow-x:auto;overflow-y:hidden;padding:10px 12px;border-bottom:1px solid #202b32;background:#0d151a;flex:0 0 auto;scrollbar-width:thin}.editor-tab{height:36px;white-space:nowrap;padding:0 12px;border:0;border-radius:11px;background:transparent;color:#8e9ba5;cursor:pointer}.editor-tab.active{background:#122126;color:#42ddd5;font-weight:700}.editor-body{flex:1 1 0;min-height:0;height:0;overflow-y:auto;overflow-x:hidden;padding:14px;display:block;overscroll-behavior:contain;touch-action:pan-y;-webkit-overflow-scrolling:touch;scrollbar-gutter:stable}.section{border:1px solid #26323a;border-radius:16px;background:#0f171c;margin-bottom:12px;overflow:hidden}.section:last-child{margin-bottom:0}.section-title{font-size:14px;font-weight:700;padding:13px 14px;border-bottom:1px solid #202b32}.section-content{padding:13px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.field{display:flex;flex-direction:column;gap:6px;min-width:0}.field.full{grid-column:1/-1}.field label{font-size:11px;color:#8d9aa4;font-weight:650}.field input,.field select,.field textarea{width:100%;border:1px solid #2a3740;background:#0a1014;color:#ecf1f4;border-radius:11px;padding:9px 10px;outline:none}.field textarea{min-height:220px;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}.field input:focus,.field select:focus,.field textarea:focus{border-color:#2aaea7;box-shadow:0 0 0 2px rgba(53,221,213,.08)}.checkbox-row{display:flex;align-items:center;gap:9px;min-height:39px}.checkbox-row input{width:18px;height:18px;accent-color:#35ddd5}.color-row{display:grid;grid-template-columns:46px 1fr;gap:6px}.color-row input[type=color]{height:39px;padding:3px}.help{grid-column:1/-1;color:#71808a;font-size:11px;line-height:1.45}.editor-footer{padding:11px max(14px,env(safe-area-inset-right)) max(11px,env(safe-area-inset-bottom)) 14px;border-top:1px solid #202b32;display:flex;align-items:center;justify-content:space-between;gap:10px;color:#71808a;font-size:10px;flex-wrap:wrap;background:#0b1116;flex:0 0 auto}.picker-overlay{position:fixed;inset:0;z-index:12000;background:rgba(0,0,0,.72);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:max(12px,env(safe-area-inset-top)) 10px max(12px,env(safe-area-inset-bottom))}@keyframes lightingDrawerIn{from{transform:translateX(28px);opacity:.75}to{transform:translateX(0);opacity:1}}@media(prefers-reduced-motion:reduce){.editor{animation:none}}
+      .area-editor{grid-column:1/-1;border:1px solid #2b3942;border-radius:15px;overflow:hidden;background:#0d151a}.area-editor-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px;border-bottom:1px solid #26323a}.area-editor-name{font-size:13px;font-weight:700}.device-editor{margin:10px;border:1px solid #26323a;border-radius:14px;background:#10181e;overflow:hidden}.device-editor-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 10px;border-bottom:1px solid #26323a}.device-editor-title{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.device-editor-grid{padding:10px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.entity-pick-row,.icon-pick-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px}.entity-pick-btn,.icon-pick-btn{min-height:39px;border:1px solid #33414b;background:#152029;color:#dce3e8;border-radius:11px;padding:0 11px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}.entity-pick-btn:hover,.icon-pick-btn:hover{background:#1a2933;border-color:#3e505c}.add-button{grid-column:1/-1;border:1px dashed #43535e;background:rgba(255,214,107,.035);color:#dce3e8;border-radius:13px;padding:11px;cursor:pointer}.minimum-note{grid-column:1/-1;font-size:10px;color:#83909a}
+      .picker{width:min(560px,100%);max-height:min(80vh,700px);display:flex;flex-direction:column;background:#0d141a;border:1px solid #26323a;border-radius:20px;overflow:hidden;color:#eef2f5;box-shadow:0 30px 90px rgba(0,0,0,.52)}.picker-head{padding:12px;border-bottom:1px solid #26323a;display:flex;align-items:center;justify-content:space-between;gap:8px}.picker-title{font-weight:700}.picker-search{padding:10px;border-bottom:1px solid #26323a}.picker-search input{width:100%;border:1px solid #33414b;background:#0b1217;color:#eef2f5;border-radius:12px;padding:10px}.picker-filter{padding:0 10px 9px;color:#8e9aa4;font-size:11px;display:flex;align-items:center;gap:7px}.picker-list{overflow:auto;padding:7px}.picker-item{width:100%;border:0;background:transparent;color:#eef2f5;border-radius:12px;padding:9px;display:grid;grid-template-columns:38px minmax(0,1fr) auto;align-items:center;gap:9px;text-align:left;cursor:pointer}.picker-item:hover{background:#151f26}.picker-item-icon{width:38px;height:38px;border-radius:11px;background:#151f26;display:grid;place-items:center}.picker-item-name{font-size:12px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.picker-item-id{font-size:10px;color:#83909a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.picker-item-state{font-size:10px;color:#9ca8b0}.picker-empty{padding:24px;text-align:center;color:#83909a;font-size:12px}.icon-native-body{padding:14px;overflow:visible}.icon-native-host{min-height:72px}.icon-native-host ha-selector,.icon-native-host ha-icon-picker{display:block;width:100%}.icon-native-help{margin-top:10px;color:#83909a;font-size:11px;line-height:1.45}.icon-native-fallback{padding:12px;border:1px dashed #43535e;border-radius:12px;color:#aeb8bf;font-size:12px;line-height:1.45;background:#10181e}
+      .toast{position:fixed;left:50%;bottom:max(18px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:1400;max-width:calc(100vw - 24px);padding:10px 13px;border-radius:13px;background:#172229;border:1px solid #33414b;color:#eef2f5;font-size:12px;box-shadow:0 12px 45px rgba(0,0,0,.4)}.toast.error{border-color:rgba(239,100,97,.48);color:#efaaa8}
+      @media(max-width:620px){.section-content,.device-editor-grid{grid-template-columns:1fr}.editor{width:100vw;height:100dvh;max-height:100dvh;border-left:0;box-shadow:none}.editor-header{padding:max(11px,env(safe-area-inset-top)) max(11px,env(safe-area-inset-right)) 10px max(11px,env(safe-area-inset-left));align-items:flex-start}.editor-title{font-size:16px}.editor-actions{justify-content:flex-end}.editor-btn{padding:8px 9px;font-size:12px}.editor-tabs{padding-left:max(10px,env(safe-area-inset-left));padding-right:max(10px,env(safe-area-inset-right))}.editor-body{padding-left:max(10px,env(safe-area-inset-left));padding-right:max(10px,env(safe-area-inset-right))}.editor-footer{padding-left:max(11px,env(safe-area-inset-left));padding-right:max(11px,env(safe-area-inset-right))}.field.full{grid-column:1}.header-title{font-size:min(7vw,27px)!important}.page{padding-left:max(9px,env(safe-area-inset-left));padding-right:max(9px,env(safe-area-inset-right))}}
+    `;
+  }
+
+  _input(path, label, value, opts = {}) {
+    const type = opts.type || "text";
+    const full = opts.full ? " full" : "";
+    if (type === "checkbox") {
+      return `<div class="field${full}"><label>${this._escape(label)}</label><div class="checkbox-row"><input type="checkbox" data-setting="${this._escape(path)}" data-value-type="boolean" ${value ? "checked" : ""}><span>${value ? "Activado" : "Desactivado"}</span></div></div>`;
+    }
+    if (type === "select") {
+      const options = (opts.options || []).map(([v, l]) => `<option value="${this._escape(v)}" ${String(value) === String(v) ? "selected" : ""}>${this._escape(l)}</option>`).join("");
+      return `<div class="field${full}"><label>${this._escape(label)}</label><select data-setting="${this._escape(path)}">${options}</select></div>`;
+    }
+    if (type === "color") {
+      const safe = /^#[0-9a-f]{6}$/i.test(String(value || "")) ? value : "#ffffff";
+      return `<div class="field${full}"><label>${this._escape(label)}</label><div class="color-row"><input type="color" value="${this._escape(safe)}" data-setting="${this._escape(path)}"><input type="text" value="${this._escape(value || "")}" data-setting="${this._escape(path)}"></div></div>`;
+    }
+    const min = opts.min !== undefined ? ` min="${opts.min}"` : "";
+    const max = opts.max !== undefined ? ` max="${opts.max}"` : "";
+    const step = opts.step !== undefined ? ` step="${opts.step}"` : "";
+    const valueType = type === "number" ? ` data-value-type="number"` : "";
+    return `<div class="field${full}"><label>${this._escape(label)}</label><input type="${this._escape(type)}" value="${this._escape(value ?? "")}" data-setting="${this._escape(path)}"${valueType}${min}${max}${step}></div>`;
+  }
+
+  _entityInput(path, label, value, areaIndex, deviceIndex) {
+    return `<div class="field full"><label>${this._escape(label)}</label><div class="entity-pick-row"><input type="text" value="${this._escape(value || "")}" data-setting="${this._escape(path)}" placeholder="light.sala o switch.lampara"><button class="entity-pick-btn" data-action="pick-entity" data-area-index="${areaIndex}" data-device-index="${deviceIndex}">Seleccionar</button></div></div>`;
+  }
+
+  _iconInput(path, label, value, opts = {}) {
+    const full = opts.full ? " full" : "";
+    return `<div class="field${full}"><label>${this._escape(label)}</label><div class="icon-pick-row"><input type="text" value="${this._escape(value || "")}" data-setting="${this._escape(path)}" placeholder="mdi:lightbulb"><button class="icon-pick-btn" data-action="pick-icon" data-setting-path="${this._escape(path)}" data-picker-label="${this._escape(label)}" title="Abrir selector nativo de iconos MDI">${this._icon("mdi:magnify", 17, "#aeb7be")}<span>Buscar icono</span></button></div></div>`;
+  }
+
+  _editor(cfg) {
+    const tabs = [["areas", "Áreas y dispositivos"], ["general", "General"], ["navigation", "Navegación"], ["advanced", "Avanzado"]];
+    return `<div class="editor-overlay"><section class="editor">
+      <div class="editor-header"><div><div class="editor-title">Personalización · Iluminación</div><div class="editor-subtitle">Los cambios no se guardan hasta pulsar Guardar</div></div><div class="editor-actions"><button class="editor-btn" data-action="close-editor">Cancelar</button><button class="editor-btn primary" data-action="save-config">Guardar</button></div></div>
+      <div class="editor-tabs">${tabs.map(([id, label]) => `<button class="editor-tab ${this._editorTab === id ? "active" : ""}" data-action="tab" data-tab="${id}">${label}</button>`).join("")}</div>
+      <div class="editor-body">
+        ${this._editorTab === "areas" ? this._editorAreas(cfg) : ""}
+        ${this._editorTab === "general" ? this._editorGeneral(cfg) : ""}
+        ${this._editorTab === "navigation" ? this._editorNavigation(cfg) : ""}
+        ${this._editorTab === "advanced" ? this._editorAdvanced(cfg) : ""}
+      </div>
+      <div class="editor-footer"><span>Persistencia en .storage mediante smart_lighting_panel.</span><div class="row-actions"><button class="tiny-btn" data-action="export-config">Exportar</button><button class="tiny-btn" data-action="import-config">Importar</button><button class="tiny-btn danger" data-action="reset-config">Restablecer</button><input id="import-file" type="file" accept="application/json,.json" hidden></div></div>
+    </section></div>`;
+  }
+
+  _editorAreas(cfg) {
+    const areas = (cfg.areas || []).map((area, ai) => {
+      const devices = (area.devices || []).map((dev, di) => {
+        const p = `areas.${ai}.devices.${di}`;
+        return `<div class="device-editor">
+          <div class="device-editor-head"><div class="device-editor-title">${this._escape(dev.name || `Dispositivo ${di + 1}`)}</div><div class="row-actions"><button class="tiny-btn danger" data-action="remove-device" data-area-index="${ai}" data-device-index="${di}">Eliminar</button></div></div>
+          <div class="device-editor-grid">
+            ${this._input(`${p}.show`, "Mostrar", dev.show, { type: "checkbox" })}
+            ${this._input(`${p}.name`, "Nombre visible", dev.name)}
+            ${this._entityInput(`${p}.entity`, "Entidad", dev.entity, ai, di)}
+            ${this._input(`${p}.appearance`, "Representación", dev.appearance, { type: "select", options: [["light", "Como luz"], ["switch", "Como apagador"], ["auto", "Automático por dominio"], ["custom", "Personalizada"]] })}
+            ${this._input(`${p}.show_state`, "Mostrar estado", dev.show_state !== false, { type: "checkbox" })}
+            ${this._input(`${p}.tap_action`, "Un toque", dev.tap_action || "toggle", { type: "select", options: [["toggle", "Alternar entidad"], ["more-info", "Más información"], ["none", "No hacer nada"]] })}
+            ${this._input(`${p}.hold_action`, "Mantener presionado", dev.hold_action || "more-info", { type: "select", options: [["more-info", "Más información"], ["toggle", "Alternar entidad"], ["none", "No hacer nada"]] })}
+            ${this._iconInput(`${p}.icon_on`, "Icono encendido", dev.icon_on)}
+            ${this._iconInput(`${p}.icon_off`, "Icono apagado", dev.icon_off)}
+            ${this._input(`${p}.color_on`, "Color encendido", dev.color_on, { type: "color" })}
+            ${this._input(`${p}.color_off`, "Color apagado", dev.color_off, { type: "color" })}
+            ${this._input(`${p}.background_on`, "Fondo encendido", dev.background_on, { full: true })}
+            ${this._input(`${p}.background_off`, "Fondo apagado", dev.background_off, { full: true })}
+            ${this._input(`${p}.border_on`, "Borde encendido", dev.border_on, { full: true })}
+            ${this._input(`${p}.border_off`, "Borde apagado", dev.border_off, { full: true })}
+          </div>
+        </div>`;
+      }).join("");
+      return `<div class="area-editor">
+        <div class="area-editor-head"><div class="area-editor-name">${this._escape(area.name || `Área ${ai + 1}`)}</div><div class="row-actions"><button class="tiny-btn danger" data-action="remove-area" data-area-index="${ai}">Eliminar área</button></div></div>
+        <div class="device-editor-grid">
+          ${this._input(`areas.${ai}.show`, "Mostrar área", area.show, { type: "checkbox" })}
+          ${this._input(`areas.${ai}.name`, "Nombre del área", area.name)}
+          ${this._iconInput(`areas.${ai}.icon`, "Icono del área", area.icon)}
+          ${this._input(`areas.${ai}.icon_color`, "Color del icono", area.icon_color, { type: "color" })}
+          <div class="help">Dentro de esta área puedes mezclar entidades <b>light.*</b> y <b>switch.*</b>. La representación “Como luz” hace que un apagador se vea como foco, sin alterar la entidad real.</div>
+        </div>
+        ${devices}
+        <div style="padding:0 10px 10px"><button class="add-button" data-action="add-device" data-area-index="${ai}">+ Agregar luz/apagador</button></div>
+      </div>`;
+    }).join("");
+    return this._section("Áreas", `${areas}<button class="add-button" data-action="add-area">+ Agregar área</button><div class="minimum-note">La configuración inicial trae dos espacios. Para evitar borrar accidentalmente todos los controles, el editor conserva un mínimo de dos dispositivos en total.</div>`);
+  }
+
+  _editorGeneral(cfg) {
+    const h = cfg.header, d = cfg.design;
+    return [
+      this._section("Encabezado", `${this._input("header.show", "Mostrar encabezado", h.show, { type: "checkbox" })}${this._input("header.title", "Título", h.title)}${this._input("header.subtitle", "Subtítulo", h.subtitle)}${this._iconInput("header.icon", "Icono MDI", h.icon)}${this._input("header.icon_color", "Color icono", h.icon_color, { type: "color" })}${this._input("header.title_color", "Color título", h.title_color, { type: "color" })}${this._input("header.subtitle_color", "Color subtítulo", h.subtitle_color, { type: "color" })}${this._input("header.align", "Alineación", h.align, { type: "select", options: [["left", "Izquierda"], ["center", "Centro"], ["right", "Derecha"]] })}`),
+      this._section("Diseño", `${this._input("design.background", "Fondo principal", d.background, { type: "color" })}${this._input("design.background_secondary", "Fondo secundario", d.background_secondary, { type: "color" })}${this._input("design.card_background", "Fondo tarjeta", d.card_background, { type: "color" })}${this._input("design.card_border", "Borde tarjeta", d.card_border, { type: "color" })}${this._input("design.text_color", "Texto", d.text_color, { type: "color" })}${this._input("design.muted_color", "Texto secundario", d.muted_color, { type: "color" })}${this._input("design.accent_color", "Acento", d.accent_color, { type: "color" })}${this._input("design.unavailable_color", "No disponible", d.unavailable_color, { type: "color" })}${this._input("design.panel_max_width", "Ancho máximo px", d.panel_max_width, { type: "number", min: 320, max: 1600 })}${this._input("design.card_min_height", "Altura mínima tarjeta", d.card_min_height, { type: "number", min: 90, max: 260 })}${this._input("design.card_radius", "Radio tarjeta", d.card_radius, { type: "number", min: 0, max: 60 })}${this._input("design.card_gap", "Separación tarjetas", d.card_gap, { type: "number", min: 0, max: 40 })}${this._input("design.columns_mobile", "Columnas móvil", d.columns_mobile, { type: "number", min: 1, max: 4 })}${this._input("design.columns_tablet", "Columnas tablet", d.columns_tablet, { type: "number", min: 1, max: 6 })}${this._input("design.columns_desktop", "Columnas escritorio", d.columns_desktop, { type: "number", min: 1, max: 8 })}${this._input("design.font_family", "Fuente", d.font_family, { full: true })}`),
+    ].join("");
+  }
+
+  _editorNavigation(cfg) {
+    const n = cfg.navigation;
+    const buttons = (n.buttons || []).map((b, i) => `<div class="device-editor"><div class="device-editor-head"><div class="device-editor-title">${this._escape(b.label || `Botón ${i + 1}`)}</div><button class="tiny-btn danger" data-action="remove-nav" data-index="${i}">Eliminar</button></div><div class="device-editor-grid">${this._input(`navigation.buttons.${i}.show`, "Mostrar", b.show, { type: "checkbox" })}${this._input(`navigation.buttons.${i}.label`, "Texto", b.label)}${this._iconInput(`navigation.buttons.${i}.icon`, "Icono", b.icon)}${this._input(`navigation.buttons.${i}.path`, "Ruta", b.path)}${this._input(`navigation.buttons.${i}.color`, "Color", b.color, { type: "color" })}</div></div>`).join("");
+    return this._section("Navegación", `${this._input("navigation.show", "Mostrar navegación", n.show, { type: "checkbox" })}${this._input("navigation.position", "Posición", n.position, { type: "select", options: [["top", "Arriba"], ["bottom", "Abajo"]] })}${this._input("navigation.columns", "Columnas", n.columns, { type: "number", min: 1, max: 8 })}${this._input("navigation.show_labels", "Mostrar etiquetas", n.show_labels, { type: "checkbox" })}<div class="help">Puedes enlazar /smart-home, /smart-energy-advanced, otros paneles o vistas nativas.</div>${buttons}<button class="add-button" data-action="add-nav">+ Agregar botón</button>`);
+  }
+
+  _editorAdvanced(cfg) {
+    return this._section("JSON avanzado", `<div class="field full"><label>Configuración completa</label><textarea id="advanced-json">${this._escape(JSON.stringify(cfg, null, 2))}</textarea></div><div class="help">Aplicar JSON modifica la copia de trabajo. Después debes pulsar Guardar.</div><div class="row-actions" style="grid-column:1/-1"><button class="editor-btn" data-action="apply-json">Aplicar JSON</button></div>`);
+  }
+
+  _section(title, body) {
+    return `<section class="section"><div class="section-title">${this._escape(title)}</div><div class="section-content">${body}</div></section>`;
+  }
+
+  _entityPickerHtml() {
+    const picker = this._entityPicker;
+    if (!picker) return "";
+    const query = String(picker.query || "").trim().toLowerCase();
+    const onlyLighting = picker.onlyLighting !== false;
+    const entries = Object.entries(this._hass?.states || {})
+      .filter(([id]) => !onlyLighting || id.startsWith("light.") || id.startsWith("switch."))
+      .map(([id, obj]) => ({ id, obj, name: obj.attributes?.friendly_name || id }))
+      .filter((x) => !query || x.id.toLowerCase().includes(query) || x.name.toLowerCase().includes(query))
+      .sort((a, b) => a.name.localeCompare(b.name, "es"))
+      .slice(0, 150);
+    return `<div class="picker-overlay"><section class="picker"><div class="picker-head"><div><div class="picker-title">Seleccionar entidad</div><div class="editor-subtitle">Luces y apagadores primero</div></div><button class="icon-btn" data-action="close-picker">${this._icon("mdi:close", 22, "#aeb7be")}</button></div><div class="picker-search"><input type="search" placeholder="Buscar por nombre o entity_id" value="${this._escape(picker.query || "")}" data-entity-search="picker-query"></div><label class="picker-filter"><input type="checkbox" data-action="picker-filter" ${onlyLighting ? "checked" : ""}> Solo light.* y switch.*</label><div class="picker-list">${entries.length ? entries.map((x) => {
+      const domain = x.id.split(".")[0];
+      const icon = x.obj.attributes?.icon || (domain === "light" ? "mdi:lightbulb" : domain === "switch" ? "mdi:toggle-switch" : "mdi:circle-outline");
+      return `<button class="picker-item" data-action="choose-entity" data-entity="${this._escape(x.id)}"><span class="picker-item-icon">${this._icon(icon, 22, "#ffd66b")}</span><span><span class="picker-item-name">${this._escape(x.name)}</span><span class="picker-item-id">${this._escape(x.id)}</span></span><span class="picker-item-state">${this._escape(x.obj.state)}</span></button>`;
+    }).join("") : `<div class="picker-empty">No hay coincidencias.</div>`}</div></section></div>`;
+  }
+
+  _iconPickerHtml() {
+    const picker = this._iconPicker;
+    if (!picker) return "";
+    return `<div class="picker-overlay"><section class="picker"><div class="picker-head"><div><div class="picker-title">Seleccionar icono MDI</div><div class="editor-subtitle">${this._escape(picker.label || "Icono")} · selector nativo de Home Assistant</div></div><button class="icon-btn" data-action="close-icon-picker" title="Cerrar">${this._icon("mdi:close", 22, "#aeb7be")}</button></div><div class="icon-native-body"><div id="native-icon-picker-host" class="icon-native-host"></div><div class="icon-native-help">Busca por nombre y selecciona un icono. El campo manual <code>mdi:...</code> permanece disponible como respaldo.</div></div></section></div>`;
+  }
+
+  _mountNativeIconPicker() {
+    const pickerState = this._iconPicker;
+    const host = this.shadowRoot?.getElementById("native-icon-picker-host");
+    if (!pickerState || !host || host.dataset.mounted === "1") return;
+    host.dataset.mounted = "1";
+
+    const mount = (tag) => {
+      if (!this._iconPicker || !host.isConnected) return false;
+      const el = document.createElement(tag);
+      if (tag === "ha-selector") {
+        el.hass = this._hass;
+        el.selector = { icon: {} };
+        el.narrow = this._narrow;
+        el.required = false;
+      }
+      el.value = pickerState.value || "";
+      el.label = "Icono MDI";
+      el.addEventListener("value-changed", (ev) => {
+        const value = ev?.detail?.value ?? "";
+        if (!this._editConfig || !this._iconPicker) return;
+        this._setPath(this._editConfig, this._iconPicker.path, value);
+        this._iconPicker = null;
+        this._lastSignature = "";
+        this._queueRender(true);
+      });
+      host.replaceChildren(el);
+      try { el.focus?.(); } catch (_) {}
+      return true;
+    };
+
+    if (customElements.get("ha-selector") && mount("ha-selector")) return;
+    if (customElements.get("ha-icon-picker") && mount("ha-icon-picker")) return;
+
+    Promise.race([
+      customElements.whenDefined("ha-selector").then(() => "ha-selector"),
+      customElements.whenDefined("ha-icon-picker").then(() => "ha-icon-picker"),
+      new Promise((resolve) => setTimeout(() => resolve("fallback"), 1200)),
+    ]).then((tag) => {
+      if (!this._iconPicker || !host.isConnected) return;
+      if (tag !== "fallback" && mount(tag)) return;
+      host.innerHTML = `<div class="icon-native-fallback">El selector nativo no está disponible en este frontend. Puedes cerrar esta ventana y escribir el valor manualmente, por ejemplo <b>mdi:lightbulb</b>. Esta protección evita que una incompatibilidad futura rompa el editor.</div>`;
+    });
+  }
+
+  _totalDevices() {
+    return (this._editConfig?.areas || []).reduce((sum, area) => sum + (area.devices || []).length, 0);
+  }
+
+  _toast(message, type = "ok") {
+    this._toastMessage = message;
+    this._toastType = type;
+    this._lastSignature = "";
+    this._queueRender(true);
+    clearTimeout(this._toastTimer);
+    this._toastTimer = setTimeout(() => {
+      this._toastMessage = "";
+      this._lastSignature = "";
+      this._queueRender(true);
+    }, 2400);
+  }
+
+  _onInput(ev) {
+    if (ev.target.matches?.("[data-entity-search]")) {
+      if (!this._entityPicker) return;
+      this._entityPicker.query = ev.target.value;
+      this._lastSignature = "";
+      this._queueRender(true);
+    }
+  }
+
+  _onChange(ev) {
+    if (ev.target.matches?.('[data-action="picker-filter"]')) {
+      if (!this._entityPicker) return;
+      this._entityPicker.onlyLighting = Boolean(ev.target.checked);
+      this._lastSignature = "";
+      this._queueRender(true);
+      return;
+    }
+    const el = ev.target.closest?.("[data-setting]");
+    if (!el || !this._editConfig) return;
+    let value;
+    const type = el.dataset.valueType;
+    if (type === "boolean") value = Boolean(el.checked);
+    else if (type === "number") value = Number(el.value);
+    else value = el.value;
+    this._setPath(this._editConfig, el.dataset.setting, value);
+    if (el.type === "color") {
+      const sibling = el.parentElement?.querySelector?.('input[type="text"][data-setting]');
+      if (sibling) sibling.value = el.value;
+    }
+    if (/^navigation\.buttons\.\d+\.show$/.test(el.dataset.setting) && value === true) this._editConfig.navigation.show = true;
+    this._lastSignature = "";
+    this._queueRender(true);
+  }
+
+  async _onClick(ev) {
+    const nav = ev.target.closest?.("[data-nav-path]");
+    if (nav) { this._navigate(nav.dataset.navPath); return; }
+    const target = ev.target.closest?.("[data-action]");
+    if (!target) return;
+    const action = target.dataset.action;
+
+    if (action === "open-editor") {
+      this._editConfig = deepClone(this._config());
+      this._editorOpen = true;
+      this._editorTab = "areas";
+      this._lastSignature = "";
+      this._queueRender();
+      return;
+    }
+    if (action === "close-editor") {
+      this._editorOpen = false;
+      this._editConfig = null;
+      this._entityPicker = null;
+      this._iconPicker = null;
+      this._lastSignature = "";
+      this._queueRender();
+      return;
+    }
+    if (action === "tab") {
+      this._editorTab = target.dataset.tab;
+      this._lastSignature = "";
+      this._queueRender(true);
+      return;
+    }
+    if (action === "save-config") { await this._saveConfig(); return; }
+    if (action === "reset-config") {
+      if (!confirm("¿Restablecer toda la configuración de Iluminación?")) return;
+      try {
+        await this._hass.callWS({ type: `${DOMAIN}/config/reset` });
+        this._storedConfig = {};
+        this._editConfig = deepClone(DEFAULTS);
+        this._toast("Configuración restablecida");
+      } catch (err) { this._toast(`No se pudo restablecer: ${err?.message || err}`, "error"); }
+      return;
+    }
+    if (action === "add-area") {
+      const arr = this._editConfig.areas ||= [];
+      arr.push({ id: newId("area"), show: true, name: `Nueva área`, icon: "mdi:home-outline", icon_color: this._editConfig.design.accent_color, devices: [] });
+      this._lastSignature = ""; this._queueRender(true); return;
+    }
+    if (action === "remove-area") {
+      const ai = Number(target.dataset.areaIndex);
+      const area = this._editConfig.areas?.[ai];
+      const count = area?.devices?.length || 0;
+      if (this._totalDevices() - count < 2) { this._toast("Deben quedar al menos dos dispositivos en total", "error"); return; }
+      this._editConfig.areas.splice(ai, 1);
+      this._lastSignature = ""; this._queueRender(true); return;
+    }
+    if (action === "add-device") {
+      const ai = Number(target.dataset.areaIndex);
+      const area = this._editConfig.areas?.[ai];
+      if (!area) return;
+      area.devices ||= [];
+      area.devices.push(defaultDevice(`Luz ${this._totalDevices() + 1}`));
+      this._lastSignature = ""; this._queueRender(true); return;
+    }
+    if (action === "remove-device") {
+      if (this._totalDevices() <= 2) { this._toast("El panel conserva un mínimo de dos dispositivos", "error"); return; }
+      const ai = Number(target.dataset.areaIndex), di = Number(target.dataset.deviceIndex);
+      this._editConfig.areas?.[ai]?.devices?.splice(di, 1);
+      this._lastSignature = ""; this._queueRender(true); return;
+    }
+    if (action === "pick-entity") {
+      this._entityPicker = { areaIndex: Number(target.dataset.areaIndex), deviceIndex: Number(target.dataset.deviceIndex), query: "", onlyLighting: true };
+      this._lastSignature = ""; this._queueRender(true); return;
+    }
+    if (action === "close-picker") { this._entityPicker = null; this._lastSignature = ""; this._queueRender(true); return; }
+    if (action === "pick-icon") {
+      const path = target.dataset.settingPath || "";
+      if (!path || !this._editConfig) return;
+      this._iconPicker = { path, label: target.dataset.pickerLabel || "Icono", value: this._getPath(this._editConfig, path) || "" };
+      this._lastSignature = ""; this._queueRender(true); return;
+    }
+    if (action === "close-icon-picker") { this._iconPicker = null; this._lastSignature = ""; this._queueRender(true); return; }
+    if (action === "choose-entity") {
+      const picker = this._entityPicker;
+      if (!picker) return;
+      const dev = this._editConfig.areas?.[picker.areaIndex]?.devices?.[picker.deviceIndex];
+      if (!dev) return;
+      dev.entity = target.dataset.entity || "";
+      if (!dev.name || /^Luz \d+$/.test(dev.name) || dev.name === "Nueva luz") {
+        dev.name = this._hass?.states?.[dev.entity]?.attributes?.friendly_name || dev.name;
+      }
+      this._entityPicker = null;
+      this._lastSignature = ""; this._queueRender(true); return;
+    }
+    if (action === "add-nav") {
+      this._editConfig.navigation.show = true;
+      (this._editConfig.navigation.buttons ||= []).push({ show: true, label: "Nuevo", icon: "mdi:circle-outline", path: "/", color: this._editConfig.design.accent_color });
+      this._lastSignature = ""; this._queueRender(true); return;
+    }
+    if (action === "remove-nav") {
+      this._editConfig.navigation.buttons.splice(Number(target.dataset.index), 1);
+      this._lastSignature = ""; this._queueRender(true); return;
+    }
+    if (action === "apply-json") {
+      const area = this.shadowRoot.getElementById("advanced-json");
+      try {
+        const parsed = JSON.parse(area.value);
+        if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("La raíz debe ser un objeto JSON");
+        this._editConfig = parsed;
+        this._toast("JSON aplicado; pulsa Guardar para persistirlo");
+      } catch (err) { this._toast(`JSON inválido: ${err.message}`, "error"); }
+      return;
+    }
+    if (action === "export-config") {
+      const blob = new Blob([JSON.stringify(this._editConfig || this._config(), null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a"); a.href = url; a.download = "smart-lighting-panel-config.json"; a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000); return;
+    }
+    if (action === "import-config") {
+      const input = this.shadowRoot.getElementById("import-file");
+      input.onchange = async () => {
+        try {
+          const file = input.files?.[0]; if (!file) return;
+          const parsed = JSON.parse(await file.text());
+          if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("La raíz debe ser un objeto");
+          this._editConfig = parsed;
+          this._toast("Configuración importada; pulsa Guardar");
+        } catch (err) { this._toast(`No se pudo importar: ${err.message}`, "error"); }
+        finally { input.value = ""; }
+      };
+      input.click();
+    }
+  }
+
+  async _saveConfig() {
+    if (!this._editConfig) return;
+    try {
+      await this._hass.callWS({ type: `${DOMAIN}/config/save`, config: this._editConfig });
+      this._storedConfig = deepClone(this._editConfig);
+      this._editorOpen = false;
+      this._editConfig = null;
+      this._entityPicker = null;
+      this._iconPicker = null;
+      this._backendOk = true;
+      this._toast("Configuración guardada");
+      this._lastSignature = "";
+      this._queueRender();
+    } catch (err) {
+      this._toast(`No se pudo guardar: ${err?.message || err}`, "error");
+    }
+  }
+
+  _navigate(path) {
+    if (!path) return;
+    try {
+      if (/^https?:\/\//i.test(path)) { window.open(path, "_blank", "noopener"); return; }
+      history.pushState(null, "", path);
+      window.dispatchEvent(new CustomEvent("location-changed"));
+    } catch (_) { window.location.href = path; }
+  }
+
+  _onPointerDown(ev) {
+    if (this._editorOpen || this._entityPicker || ev.button > 0) return;
+    const tile = ev.target.closest?.("[data-device-tile]");
+    if (!tile) return;
+    const ai = Number(tile.dataset.areaIndex), di = Number(tile.dataset.deviceIndex);
+    const cfg = this._config();
+    const device = cfg.areas?.[ai]?.devices?.[di];
+    if (!device?.entity) return;
+    this._clearGesture();
+    const gesture = {
+      pointerId: ev.pointerId,
+      tile,
+      areaIndex: ai,
+      deviceIndex: di,
+      startX: ev.clientX,
+      startY: ev.clientY,
+      moved: false,
+      held: false,
+      timer: null,
+    };
+    gesture.timer = setTimeout(() => {
+      if (!gesture.moved && this._gesture === gesture) {
+        gesture.held = true;
+        gesture.tile.classList.add("holding");
+        try { navigator.vibrate?.(18); } catch (_) {}
+      }
+    }, HOLD_MS);
+    this._gesture = gesture;
+  }
+
+  _onPointerMove(ev) {
+    const g = this._gesture;
+    if (!g || g.pointerId !== ev.pointerId) return;
+    const dx = ev.clientX - g.startX, dy = ev.clientY - g.startY;
+    if (Math.hypot(dx, dy) > MOVE_TOLERANCE) {
+      g.moved = true;
+      clearTimeout(g.timer);
+      g.tile.classList.remove("holding");
+    }
+  }
+
+  _onPointerUp(ev) {
+    const g = this._gesture;
+    if (!g || g.pointerId !== ev.pointerId) return;
+    clearTimeout(g.timer);
+    g.tile.classList.remove("holding");
+    const cfg = this._config();
+    const device = cfg.areas?.[g.areaIndex]?.devices?.[g.deviceIndex];
+    const moved = g.moved;
+    const held = g.held;
+    this._gesture = null;
+    if (moved || !device?.entity) return;
+    if (held) this._executeDeviceAction(device, device.hold_action || "more-info");
+    else this._executeDeviceAction(device, device.tap_action || "toggle");
+  }
+
+  _onPointerCancel(ev) {
+    if (!this._gesture || this._gesture.pointerId !== ev.pointerId) return;
+    this._clearGesture();
+  }
+
+  _clearGesture() {
+    if (!this._gesture) return;
+    clearTimeout(this._gesture.timer);
+    this._gesture.tile?.classList?.remove("holding");
+    this._gesture = null;
+  }
+
+  async _executeDeviceAction(device, action) {
+    if (!device?.entity || action === "none") return;
+    if (action === "toggle") {
+      try {
+        await this._hass.callService("homeassistant", "toggle", { entity_id: device.entity });
+      } catch (err) { this._toast(`No se pudo alternar ${device.entity}: ${err?.message || err}`, "error"); }
+      return;
+    }
+    if (action === "more-info") {
+      // The same native dialog used by Home Assistant entity cards.
+      const event = new CustomEvent("hass-more-info", {
+        detail: { entityId: device.entity },
+        bubbles: true,
+        composed: true,
+      });
+      this.dispatchEvent(event);
+    }
+  }
 }
 
 if (!customElements.get("smart-lighting-panel")) customElements.define("smart-lighting-panel", SmartLightingPanel);
-console.info(`Smart Lighting Panel ${SMART_LIGHTING_VERSION} loaded from Smart Home Suite 0.2.0`);
