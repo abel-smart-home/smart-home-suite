@@ -94,7 +94,10 @@ MODULE_CATALOG: tuple[ModuleSpec, ...] = (
         enabled_by_default=True,
         setup=setup_smart_support,
         unload=unload_smart_support,
-        notes="Remote account actions currently require Spook user services",
+        notes=(
+            "Remote account actions use Spook; Suite health and Repairs supervise "
+            "provider availability"
+        ),
     ),
 )
 

@@ -16,6 +16,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import Store
 
+from ...const import VERSION as SUITE_VERSION
 from .const import DOMAIN, STORAGE_KEY, STORAGE_VERSION
 
 _LOGGER = logging.getLogger(__name__)
@@ -25,7 +26,6 @@ WEB_COMPONENT = "smart-energy-advanced-panel"
 STATIC_URL = "/smart_home_suite_static"
 FRONTEND_FILE = "smart-energy-advanced-panel.js"
 MODULE_VERSION = "1.3.0"
-SUITE_VERSION = "0.5.0"
 
 
 def _data(hass: HomeAssistant) -> dict[str, Any]:

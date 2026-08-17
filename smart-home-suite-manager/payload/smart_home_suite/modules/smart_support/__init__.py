@@ -20,6 +20,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.service import async_register_admin_service, async_set_service_schema
 from homeassistant.helpers.storage import Store
 
+from ...const import VERSION as SUITE_VERSION
 from .const import (
     DOMAIN,
     HARD_MAX_HOURS,
@@ -40,7 +41,6 @@ WEB_COMPONENT = "smart-support-panel"
 STATIC_URL = "/smart_home_suite_static"
 FRONTEND_FILE = "smart-support-panel.js"
 MODULE_VERSION = "1.1.2"
-SUITE_VERSION = "0.5.0"
 
 HOURS_SCHEMA = vol.Schema(
     {vol.Optional("hours"): vol.All(

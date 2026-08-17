@@ -13,6 +13,8 @@ from homeassistant.core import HomeAssistant
 from .const import DOMAIN, VERSION
 from .module_catalog import MODULE_CATALOG
 from .module_manager import module_enabled
+from .modules.smart_support.const import DOMAIN as SUPPORT_DOMAIN
+from .support_health import get_smart_support_provider_status
 
 
 async def async_get_config_entry_diagnostics(
@@ -41,6 +43,25 @@ async def async_get_config_entry_diagnostics(
             }
         )
 
+    support_provider = get_smart_support_provider_status(hass)
+    support_verification: dict[str, Any] | None = None
+    support_manager = hass.data.get(SUPPORT_DOMAIN, {}).get("manager")
+    if support_manager is not None and support_provider["module_runtime_enabled"]:
+        verification = await support_manager.async_verify()
+        support_verification = {
+            "ready": bool(verification.get("ready", False)),
+            "spook_available": bool(verification.get("spook_available", False)),
+            "user_id_configured": bool(
+                verification.get("user_id_configured", False)
+            ),
+            "user_found": bool(verification.get("user_found", False)),
+            "user_admin_group": bool(
+                verification.get("user_admin_group", False)
+            ),
+            "user_owner": bool(verification.get("user_owner", False)),
+            "message": verification.get("message"),
+        }
+
     return {
         "suite": {
             "version": VERSION,
@@ -49,6 +70,7 @@ async def async_get_config_entry_diagnostics(
             "config_entry_minor_version": entry.minor_version,
             "module_count": len(MODULE_CATALOG),
             "repair_integration": True,
+            "runtime_dependency_supervision": True,
         },
         "home_assistant": {
             "version": HA_VERSION,
@@ -56,4 +78,8 @@ async def async_get_config_entry_diagnostics(
             "python": platform.python_version(),
         },
         "modules": modules,
+        "smart_support": {
+            "provider": support_provider,
+            "verification": support_verification,
+        },
     }

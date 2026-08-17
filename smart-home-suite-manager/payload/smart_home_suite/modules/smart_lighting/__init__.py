@@ -19,6 +19,8 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import Store
 
+from ...const import VERSION as SUITE_VERSION
+
 _LOGGER = logging.getLogger(__name__)
 
 LEGACY_DOMAIN = "smart_lighting_panel"
@@ -31,7 +33,6 @@ STATIC_URL = "/smart_home_suite_static"
 FRONTEND_FILE = "smart-lighting-panel.js"
 
 MODULE_VERSION = "1.0.3"
-SUITE_VERSION = "0.5.0"
 
 
 def _data(hass: HomeAssistant) -> dict[str, Any]:

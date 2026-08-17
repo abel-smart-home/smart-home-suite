@@ -29,6 +29,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.const import CONF_URL
 from homeassistant.exceptions import HomeAssistantError
 
+from ...const import VERSION as SUITE_VERSION
 from ...legacy import smart_home_panel as exact_backend
 
 _LOGGER = logging.getLogger(__name__)
@@ -42,7 +43,6 @@ PANEL_FILE = "smart-home-panel.js"
 
 MODULE_VERSION = "1.3.0"
 BASE_PANEL_VERSION = "2.0.5"
-SUITE_VERSION = "0.5.0"
 
 DASHBOARD_TITLE = "Smart Home"
 DASHBOARD_ICON = "mdi:home-lightning-bolt"

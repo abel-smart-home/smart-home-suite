@@ -29,6 +29,10 @@
     "module_setup_failed": {
       "title": "Un módulo de Smart Home Suite no pudo iniciar",
       "description": "El módulo {module} está habilitado pero no pudo cargarse. Los demás módulos permanecen aislados y pueden seguir funcionando. Revisa los diagnósticos de Smart Home Suite y los registros de Home Assistant."
+    },
+    "smart_support_provider_unavailable": {
+      "title": "Smart Support requiere atención",
+      "description": "Smart Support está habilitado y tiene un usuario de soporte configurado, pero el proveedor de acciones de cuenta no está listo. Faltan: {actions}. Los demás módulos de Smart Home Suite no están afectados. Si una sesión de soporte estaba activa, revisa inmediatamente el estado de esa cuenta antes de continuar. Verifica Spook y reinicia Home Assistant si acabas de instalarlo."
     }
   }
 }
