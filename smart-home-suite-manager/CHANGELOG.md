@@ -1,6 +1,17 @@
 # Changelog
 
-## 0.2.1 - 2026-08-17 · TEST correction
+## 0.3.0 - 2026-08-17 · TEST
+
+- Conserva Smart Lighting Panel V1.0.3 exacto.
+- Añade Smart Energy Advanced Panel V1.3.0 con frontend exacto.
+- Añade Smart Support Panel V1.1.2 con frontend y lógica backend original adaptada al ciclo de vida de la Suite.
+- Añade Smart Home Native Bridge V1.3.0 exacto.
+- Smart Home captura automáticamente el frontend/backend V2.0.5 existentes antes de migrar.
+- Smart Home se registra dinámicamente como dashboard Lovelace nativo `/smart-home`, sin crear un dashboard YAML nuevo.
+- Añade selección independiente de los cuatro módulos desde Opciones.
+- No publica release hasta completar pruebas reales en HAOS.
+
+## 0.3.0 - 2026-08-17 · TEST correction
 
 - Sustituye el frontend reconstruido de 0.2.0 por el archivo original completo de Smart Lighting Panel V1.0.3.
 - Conserva el JavaScript original byte por byte.
