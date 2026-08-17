@@ -12,7 +12,7 @@ CREATE_BACKUP="$(bashio::config 'create_backup')"
 KEEP_BACKUPS="$(bashio::config 'keep_backups')"
 
 log_header() {
-  bashio::log.info "Smart Home Suite Manager 0.1.0"
+  bashio::log.info "Smart Home Suite Manager 0.2.0"
   bashio::log.info "Action: ${ACTION}"
 }
 
@@ -109,7 +109,7 @@ install_repair() {
   atomic_replace "${PAYLOAD}"
   sync
 
-  bashio::log.info "Installed Smart Home Suite 0.1.0 at ${TARGET}."
+  bashio::log.info "Installed Smart Home Suite 0.2.0 at ${TARGET}."
   bashio::log.info "Restart Home Assistant, then add the Smart Home Suite integration from Settings > Devices & services."
   bashio::log.info "INSTALLATION_OK"
 }

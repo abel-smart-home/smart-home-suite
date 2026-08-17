@@ -1,29 +1,21 @@
-# Smart Home Suite Manager 0.1.0
+# Smart Home Suite Manager 0.2.0
 
-## Acciones
+## Instalar / actualizar / reparar
 
-### Instalar / reparar
+1. Selecciona `install_repair`.
+2. Mantén `create_backup: true`.
+3. Inicia la App una vez.
+4. Confirma `INSTALLATION_OK`.
+5. Reinicia Home Assistant.
 
-Selecciona `install_repair`, inicia la App una vez y revisa el registro.
+La actualización desde 0.1.0 crea un backup antes de instalar 0.2.0.
 
-Un resultado correcto termina con:
+Después del reinicio, la integración existente **Smart Home Suite** debe seguir configurada y aparecerá el módulo **Smart Lighting** en `/lighting`.
 
-`INSTALLATION_OK`
+## Restaurar
 
-Después reinicia Home Assistant.
+Selecciona `restore_latest` y ejecuta la App. Un resultado correcto termina en `RESTORE_OK`.
 
-### Restaurar último respaldo
+## Importante para el piloto
 
-Selecciona `restore_latest`, inicia la App una vez y revisa el registro.
-
-Un resultado correcto termina con:
-
-`RESTORE_OK`
-
-Después reinicia Home Assistant.
-
-## Seguridad de reemplazo
-
-Antes de activar el nuevo componente, el Manager prepara y valida una copia temporal. La sustitución se hace dentro de `custom_components`, conservando temporalmente la versión previa para poder volver atrás si falla el cambio de carpeta.
-
-Cuando `create_backup` está activo, también se crea un archivo `.tar.gz` persistente dentro de los datos de la App.
+No instales el componente standalone `smart_lighting_panel` al mismo tiempo en la VM de prueba. La Suite 0.2.0 ya incorpora su backend y panel.

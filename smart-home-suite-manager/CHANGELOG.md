@@ -1,12 +1,14 @@
 # Changelog
 
+## 0.2.0 - 2026-08-17
+
+- Integra Smart Lighting Panel V1.0.3 como primer módulo de Smart Home Suite.
+- Registra `/lighting` automáticamente sin YAML `panel_custom`.
+- Sirve el frontend desde la propia integración.
+- Añade Module Manager básico y opción activar/desactivar Smart Lighting.
+- Conserva el storage key legado `smart_lighting_panel`.
+- Mantiene instalación, backup, reparación y restore de Manager 0.1.0.
+
 ## 0.1.0 - 2026-08-17
 
-- Estructura inicial de repositorio Home Assistant Apps.
-- Smart Home Suite Manager para `amd64` y `aarch64`.
-- Instalación/reparación automática de `custom_components/smart_home_suite`.
-- Sustitución preparada en carpeta temporal antes de activar.
-- Backup opcional antes de reemplazar una instalación existente.
-- Restauración del respaldo más reciente.
-- Payload mínimo de Smart Home Suite con Config Flow.
-- Flujo de compilación multi-arquitectura mediante GitHub Actions y GHCR.
+- Infraestructura inicial validada en HAOS amd64.
