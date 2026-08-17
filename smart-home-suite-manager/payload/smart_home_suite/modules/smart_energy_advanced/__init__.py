@@ -1,6 +1,7 @@
-"""Smart Energy Advanced Panel V1.3.0 module for Smart Home Suite.
+"""Smart Energy Advanced Panel V1.3.1 module for Smart Home Suite.
 
-The visual frontend is the original V1.3.0 JavaScript, byte for byte.
+V1.3.1 keeps the V1.3.0 runtime/storage contract and aligns the editor's
+Import/Export/Reset controls with the shared Suite UX footer.
 The legacy WebSocket namespace and .storage key are preserved.
 """
 
@@ -25,7 +26,7 @@ PANEL_PATH = "energy-advanced"
 WEB_COMPONENT = "smart-energy-advanced-panel"
 STATIC_URL = "/smart_home_suite_static"
 FRONTEND_FILE = "smart-energy-advanced-panel.js"
-MODULE_VERSION = "1.3.0"
+MODULE_VERSION = "1.3.1"
 
 
 def _data(hass: HomeAssistant) -> dict[str, Any]:
@@ -42,7 +43,7 @@ def _store(hass: HomeAssistant) -> Store[dict[str, Any]]:
 
 
 async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Register exact Smart Energy Advanced V1.3.0 API and panel."""
+    """Register Smart Energy Advanced V1.3.1 API and panel."""
     data = _data(hass)
 
     if not data.get("suite_websocket_registered"):
@@ -70,7 +71,7 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         webcomponent_name=WEB_COMPONENT,
         sidebar_title="Energía avanzada",
         sidebar_icon="mdi:lightning-bolt-circle",
-        module_url=f"{STATIC_URL}/{FRONTEND_FILE}?v=130-suite050",
+        module_url=f"{STATIC_URL}/{FRONTEND_FILE}?v=131-suite101",
         require_admin=False,
         handle_safe_area=True,
         config={

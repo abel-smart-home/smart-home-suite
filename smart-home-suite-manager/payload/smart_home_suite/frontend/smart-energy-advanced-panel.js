@@ -1,10 +1,10 @@
 /**
- * Smart Energy Advanced Panel V1.3.0
+ * Smart Energy Advanced Panel V1.3.1
  * Mobile-first advanced electrical dashboard for Home Assistant.
  * No external JavaScript dependencies.
  */
 
-const PANEL_VERSION = "1.3.0";
+const PANEL_VERSION = "1.3.1";
 const BACKEND_DOMAIN = "smart_energy_advanced_panel";
 
 const deepClone = (value) => JSON.parse(JSON.stringify(value));
@@ -1086,7 +1086,7 @@ class SmartEnergyAdvancedPanel extends HTMLElement {
       .editor{width:min(640px,100%);height:100%;background:#0b1116;color:#f5f7fa;border-left:1px solid #26323a;display:flex;flex-direction:column;box-shadow:-20px 0 60px rgba(0,0,0,.35)}
       .editor-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 14px 10px;border-bottom:1px solid #202b32}
       .editor-title{font-size:19px;font-weight:720}
-      .editor-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+      .editor-actions,.row-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
       .editor-btn{min-height:38px;padding:0 12px;border-radius:12px;border:1px solid #2b3942;background:#111a20;color:#e8edf1;cursor:pointer}
       .editor-btn.primary{border-color:#247f7a;background:#123b3a;color:#55e6df}
       .editor-btn.danger{border-color:#703332;color:#ef8a87}
@@ -1119,7 +1119,8 @@ class SmartEnergyAdvancedPanel extends HTMLElement {
       .action-box{border-top:1px dashed #28353d;padding-top:10px;display:grid;gap:9px}
       .action-title{font-size:10.5px;color:#7f8c95;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
       .nav-note{padding:9px 10px;border-radius:11px;background:rgba(53,221,213,.05);border:1px solid rgba(53,221,213,.15);color:#77cfc9;font-size:10px;line-height:1.4}
-      .editor-bottom{padding:9px 14px 12px;border-top:1px solid #202b32;color:#65737c;font-size:9.5px;line-height:1.4}
+      .editor-bottom{padding:9px 14px 12px;border-top:1px solid #202b32;color:#65737c;font-size:9.5px;line-height:1.4;flex:0 0 auto}
+      .editor-footer{padding:11px 14px max(11px,env(safe-area-inset-bottom));border-top:1px solid #202b32;display:flex;align-items:center;justify-content:space-between;gap:10px;color:#71808a;font-size:10px;flex-wrap:wrap;background:#0b1116;flex:0 0 auto}
 
       .picker-backdrop{position:fixed;inset:0;z-index:10020;background:rgba(0,0,0,.76);display:grid;place-items:center;padding:12px}
       .picker{width:min(560px,100%);height:min(760px,92dvh);background:#0b1116;border:1px solid #2a3740;border-radius:19px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 26px 70px rgba(0,0,0,.45)}
@@ -1199,6 +1200,15 @@ class SmartEnergyAdvancedPanel extends HTMLElement {
           <div class="editor-body">${content}</div>
           <div class="editor-bottom">
             Los estados siguen actualizándose internamente mientras editas, pero el editor no se reconstruye por esos cambios.
+          </div>
+          <div class="editor-footer">
+            <span>Persistencia en .storage mediante smart_energy_advanced_panel.</span>
+            <div class="row-actions">
+              <button class="tiny-btn" data-action="export-config">Exportar</button>
+              <button class="tiny-btn" data-action="import-config">Importar</button>
+              <button class="tiny-btn danger" data-action="reset-config">Restablecer</button>
+              <input id="import-file" type="file" accept="application/json,.json" hidden>
+            </div>
           </div>
         </aside>
       </div>
@@ -1478,10 +1488,6 @@ class SmartEnergyAdvancedPanel extends HTMLElement {
         <textarea class="control" id="advanced-json">${this._escape(JSON.stringify(this._editConfig || cfg, null, 2))}</textarea>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="editor-btn" data-action="apply-json">Aplicar JSON</button>
-          <button class="editor-btn" data-action="export-config">Exportar</button>
-          <button class="editor-btn" data-action="import-config">Importar</button>
-          <button class="editor-btn danger" data-action="reset-config">Restablecer</button>
-          <input type="file" id="import-file" accept="application/json,.json" hidden>
         </div>
       `),
       this._editSection("Aislamiento", `

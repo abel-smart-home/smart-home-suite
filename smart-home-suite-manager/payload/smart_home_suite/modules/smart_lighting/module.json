@@ -9,6 +9,6 @@
   "sidebar_icon": "mdi:lightbulb-group",
   "storage_key": "smart_lighting_panel.config",
   "storage_version": 1,
-  "suite_version": "1.0.0",
+  "suite_version": "1.0.1",
   "frontend_source": "exact Smart Lighting Panel V1.0.3"
 }
