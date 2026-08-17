@@ -18,8 +18,55 @@ env:
   APP_DIR: smart-home-suite-manager
 
 jobs:
+  validate:
+    name: Validate release payload
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository without external Actions
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${GITHUB_SHA}"
+          git checkout --detach FETCH_HEAD
+          git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
+
+      - name: Validate package structure and metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 "${APP_DIR}/scripts/validate_release.py"
+
+      - name: Compile Python sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m compileall -q "${APP_DIR}/payload/smart_home_suite"
+
+      - name: Validate shell syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n "${APP_DIR}/run.sh"
+
+      - name: Validate JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in "${APP_DIR}"/payload/smart_home_suite/frontend/*.js; do
+            node --check "${file}"
+          done
+
+      - name: Validation complete
+        shell: bash
+        run: echo "CI_VALIDATION_OK"
+
   build-amd64:
     name: Build amd64
+    needs: validate
     runs-on: ubuntu-24.04
     outputs:
       version: ${{ steps.version.outputs.version }}
@@ -72,6 +119,7 @@ jobs:
 
   build-aarch64:
     name: Build aarch64
+    needs: validate
     runs-on: ubuntu-24.04-arm
     outputs:
       version: ${{ steps.version.outputs.version }}
