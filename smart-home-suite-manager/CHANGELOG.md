@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.2 - 2026-08-17 · TEST
+
+- Corrige la carga del backend exacto Smart Home Panel V2.0.5.
+- Elimina `importlib.import_module()` dentro del event loop.
+- Usa importación relativa de paquete: `from ...legacy import smart_home_panel`.
+- Mantiene sin cambios el dashboard storage, frontend V2.0.5 y bridge V1.3.0.
+- Mantiene las correcciones de Smart Support introducidas en 0.3.1.
+
 ## 0.3.1 - 2026-08-17 · TEST
 
 - Smart Home V2.0.5 ahora está incluido de forma autocontenida.
