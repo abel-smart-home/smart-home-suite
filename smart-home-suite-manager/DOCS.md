@@ -1,4 +1,4 @@
-# Smart Home Suite Manager 1.0.0
+# Smart Home Suite Manager 1.1.0
 
 ## Instalar / actualizar / reparar
 
@@ -11,14 +11,11 @@
 7. Confirma `INSTALLATION_OK`.
 8. Reinicia Home Assistant.
 
-Si ya existe una instalación, el Manager crea un backup antes del reemplazo y
-conserva temporalmente la instalación anterior hasta que la nueva versión supere
-la validación final.
+Si ya existe una instalación, el Manager crea un backup antes del reemplazo y conserva temporalmente la instalación anterior hasta que la nueva versión supere la validación final.
 
 ## Validar sin modificar
 
-Selecciona `validate_only` para comprobar la integridad estructural del payload
-y, si existe, de la Suite instalada.
+Selecciona `validate_only` para comprobar la integridad estructural del payload y, si existe, de la Suite instalada.
 
 Esta acción no reemplaza archivos ni crea un nuevo backup.
 
@@ -38,14 +35,16 @@ Resultado correcto:
 
 Después reinicia Home Assistant.
 
+## Smart Automations
+
+Smart Home Suite 1.1.0 incorpora Smart Automations 1.0.0 como módulo oficial. Su panel vive en `/smart-automations`, conserva `smart_automations.config` y genera automatizaciones nativas de Home Assistant.
+
+Las primeras recetas cubren iluminación por sol, apagado por ausencia, alertas de potencia y límites de kWh. El módulo puede habilitarse o deshabilitarse desde las opciones centrales de la Suite.
+
 ## Smart Support
 
-Smart Home Suite 1.0.0 supervisa la disponibilidad de las acciones de cuenta
-utilizadas por Smart Support. Esta supervisión vive en la integración instalada;
-el Manager únicamente valida que el archivo correspondiente forme parte del
-payload antes de instalarlo.
+La Suite continúa supervisando la disponibilidad de las acciones de cuenta utilizadas por Smart Support. Esta supervisión vive en la integración instalada; el Manager valida que los archivos correspondientes formen parte del payload antes de instalarlo.
 
 ## Importante
 
-No instales simultáneamente las versiones standalone de los paneles ya incluidos
-en Smart Home Suite, porque podrían competir por rutas, servicios o almacenamiento.
+No instales simultáneamente versiones standalone de los paneles ya incluidos en Smart Home Suite, porque podrían competir por rutas, servicios o almacenamiento.

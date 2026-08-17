@@ -12,7 +12,7 @@ CREATE_BACKUP="$(bashio::config 'create_backup')"
 KEEP_BACKUPS="$(bashio::config 'keep_backups')"
 
 log_header() {
-  bashio::log.info "Smart Home Suite Manager 1.0.0"
+  bashio::log.info "Smart Home Suite Manager 1.1.0"
   bashio::log.info "Action: ${ACTION}"
 }
 
@@ -54,14 +54,24 @@ validate_component() {
   version="$(component_version "${path}")"
   test -n "${version}"
 
-  # Smart Support provider supervision was introduced in Suite 1.0.0.
-  # Keep structural validation backward-compatible so a verified 0.x backup
-  # can still be inspected/restored by a 1.x Manager.
   case "${version}" in
     0.*)
       ;;
     *)
       test -f "${path}/support_health.py"
+      ;;
+  esac
+
+  # Smart Automations became an official payload component in Suite 1.1.0.
+  # Keep validation compatible with verified 0.x/1.0.x backups so restore_latest
+  # can still recover a previous installation after upgrading the Manager.
+  case "${version}" in
+    0.*|1.0.*)
+      ;;
+    *)
+      test -f "${path}/frontend/smart-automations-panel.js"
+      test -f "${path}/modules/smart_automations/module.json"
+      test -f "${path}/modules/smart_automations/__init__.py"
       ;;
   esac
 
@@ -85,7 +95,14 @@ validate_component() {
     module_count=$((module_count + 1))
   done
 
-  test "${module_count}" -ge 4
+  case "${version}" in
+    0.*|1.0.*)
+      test "${module_count}" -ge 4
+      ;;
+    *)
+      test "${module_count}" -ge 5
+      ;;
+  esac
 
   duplicate_paths="$(
     sort /tmp/smart-home-suite-panel-paths.$$ | uniq -d | head -n 1 || true
@@ -98,12 +115,8 @@ recover_interrupted_replace() {
   local previous newest_previous
 
   mkdir -p "${CUSTOM_COMPONENTS}"
-
-  # Clean abandoned staging directories; they were never active.
   rm -rf "${CUSTOM_COMPONENTS}"/.smart_home_suite.new.* 2>/dev/null || true
 
-  # If a previous installation was moved aside and the active target disappeared,
-  # restore the newest valid previous copy automatically.
   if [ ! -d "${TARGET}" ]; then
     newest_previous="$(
       ls -1td "${CUSTOM_COMPONENTS}"/.smart_home_suite.previous.* 2>/dev/null \
@@ -116,7 +129,6 @@ recover_interrupted_replace() {
     fi
   fi
 
-  # Old valid previous directories are never needed once TARGET exists.
   if [ -d "${TARGET}" ]; then
     for previous in "${CUSTOM_COMPONENTS}"/.smart_home_suite.previous.*; do
       [ -d "${previous}" ] || continue
@@ -190,7 +202,6 @@ atomic_replace() {
     return 1
   fi
 
-  # Keep previous_path until the newly active directory has passed final validation.
   if ! validate_component "${TARGET}"; then
     bashio::log.error "Post-install validation failed. Rolling back automatically."
     rm -rf "${TARGET}"

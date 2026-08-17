@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.1.0 - 2026-08-17 · STABLE
+
+- Incorpora **Smart Automations 1.0.0** como quinto módulo oficial de Smart Home Suite.
+- Añade panel `/smart-automations` con interfaz simplificada orientada a usuarios comunes.
+- Mantiene Home Assistant como motor de ejecución: las automatizaciones creadas son nativas.
+- Incluye cuatro recetas iniciales: iluminación por amanecer/anochecer, apagado de luces por ausencia, aviso por potencia elevada y aviso por límite de kWh.
+- Valida los sensores `sensor.power_record_ciclo_kwh_mes_facturado` y `sensor.power_record_ciclo_kwh_diario_facturado` como opciones de referencia para límites de energía.
+- Añade editor con Guardar/Cancelar, Importar/Exportar/Restablecer y vista previa visual en tiempo real sin autosave.
+- Añade personalización responsive completa con ancho base de 520 px, columnas, padding, gaps, radios, colores, tipografía, encabezado y navegación.
+- Mantiene selector de entidades e iconos MDI y preservación de foco/scroll durante la edición.
+- Elimina el botón global de automatizaciones avanzadas de la experiencia simplificada.
+- Conserva la clave `smart_automations.config` utilizada durante el piloto para permitir actualización sin pérdida de configuración.
+- Smart Automations se integra al catálogo, opciones, aislamiento, versionado y diagnóstico central de la Suite.
+- Actualiza Smart Home Suite Manager e integración a 1.1.0.
+- Conserva sin cambios funcionales Smart Home 2.0.5/Bridge 1.3.0, Smart Lighting 1.0.3, Smart Energy Advanced 1.3.1 y Smart Support 1.1.2.
+
 ## 1.0.0 - 2026-08-17 · STABLE
 
 - Primera línea base estable de Smart Home Suite.
