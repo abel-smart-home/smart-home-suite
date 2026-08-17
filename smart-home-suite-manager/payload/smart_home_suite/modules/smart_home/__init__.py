@@ -7,7 +7,6 @@ dashboard registration and module enable/disable.
 
 from __future__ import annotations
 
-import importlib
 import logging
 from pathlib import Path
 from typing import Any
@@ -29,6 +28,8 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 
+from ...legacy import smart_home_panel as exact_backend
+
 _LOGGER = logging.getLogger(__name__)
 
 LEGACY_DOMAIN = "smart_home_panel"
@@ -40,7 +41,7 @@ PANEL_FILE = "smart-home-panel.js"
 
 MODULE_VERSION = "1.3.0"
 BASE_PANEL_VERSION = "2.0.5"
-SUITE_VERSION = "0.3.1"
+SUITE_VERSION = "0.3.2"
 
 DASHBOARD_TITLE = "Smart Home"
 DASHBOARD_ICON = "mdi:home-lightning-bolt"
@@ -60,9 +61,9 @@ async def _ensure_exact_backend(hass: HomeAssistant) -> None:
     if data.get("suite_exact_backend_ready"):
         return
 
-    exact_backend = importlib.import_module(
-        "smart_home_suite.legacy.smart_home_panel"
-    )
+    # The exact V2.0.5 backend is imported package-relatively when this module
+    # is loaded. This avoids both an incorrect top-level module name and a
+    # blocking import_module() call inside Home Assistant's event loop.
 
     # The exact backend owns hass.data[smart_home_panel]. Avoid replacing an
     # already initialized exact backend on Config Entry reload.
@@ -148,7 +149,7 @@ async def _ensure_native_dashboard(hass: HomeAssistant) -> None:
         {
             "strategy": {
                 "type": "custom:smart-home",
-                "panel_module_url": f"{STATIC_URL}/{PANEL_FILE}?v=205-suite031",
+                "panel_module_url": f"{STATIC_URL}/{PANEL_FILE}?v=205-suite032",
                 "hide_ha_header": True,
                 "mobile_menu_access": "admins",
             }
@@ -192,7 +193,7 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if not data.get("suite_bridge_registered"):
         add_extra_js_url(
             hass,
-            f"{STATIC_URL}/{BRIDGE_FILE}?v=130-suite031",
+            f"{STATIC_URL}/{BRIDGE_FILE}?v=130-suite032",
         )
         data["suite_bridge_registered"] = True
 
