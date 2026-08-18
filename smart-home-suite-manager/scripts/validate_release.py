@@ -218,6 +218,7 @@ def validate() -> None:
     for filename in (
         "smart-home-panel.js",
         "smart-home-native.js",
+        "smart-home-panel-runtime.js",
         "smart-lighting-panel.js",
         "smart-energy-advanced-panel.js",
         "smart-automations-panel.js",
@@ -226,6 +227,31 @@ def validate() -> None:
         path = PAYLOAD / "frontend" / filename
         if not path.is_file() or path.stat().st_size < 1000:
             fail(f"Frontend missing or unexpectedly small: {filename}")
+
+    smart_home_runtime = (PAYLOAD / "frontend" / "smart-home-panel-runtime.js").read_text(
+        encoding="utf-8"
+    )
+    for required_token in (
+        'SMART_HOME_RUNTIME_GUARD_VERSION = "1.0.0"',
+        'Object.getOwnPropertyDescriptor(proto, "narrow")',
+        'if (current === next) return;',
+    ):
+        if required_token not in smart_home_runtime:
+            fail(
+                "smart-home-panel-runtime.js is missing required guard token "
+                f"{required_token!r}"
+            )
+
+    smart_home_wrapper = (
+        PAYLOAD / "modules" / "smart_home" / "__init__.py"
+    ).read_text(encoding="utf-8")
+    for required_token in (
+        'PANEL_RUNTIME_FILE = "smart-home-panel-runtime.js"',
+        'RUNTIME_GUARD_VERSION = "1.0.0"',
+        '?v=205-guard100-suite111',
+    ):
+        if required_token not in smart_home_wrapper:
+            fail(f"smart_home wrapper is missing required token {required_token!r}")
 
     print(f"RELEASE_VALIDATION_OK version={version} modules={len(catalog_ids)}")
 
