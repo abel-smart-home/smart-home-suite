@@ -219,6 +219,7 @@ def validate() -> None:
         "smart-home-panel.js",
         "smart-home-native.js",
         "smart-home-panel-runtime.js",
+        "smart-home-card-layout.js",
         "smart-lighting-panel.js",
         "smart-energy-advanced-panel.js",
         "smart-automations-panel.js",
@@ -233,12 +234,30 @@ def validate() -> None:
     )
     for required_token in (
         'SMART_HOME_RUNTIME_GUARD_VERSION = "1.0.0"',
+        'SMART_HOME_RUNTIME_VERSION = "1.1.0"',
+        'import "./smart-home-card-layout.js?v=100-module140";',
         'Object.getOwnPropertyDescriptor(proto, "narrow")',
         'if (current === next) return;',
     ):
         if required_token not in smart_home_runtime:
             fail(
-                "smart-home-panel-runtime.js is missing required guard token "
+                "smart-home-panel-runtime.js is missing required runtime token "
+                f"{required_token!r}"
+            )
+
+    smart_home_cards = (PAYLOAD / "frontend" / "smart-home-card-layout.js").read_text(
+        encoding="utf-8"
+    )
+    for required_token in (
+        'SMART_HOME_CARD_LAYOUT_RUNTIME_VERSION = "1.0.0"',
+        'card_layout.order',
+        'extra_cards',
+        'history/history_during_period',
+        'move-smart-card',
+    ):
+        if required_token not in smart_home_cards:
+            fail(
+                "smart-home-card-layout.js is missing required feature token "
                 f"{required_token!r}"
             )
 
@@ -247,8 +266,12 @@ def validate() -> None:
     ).read_text(encoding="utf-8")
     for required_token in (
         'PANEL_RUNTIME_FILE = "smart-home-panel-runtime.js"',
+        'CARD_LAYOUT_FILE = "smart-home-card-layout.js"',
+        'MODULE_VERSION = "1.4.0"',
+        'RUNTIME_VERSION = "1.1.0"',
         'RUNTIME_GUARD_VERSION = "1.0.0"',
-        '?v=205-guard100-suite111',
+        'CARD_LAYOUT_RUNTIME_VERSION = "1.0.0"',
+        '?v=205-guard100-cards100-module140',
     ):
         if required_token not in smart_home_wrapper:
             fail(f"smart_home wrapper is missing required token {required_token!r}")

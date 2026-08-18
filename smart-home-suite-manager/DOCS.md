@@ -1,4 +1,4 @@
-# Smart Home Suite Manager 1.1.1
+# Smart Home Suite Manager 1.2.0 — PRE-RELEASE
 
 ## Instalar / actualizar / reparar
 
@@ -35,19 +35,25 @@ Resultado correcto:
 
 Después reinicia Home Assistant.
 
-## Smart Home
+## Smart Home 1.4.0
 
-Suite 1.1.1 añade un runtime guard para Smart Home que evita rerenders redundantes del estado móvil/escritorio. La corrección mantiene estable la ventana **Buscar icono MDI** mientras llegan actualizaciones frecuentes de Home Assistant. Panel 2.0.5 y Native Dashboard Bridge 1.3.0 permanecen sin cambios.
+Suite 1.2.0 conserva Smart Home Panel 2.0.5 y Native Dashboard Bridge 1.3.0 y amplía el runtime de la Suite para permitir:
+
+- reordenar las cuatro tarjetas existentes;
+- agregar tarjetas opcionales de valor, barra o gráfica;
+- usar selector de entidad e icono MDI;
+- configurar estilos y acciones tap/hold;
+- conservar configuraciones anteriores sin migración destructiva.
+
+La gráfica de historial se obtiene mediante WebSocket y utiliza caché para evitar consultar Recorder en cada actualización de estado.
 
 ## Smart Automations
 
-Smart Home Suite 1.1.1 incorpora Smart Automations 1.0.0 como módulo oficial. Su panel vive en `/smart-automations`, conserva `smart_automations.config` y genera automatizaciones nativas de Home Assistant.
-
-Las primeras recetas cubren iluminación por sol, apagado por ausencia, alertas de potencia y límites de kWh. El módulo puede habilitarse o deshabilitarse desde las opciones centrales de la Suite.
+Smart Automations 1.0.0 continúa como módulo oficial en `/smart-automations` y genera automatizaciones nativas de Home Assistant.
 
 ## Smart Support
 
-La Suite continúa supervisando la disponibilidad de las acciones de cuenta utilizadas por Smart Support. Esta supervisión vive en la integración instalada; el Manager valida que los archivos correspondientes formen parte del payload antes de instalarlo.
+La Suite continúa supervisando la disponibilidad de las acciones de cuenta utilizadas por Smart Support.
 
 ## Importante
 
