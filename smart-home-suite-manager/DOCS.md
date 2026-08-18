@@ -1,4 +1,4 @@
-# Smart Home Suite Manager 1.3.0
+# Smart Home Suite Manager 1.3.0 · STABLE
 
 ## Instalar / actualizar / reparar
 

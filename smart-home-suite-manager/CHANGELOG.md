@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.3.0 - 2026-08-18 · STABLE
+
+- Promueve a estable la versión 1.3.0 validada previamente como pre-release en Home Assistant OS.
+- Actualiza **Smart Energy Advanced a 1.4.0** mediante `smart-energy-advanced-layout.js` V1.0.0.
+- Mantiene **Smart Energy Advanced Panel V1.3.1** como frontend base sin reconstruirlo.
+- Añade orden configurable de secciones con controles ↑ / ↓ y vista previa inmediata.
+- Añade orden configurable de widgets eléctricos dentro de su propia sección.
+- Los widgets y secciones futuros aparecen automáticamente en los controles de orden.
+- Guardar persiste el orden utilizando los arrays `sections` y `widgets` existentes; Cancelar descarta la copia de trabajo.
+- Conserva `.storage/smart_energy_advanced_panel.config` y los WebSocket `smart_energy_advanced_panel/config/*`.
+- Conserva navegación, responsive, selector de entidades, selector MDI, acciones tap/hold, Importar/Exportar/Restablecer y aislamiento del módulo.
+- El gráfico nativo `power-sources-graph` conserva su implementación y acompaña a la sección `realtime` al reordenarla.
+- No requiere migración destructiva de configuración.
+- Mantiene sin cambios funcionales Smart Home 1.4.0, Smart Lighting 1.0.3, Smart Automations 1.0.0 y Smart Support 1.1.2.
+- La promoción a estable no modifica el payload funcional que pasó las pruebas del pre-release.
+
 ## 1.2.0 - 2026-08-18 · STABLE
 
 - Promueve a estable la versión 1.2.0 validada previamente como pre-release.
@@ -126,7 +142,7 @@
 
 - Sustituye el frontend reconstruido de 0.2.0 por el archivo original completo de Smart Lighting Panel V1.0.3.
 - Conserva el JavaScript original byte por byte.
-- Corrige la clave de `.storage` a `smart_lighting_panel.config`, exactamente igual al componente independiente V1.0.3.
+- Corrige la clave de `.storage` a `smart_lighting_panel.config`, exactamente igual que el componente independiente V1.0.3.
 - Mantiene los WebSocket commands originales `smart_lighting_panel/config/get|save|reset`.
 - Mantiene Smart Lighting como módulo 1.0.3; el cambio es exclusivamente de empaquetado/integración de Suite.
 - Cambia el cache-buster del frontend para evitar reutilizar el JS incorrecto de 0.2.0.

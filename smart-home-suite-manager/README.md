@@ -10,4 +10,4 @@ Acciones disponibles:
 
 Smart Home Suite 1.3.0 mantiene los cinco módulos oficiales y actualiza **Smart Energy Advanced a 1.4.0** mediante una extensión runtime que permite reordenar secciones y widgets sin cambiar su `.storage`, WebSocket ni frontend base V1.3.1.
 
-Esta publicación debe mantenerse como **pre-release** hasta completar el checklist real en HAOS. Una vez validada, puede promoverse el mismo release 1.3.0 a estable sin cambiar el payload.
+**Smart Home Suite 1.3.0 es una versión STABLE**, validada previamente como pre-release en Home Assistant OS.
