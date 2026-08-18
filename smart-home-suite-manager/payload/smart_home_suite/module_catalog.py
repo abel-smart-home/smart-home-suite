@@ -86,11 +86,15 @@ MODULE_CATALOG: tuple[ModuleSpec, ...] = (
         module_id="smart_energy_advanced",
         name="Smart Energy Advanced",
         option_label="Energía avanzada",
-        version="1.3.1",
+        version="1.4.0",
         panel_path="energy-advanced",
         enabled_by_default=True,
         setup=setup_smart_energy_advanced,
         unload=unload_smart_energy_advanced,
+        notes=(
+            "Base panel 1.3.1 + Suite ordering runtime 1.0.0; "
+            "sections and widgets can be reordered without changing storage/API"
+        ),
     ),
     ModuleSpec(
         module_id="smart_automations",

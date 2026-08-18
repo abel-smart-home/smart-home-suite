@@ -1,13 +1,15 @@
-"""Smart Energy Advanced Panel V1.3.1 module for Smart Home Suite.
+"""Smart Energy Advanced 1.4.0 module for Smart Home Suite.
 
-V1.3.1 keeps the V1.3.0 runtime/storage contract and aligns the editor's
-Import/Export/Reset controls with the shared Suite UX footer.
-The legacy WebSocket namespace and .storage key are preserved.
+The validated Smart Energy Advanced Panel V1.3.1 frontend and its storage/API
+contract remain intact. Suite 1.3.0 loads a small layout runtime that adds
+section/widget ordering without changing the legacy WebSocket namespace or
+.storage key.
 """
 
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 from typing import Any
 
 import voluptuous as vol
@@ -25,8 +27,15 @@ _LOGGER = logging.getLogger(__name__)
 PANEL_PATH = "energy-advanced"
 WEB_COMPONENT = "smart-energy-advanced-panel"
 STATIC_URL = "/smart_home_suite_static"
-FRONTEND_FILE = "smart-energy-advanced-panel.js"
-MODULE_VERSION = "1.3.1"
+BASE_FRONTEND_FILE = "smart-energy-advanced-panel.js"
+FRONTEND_FILE = "smart-energy-advanced-layout.js"
+MODULE_VERSION = "1.4.0"
+BASE_PANEL_VERSION = "1.3.1"
+LAYOUT_RUNTIME_VERSION = "1.0.0"
+
+
+def _frontend_dir() -> Path:
+    return Path(__file__).resolve().parents[2] / "frontend"
 
 
 def _data(hass: HomeAssistant) -> dict[str, Any]:
@@ -43,8 +52,33 @@ def _store(hass: HomeAssistant) -> Store[dict[str, Any]]:
 
 
 async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Register Smart Energy Advanced V1.3.1 API and panel."""
+    """Register Smart Energy Advanced 1.4.0 API and panel."""
     data = _data(hass)
+
+    frontend_dir = _frontend_dir()
+    base_file = frontend_dir / BASE_FRONTEND_FILE
+    runtime_file = frontend_dir / FRONTEND_FILE
+    if not base_file.is_file() or not runtime_file.is_file():
+        _LOGGER.error(
+            "Smart Energy Advanced frontend is incomplete: base=%s runtime=%s",
+            base_file.is_file(),
+            runtime_file.is_file(),
+        )
+        return False
+
+    runtime_text = await hass.async_add_executor_job(runtime_file.read_text, "utf-8")
+    for required_token in (
+        'SMART_ENERGY_ORDERING_RUNTIME_VERSION = "1.0.0"',
+        'SMART_ENERGY_EFFECTIVE_VERSION = "1.4.0"',
+        'move-energy-section',
+        'move-energy-widget',
+    ):
+        if required_token not in runtime_text:
+            _LOGGER.error(
+                "Smart Energy Advanced ordering runtime is missing token %s",
+                required_token,
+            )
+            return False
 
     if not data.get("suite_websocket_registered"):
         websocket_api.async_register_command(hass, websocket_get_config)
@@ -71,16 +105,20 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         webcomponent_name=WEB_COMPONENT,
         sidebar_title="Energía avanzada",
         sidebar_icon="mdi:lightning-bolt-circle",
-        module_url=f"{STATIC_URL}/{FRONTEND_FILE}?v=131-suite101",
+        module_url=f"{STATIC_URL}/{FRONTEND_FILE}?v=100-module140-suite130",
         require_admin=False,
         handle_safe_area=True,
         config={
             "suite_version": SUITE_VERSION,
             "module_id": "smart_energy_advanced",
             "module_version": MODULE_VERSION,
+            "base_panel_version": BASE_PANEL_VERSION,
+            "layout_runtime_version": LAYOUT_RUNTIME_VERSION,
         },
     )
     data["suite_panel_registered"] = True
+    data["base_panel_version"] = BASE_PANEL_VERSION
+    data["layout_runtime_version"] = LAYOUT_RUNTIME_VERSION
     return True
 
 

@@ -1,11 +1,13 @@
-# Smart Home Suite modules · 1.1.1 STABLE
+# Smart Home Suite modules · 1.3.0 PRE-RELEASE
 
 | Módulo | Versión | Ruta |
 |---|---:|---|
-| Smart Home | Panel 2.0.5 + Bridge 1.3.0 + runtime guard 1.0.0 | `/smart-home` |
+| Smart Home | módulo 1.4.0 · Panel 2.0.5 + Bridge 1.3.0 + runtime 1.1.0 | `/smart-home` |
 | Smart Lighting | 1.0.3 | `/lighting` |
-| Smart Energy Advanced | 1.3.1 | `/energy-advanced` |
+| Smart Energy Advanced | 1.4.0 · base 1.3.1 + ordering runtime 1.0.0 | `/energy-advanced` |
 | Smart Automations | 1.0.0 | `/smart-automations` |
 | Smart Support | 1.1.2 | `/support` |
 
-Los módulos son activables de forma independiente desde las opciones de Smart Home Suite y mantienen aislamiento de ciclo de vida. Smart Automations utiliza automatizaciones nativas de Home Assistant como capa de ejecución.
+Los módulos son activables de forma independiente desde las opciones de Smart Home Suite y mantienen aislamiento de ciclo de vida.
+
+Smart Energy Advanced 1.4.0 conserva su frontend base, WebSocket y `.storage`, y añade reordenamiento de secciones y widgets mediante una extensión runtime de la Suite.
