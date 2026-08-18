@@ -1,4 +1,4 @@
-# Smart Home Suite Manager 1.6.0 · PRE-RELEASE
+# Smart Home Suite Manager 1.6.0 · STABLE
 
 ## Instalar / actualizar / reparar
 

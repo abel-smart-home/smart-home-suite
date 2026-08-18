@@ -1,7 +1,8 @@
 # Changelog
 
-## 1.6.0 - 2026-08-18 · TEST
+## 1.6.0 - 2026-08-18 · STABLE
 
+- Promueve a estable la versión 1.6.0 validada previamente como pre-release en Home Assistant OS.
 - Actualiza **Smart Lighting a 1.3.0** manteniendo Smart Lighting Panel V1.0.3 como frontend base intacto.
 - Actualiza `smart-lighting-layout.js` a V1.2.0.
 - Amplía ordering runtime a V1.1.0 para incluir **Acciones globales** dentro del orden de áreas.
@@ -17,7 +18,7 @@
 - No requiere migración destructiva y mantiene rollback compatible.
 - Mantiene sin cambios funcionales Smart Home 1.4.0, Smart Energy Advanced 1.4.0, Smart Automations 1.0.0 y Smart Support 1.1.2.
 - Refuerza `validate_release.py` para validar nuevas versiones, posición del área, orden de botones, colores por estado y cache-buster.
-- Publicar inicialmente como pre-release y promover el mismo tag a estable tras completar el checklist HAOS.
+- La promoción a estable no modifica el payload funcional que pasó las pruebas del pre-release.
 
 ## 1.5.0 - 2026-08-18 · TEST
 

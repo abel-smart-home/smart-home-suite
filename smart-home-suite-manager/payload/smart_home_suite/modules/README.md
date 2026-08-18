@@ -1,4 +1,4 @@
-# Smart Home Suite modules · 1.6.0 PRE-RELEASE
+# Smart Home Suite modules · 1.6.0 STABLE
 
 | Módulo | Versión | Ruta |
 |---|---:|---|
@@ -12,4 +12,4 @@ Los módulos son activables de forma independiente desde las opciones de Smart H
 
 Smart Lighting 1.3.0 conserva el panel base V1.0.3 y amplía el runtime para que Acciones globales participe en el orden de áreas, sus botones puedan reordenarse y tengan colores activo/inactivo configurables.
 
-Suite 1.6.0 debe validarse en HAOS real antes de promoverse a estable.
+Suite 1.6.0 fue validada en HAOS real y posteriormente promovida sin cambios funcionales a **STABLE**.

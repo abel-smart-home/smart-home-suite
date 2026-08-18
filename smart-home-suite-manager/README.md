@@ -12,4 +12,4 @@ Smart Home Suite 1.6.0 mantiene los cinco módulos oficiales y actualiza **Smart
 
 No cambia `.storage`, WebSocket ni Smart Lighting Panel V1.0.3.
 
-**Smart Home Suite 1.6.0 se publica inicialmente como PRE-RELEASE**. Después de completar `TEST-CHECKLIST-1.6.0.md` sin regresiones puede promoverse el mismo tag a estable.
+**Smart Home Suite 1.6.0 es una versión STABLE**, validada previamente en Home Assistant OS. La promoción no modifica el payload funcional probado.
