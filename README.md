@@ -2,18 +2,22 @@
 
 Repositorio de distribución de **Smart Home Suite** para Home Assistant OS sin HACS.
 
-## Smart Home Suite 1.1.0
+## Smart Home Suite 1.1.1
 
-**Smart Home Suite 1.1.0** incorpora Smart Automations como quinto módulo oficial de la Suite.
+**Smart Home Suite 1.1.1** mantiene los cinco módulos oficiales de 1.1.0 y corrige la estabilidad del selector visual MDI de Smart Home.
 
-- Smart Home Suite / Manager: **1.1.0**
-- Smart Home: Panel **2.0.5** + Native Dashboard Bridge **1.3.0**
+- Smart Home Suite / Manager: **1.1.1**
+- Smart Home: Panel **2.0.5** + Native Dashboard Bridge **1.3.0** + runtime guard **1.0.0**
 - Smart Lighting: **1.0.3**
 - Smart Energy Advanced: **1.3.1**
 - Smart Automations: **1.0.0**
 - Smart Support: **1.1.2**
 
 Todos los módulos se instalan bajo `custom_components/smart_home_suite` y se administran desde una sola Config Entry.
+
+## Corrección Smart Home 1.1.1
+
+Smart Home conserva intactos Panel 2.0.5 y Native Dashboard Bridge 1.3.0. La Suite añade un pequeño runtime guard que evita rerenders redundantes cuando el estado `narrow` (móvil/escritorio) no ha cambiado. Esto mantiene abierta la ventana nativa **Buscar icono** mientras Home Assistant recibe actualizaciones de entidades y permite buscar/seleccionar iconos MDI normalmente.
 
 ## Smart Automations
 
