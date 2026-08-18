@@ -1,8 +1,9 @@
 """Smart Home module for Smart Home Suite.
 
-Smart Home Panel V2.0.5 and the V1.3.0 native dashboard bridge are bundled
-exactly from the validated standalone packages. The Suite only owns lifecycle,
-dashboard registration and module enable/disable.
+Smart Home Panel V2.0.5 and the V1.3.0 native dashboard bridge remain bundled
+exactly from the validated standalone packages. Suite 1.1.1 adds only a small
+runtime entrypoint that guards redundant ``narrow`` assignments so bridge-driven
+Home Assistant state updates cannot destroy an open MDI picker dialog.
 """
 
 from __future__ import annotations
@@ -40,9 +41,11 @@ PANEL_PATH = "smart-home"
 STATIC_URL = "/smart_home_suite_static"
 BRIDGE_FILE = "smart-home-native.js"
 PANEL_FILE = "smart-home-panel.js"
+PANEL_RUNTIME_FILE = "smart-home-panel-runtime.js"
 
 MODULE_VERSION = "1.3.0"
 BASE_PANEL_VERSION = "2.0.5"
+RUNTIME_GUARD_VERSION = "1.0.0"
 
 DASHBOARD_TITLE = "Smart Home"
 DASHBOARD_ICON = "mdi:home-lightning-bolt"
@@ -189,6 +192,11 @@ async def _ensure_native_dashboard(hass: HomeAssistant) -> None:
     # Use a normal Lovelace panel view instead of a custom dashboard strategy.
     # The bridge resource registers smart-home-dashboard-card before Lovelace
     # resolves this card, eliminating strategy-element registration races.
+    #
+    # Suite 1.1.1 points the bridge to a tiny runtime entrypoint. That entrypoint
+    # imports the exact V2.0.5 panel and adds only a no-op guard for repeated
+    # narrow assignments. A new URL/cache-buster guarantees browsers receive the
+    # fix immediately after the Suite update.
     await ll_config.async_save(
         {
             "title": DASHBOARD_TITLE,
@@ -201,7 +209,8 @@ async def _ensure_native_dashboard(hass: HomeAssistant) -> None:
                         {
                             "type": "custom:smart-home-dashboard-card",
                             "panel_module_url": (
-                                f"{STATIC_URL}/{PANEL_FILE}?v=205-suite050"
+                                f"{STATIC_URL}/{PANEL_RUNTIME_FILE}"
+                                "?v=205-guard100-suite111"
                             ),
                             "hide_ha_header": True,
                             "mobile_menu_access": "admins",
@@ -232,14 +241,24 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     frontend_dir = _frontend_dir()
     panel_file = frontend_dir / PANEL_FILE
     bridge_file = frontend_dir / BRIDGE_FILE
+    runtime_file = frontend_dir / PANEL_RUNTIME_FILE
 
-    if not panel_file.is_file() or not bridge_file.is_file():
+    if (
+        not panel_file.is_file()
+        or not bridge_file.is_file()
+        or not runtime_file.is_file()
+    ):
         _LOGGER.error("Bundled Smart Home frontend sources are incomplete")
         return False
 
     panel_text = await hass.async_add_executor_job(panel_file.read_text, "utf-8")
     if 'PANEL_VERSION = "2.0.5"' not in panel_text:
         _LOGGER.error("Bundled Smart Home frontend is not V2.0.5")
+        return False
+
+    runtime_text = await hass.async_add_executor_job(runtime_file.read_text, "utf-8")
+    if 'SMART_HOME_RUNTIME_GUARD_VERSION = "1.0.0"' not in runtime_text:
+        _LOGGER.error("Bundled Smart Home runtime guard is not V1.0.0")
         return False
 
     await _ensure_exact_backend(hass)
@@ -256,6 +275,7 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     data["suite_native_dashboard_registered"] = True
     data["suite_version"] = SUITE_VERSION
     data["panel_version"] = BASE_PANEL_VERSION
+    data["runtime_guard_version"] = RUNTIME_GUARD_VERSION
     return True
 
 

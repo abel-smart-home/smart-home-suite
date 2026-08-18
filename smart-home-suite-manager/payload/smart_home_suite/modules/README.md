@@ -1,8 +1,8 @@
-# Smart Home Suite modules · 1.1.0 STABLE
+# Smart Home Suite modules · 1.1.1 STABLE
 
 | Módulo | Versión | Ruta |
 |---|---:|---|
-| Smart Home | Panel 2.0.5 + Bridge 1.3.0 | `/smart-home` |
+| Smart Home | Panel 2.0.5 + Bridge 1.3.0 + runtime guard 1.0.0 | `/smart-home` |
 | Smart Lighting | 1.0.3 | `/lighting` |
 | Smart Energy Advanced | 1.3.1 | `/energy-advanced` |
 | Smart Automations | 1.0.0 | `/smart-automations` |
