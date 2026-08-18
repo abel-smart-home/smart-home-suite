@@ -1,26 +1,17 @@
 /**
- * Smart Home Suite runtime guard v1.0.0
+ * Smart Home Suite runtime v1.1.0
  *
- * Smart Home Panel V2.0.5 is intentionally kept byte-for-byte unchanged.
- * This tiny module loads that exact panel and guards its `narrow` setter so
- * assigning the same mobile/desktop state does not trigger a redundant render.
- *
- * Why this exists:
- * - Smart Home is hosted by smart-home-dashboard-card.
- * - The bridge synchronizes `hass` frequently as entity states change.
- * - Its sync path also writes panel.narrow on each update.
- * - Smart Home Panel V2.0.5 queues a full render every time narrow is assigned.
- * - The MDI selector added by the bridge is an overlay appended to the panel's
- *   shadowRoot, so a redundant full render removes that open dialog.
- *
- * Other panels keep icon-picker state inside their own render model and do not
- * hit this bridge-specific repeated narrow assignment. The guard below fixes the
- * cause without altering the validated Smart Home Panel or bridge source files.
+ * Smart Home Panel V2.0.5 remains byte-for-byte unchanged. This runtime loads
+ * that validated panel, installs the existing narrow-render guard, and loads the
+ * Suite card-layout extension that adds configurable/reorderable cards without
+ * replacing the base panel source.
  */
 
 import "./smart-home-panel.js?v=205-suite050";
+import "./smart-home-card-layout.js?v=100-module140";
 
 const SMART_HOME_RUNTIME_GUARD_VERSION = "1.0.0";
+const SMART_HOME_RUNTIME_VERSION = "1.1.0";
 const GUARD_MARKER = Symbol.for("smart-home-suite-narrow-render-guard-v1.0.0");
 
 function installNarrowRenderGuard() {
@@ -47,9 +38,8 @@ function installNarrowRenderGuard() {
         ? Boolean(descriptor.get.call(this))
         : Boolean(this._narrow);
 
-      // This is the actual hotfix: do not call the original setter when the
-      // effective layout state has not changed. The original setter queues a
-      // complete panel render, which used to destroy the open MDI dialog.
+      // Preserve the existing MDI-picker stability fix: assigning the same
+      // effective layout state must not trigger a full Smart Home render.
       if (current === next) return;
       descriptor.set.call(this, next);
     },
@@ -62,7 +52,7 @@ function installNarrowRenderGuard() {
   });
 
   console.info(
-    `[Smart Home Runtime] guard v${SMART_HOME_RUNTIME_GUARD_VERSION} activo`,
+    `[Smart Home Runtime] runtime v${SMART_HOME_RUNTIME_VERSION} · guard v${SMART_HOME_RUNTIME_GUARD_VERSION} activo`,
   );
   return true;
 }

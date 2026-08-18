@@ -1,19 +1,22 @@
 {
   "id": "smart_home",
   "name": "Smart Home",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "base_panel_version": "2.0.5",
-  "source": "Smart Home Panel V2.0.5 exact + Native Dashboard Bridge V1.3.0 exact + Suite narrow-render guard V1.0.0",
+  "source": "Smart Home Panel V2.0.5 exact + Native Dashboard Bridge V1.3.0 exact + Suite Runtime V1.1.0 (narrow guard V1.0.0 + configurable cards V1.0.0)",
   "enabled_by_default": true,
   "panel_path": "smart-home",
   "sidebar_title": "Smart Home",
   "sidebar_icon": "mdi:home-lightning-bolt",
-  "suite_version": "1.1.1",
+  "suite_version": "1.2.0",
   "bridge_source": "bundled exact Smart Home native bridge V1.3.0",
   "base_frontend_source": "bundled exact Smart Home Panel V2.0.5",
-  "frontend_source": "bundled exact Smart Home Panel V2.0.5",
+  "frontend_source": "bundled exact Smart Home Panel V2.0.5 + Suite runtime extensions",
   "dashboard_type": "lovelace_storage",
   "clean_install": true,
+  "runtime_version": "1.1.0",
   "runtime_guard_version": "1.0.0",
-  "runtime_guard_source": "Suite wrapper prevents redundant narrow rerenders while editor/dialogs are open"
+  "runtime_guard_source": "Suite wrapper prevents redundant narrow rerenders while editor/dialogs are open",
+  "card_layout_runtime_version": "1.0.0",
+  "card_layout_runtime_source": "Suite runtime adds optional entity/value/bar/history cards and stable card ordering without modifying Smart Home Panel V2.0.5"
 }

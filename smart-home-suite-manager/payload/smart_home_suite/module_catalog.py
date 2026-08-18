@@ -67,7 +67,10 @@ MODULE_CATALOG: tuple[ModuleSpec, ...] = (
         enabled_by_default=True,
         setup=setup_smart_home,
         unload=unload_smart_home,
-        notes="Native dashboard bridge 1.3.0 + Suite narrow-render guard 1.0.0",
+        notes=(
+            "Native dashboard bridge 1.3.0 + Suite runtime 1.1.0 "
+            "(narrow guard 1.0.0 + configurable cards 1.0.0)"
+        ),
     ),
     ModuleSpec(
         module_id="smart_lighting",

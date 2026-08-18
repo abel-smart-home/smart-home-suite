@@ -1,9 +1,9 @@
 """Smart Home module for Smart Home Suite.
 
 Smart Home Panel V2.0.5 and the V1.3.0 native dashboard bridge remain bundled
-exactly from the validated standalone packages. Suite 1.1.1 adds only a small
-runtime entrypoint that guards redundant ``narrow`` assignments so bridge-driven
-Home Assistant state updates cannot destroy an open MDI picker dialog.
+exactly from the validated standalone packages. The Suite runtime keeps the
+existing narrow-render guard and adds configurable/reorderable cards without
+modifying the validated base panel source.
 """
 
 from __future__ import annotations
@@ -42,10 +42,13 @@ STATIC_URL = "/smart_home_suite_static"
 BRIDGE_FILE = "smart-home-native.js"
 PANEL_FILE = "smart-home-panel.js"
 PANEL_RUNTIME_FILE = "smart-home-panel-runtime.js"
+CARD_LAYOUT_FILE = "smart-home-card-layout.js"
 
-MODULE_VERSION = "1.3.0"
+MODULE_VERSION = "1.4.0"
 BASE_PANEL_VERSION = "2.0.5"
+RUNTIME_VERSION = "1.1.0"
 RUNTIME_GUARD_VERSION = "1.0.0"
+CARD_LAYOUT_RUNTIME_VERSION = "1.0.0"
 
 DASHBOARD_TITLE = "Smart Home"
 DASHBOARD_ICON = "mdi:home-lightning-bolt"
@@ -193,10 +196,9 @@ async def _ensure_native_dashboard(hass: HomeAssistant) -> None:
     # The bridge resource registers smart-home-dashboard-card before Lovelace
     # resolves this card, eliminating strategy-element registration races.
     #
-    # Suite 1.1.1 points the bridge to a tiny runtime entrypoint. That entrypoint
-    # imports the exact V2.0.5 panel and adds only a no-op guard for repeated
-    # narrow assignments. A new URL/cache-buster guarantees browsers receive the
-    # fix immediately after the Suite update.
+    # The runtime imports the exact V2.0.5 panel, keeps the narrow-render guard,
+    # and then layers configurable/reorderable cards over the validated panel.
+    # A new URL/cache-buster guarantees browsers receive the feature runtime.
     await ll_config.async_save(
         {
             "title": DASHBOARD_TITLE,
@@ -210,7 +212,7 @@ async def _ensure_native_dashboard(hass: HomeAssistant) -> None:
                             "type": "custom:smart-home-dashboard-card",
                             "panel_module_url": (
                                 f"{STATIC_URL}/{PANEL_RUNTIME_FILE}"
-                                "?v=205-guard100-suite111"
+                                "?v=205-guard100-cards100-module140"
                             ),
                             "hide_ha_header": True,
                             "mobile_menu_access": "admins",
@@ -242,11 +244,13 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     panel_file = frontend_dir / PANEL_FILE
     bridge_file = frontend_dir / BRIDGE_FILE
     runtime_file = frontend_dir / PANEL_RUNTIME_FILE
+    card_layout_file = frontend_dir / CARD_LAYOUT_FILE
 
     if (
         not panel_file.is_file()
         or not bridge_file.is_file()
         or not runtime_file.is_file()
+        or not card_layout_file.is_file()
     ):
         _LOGGER.error("Bundled Smart Home frontend sources are incomplete")
         return False
@@ -259,6 +263,16 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     runtime_text = await hass.async_add_executor_job(runtime_file.read_text, "utf-8")
     if 'SMART_HOME_RUNTIME_GUARD_VERSION = "1.0.0"' not in runtime_text:
         _LOGGER.error("Bundled Smart Home runtime guard is not V1.0.0")
+        return False
+    if 'SMART_HOME_RUNTIME_VERSION = "1.1.0"' not in runtime_text:
+        _LOGGER.error("Bundled Smart Home runtime is not V1.1.0")
+        return False
+
+    card_layout_text = await hass.async_add_executor_job(
+        card_layout_file.read_text, "utf-8"
+    )
+    if 'SMART_HOME_CARD_LAYOUT_RUNTIME_VERSION = "1.0.0"' not in card_layout_text:
+        _LOGGER.error("Bundled Smart Home card-layout runtime is not V1.0.0")
         return False
 
     await _ensure_exact_backend(hass)
@@ -274,8 +288,11 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     data["suite_native_dashboard_registered"] = True
     data["suite_version"] = SUITE_VERSION
+    data["module_version"] = MODULE_VERSION
     data["panel_version"] = BASE_PANEL_VERSION
+    data["runtime_version"] = RUNTIME_VERSION
     data["runtime_guard_version"] = RUNTIME_GUARD_VERSION
+    data["card_layout_runtime_version"] = CARD_LAYOUT_RUNTIME_VERSION
     return True
 
 
