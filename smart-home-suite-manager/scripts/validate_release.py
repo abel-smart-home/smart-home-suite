@@ -221,6 +221,7 @@ def validate() -> None:
         "smart-home-panel-runtime.js",
         "smart-home-card-layout.js",
         "smart-lighting-panel.js",
+        "smart-lighting-layout.js",
         "smart-energy-advanced-panel.js",
         "smart-automations-panel.js",
         "smart-support-panel.js",
@@ -275,6 +276,42 @@ def validate() -> None:
     ):
         if required_token not in smart_home_wrapper:
             fail(f"smart_home wrapper is missing required token {required_token!r}")
+
+    smart_lighting_base = (PAYLOAD / "frontend" / "smart-lighting-panel.js").read_text(
+        encoding="utf-8"
+    )
+    if 'const PANEL_VERSION = "1.0.3";' not in smart_lighting_base:
+        fail("smart-lighting-panel.js must remain on validated base V1.0.3")
+
+    smart_lighting_layout = (PAYLOAD / "frontend" / "smart-lighting-layout.js").read_text(
+        encoding="utf-8"
+    )
+    for required_token in (
+        'SMART_LIGHTING_ORDERING_RUNTIME_VERSION = "1.0.0"',
+        'SMART_LIGHTING_EFFECTIVE_VERSION = "1.1.0"',
+        'move-lighting-area',
+        'move-lighting-device',
+        'smart_lighting_panel.config',
+    ):
+        if required_token not in smart_lighting_layout:
+            fail(
+                "smart-lighting-layout.js is missing required feature token "
+                f"{required_token!r}"
+            )
+
+    smart_lighting_wrapper = (
+        PAYLOAD / "modules" / "smart_lighting" / "__init__.py"
+    ).read_text(encoding="utf-8")
+    for required_token in (
+        'BASE_FRONTEND_FILE = "smart-lighting-panel.js"',
+        'FRONTEND_FILE = "smart-lighting-layout.js"',
+        'MODULE_VERSION = "1.1.0"',
+        'BASE_PANEL_VERSION = "1.0.3"',
+        'LAYOUT_RUNTIME_VERSION = "1.0.0"',
+        '?v=100-module110-suite140',
+    ):
+        if required_token not in smart_lighting_wrapper:
+            fail(f"smart_lighting wrapper is missing required token {required_token!r}")
 
     print(f"RELEASE_VALIDATION_OK version={version} modules={len(catalog_ids)}")
 

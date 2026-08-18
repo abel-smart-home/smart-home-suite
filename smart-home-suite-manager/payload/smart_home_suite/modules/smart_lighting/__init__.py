@@ -1,8 +1,8 @@
-"""Smart Lighting V1.0.3 module for Smart Home Suite.
+"""Smart Lighting 1.1.0 module for Smart Home Suite.
 
-The visual frontend is the original Smart Lighting Panel V1.0.3 JavaScript.
-The legacy WebSocket API and .storage key are preserved so an existing
-standalone Smart Lighting configuration can be reused by the Suite.
+The validated Smart Lighting Panel V1.0.3 frontend and its storage/API contract
+remain intact. Suite 1.4.0 loads a small ordering runtime that adds area/device
+ordering without changing the legacy WebSocket namespace or .storage key.
 """
 
 from __future__ import annotations
@@ -30,9 +30,16 @@ STORAGE_VERSION = 1
 PANEL_PATH = "lighting"
 WEB_COMPONENT = "smart-lighting-panel"
 STATIC_URL = "/smart_home_suite_static"
-FRONTEND_FILE = "smart-lighting-panel.js"
+BASE_FRONTEND_FILE = "smart-lighting-panel.js"
+FRONTEND_FILE = "smart-lighting-layout.js"
 
-MODULE_VERSION = "1.0.3"
+MODULE_VERSION = "1.1.0"
+BASE_PANEL_VERSION = "1.0.3"
+LAYOUT_RUNTIME_VERSION = "1.0.0"
+
+
+def _frontend_dir() -> Path:
+    return Path(__file__).resolve().parents[2] / "frontend"
 
 
 def _data(hass: HomeAssistant) -> dict[str, Any]:
@@ -49,8 +56,33 @@ def _store(hass: HomeAssistant) -> Store[dict[str, Any]]:
 
 
 async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Register the original Smart Lighting API/frontend as a Suite module."""
+    """Register Smart Lighting 1.1.0 API and panel."""
     data = _data(hass)
+
+    frontend_dir = _frontend_dir()
+    base_file = frontend_dir / BASE_FRONTEND_FILE
+    runtime_file = frontend_dir / FRONTEND_FILE
+    if not base_file.is_file() or not runtime_file.is_file():
+        _LOGGER.error(
+            "Smart Lighting frontend is incomplete: base=%s runtime=%s",
+            base_file.is_file(),
+            runtime_file.is_file(),
+        )
+        return False
+
+    runtime_text = await hass.async_add_executor_job(runtime_file.read_text, "utf-8")
+    for required_token in (
+        'SMART_LIGHTING_ORDERING_RUNTIME_VERSION = "1.0.0"',
+        'SMART_LIGHTING_EFFECTIVE_VERSION = "1.1.0"',
+        'move-lighting-area',
+        'move-lighting-device',
+    ):
+        if required_token not in runtime_text:
+            _LOGGER.error(
+                "Smart Lighting ordering runtime is missing token %s",
+                required_token,
+            )
+            return False
 
     # Preserve the exact legacy WebSocket command names used by V1.0.3.
     if not data.get("websocket_registered"):
@@ -59,9 +91,8 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         websocket_api.async_register_command(hass, websocket_reset_config)
         data["websocket_registered"] = True
 
-    # Serve the exact original JS from the Suite installation itself.
+    # Serve the exact base JS plus the Suite ordering runtime from one path.
     if not data.get("static_registered"):
-        frontend_dir = Path(__file__).resolve().parents[2] / "frontend"
         try:
             await hass.http.async_register_static_paths(
                 [StaticPathConfig(STATIC_URL, str(frontend_dir), False)]
@@ -90,16 +121,20 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         webcomponent_name=WEB_COMPONENT,
         sidebar_title="Iluminación",
         sidebar_icon="mdi:lightbulb-group",
-        module_url=f"{STATIC_URL}/{FRONTEND_FILE}?v=103-suite050",
+        module_url=f"{STATIC_URL}/{FRONTEND_FILE}?v=100-module110-suite140",
         require_admin=False,
         handle_safe_area=True,
         config={
             "suite_version": SUITE_VERSION,
             "module_id": "smart_lighting",
             "module_version": MODULE_VERSION,
+            "base_panel_version": BASE_PANEL_VERSION,
+            "layout_runtime_version": LAYOUT_RUNTIME_VERSION,
         },
     )
     data["panel_registered"] = True
+    data["base_panel_version"] = BASE_PANEL_VERSION
+    data["layout_runtime_version"] = LAYOUT_RUNTIME_VERSION
     return True
 
 
@@ -119,7 +154,7 @@ async def async_unload_module(hass: HomeAssistant, entry: ConfigEntry) -> None:
     {vol.Required("type"): f"{LEGACY_DOMAIN}/config/get"}
 )
 async def websocket_get_config(hass, connection, msg) -> None:
-    """Return the saved Smart Lighting V1.0.3 configuration."""
+    """Return the saved Smart Lighting configuration."""
     data = await _store(hass).async_load()
     connection.send_result(msg["id"], {"config": data or {}})
 

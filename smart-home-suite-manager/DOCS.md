@@ -1,8 +1,8 @@
-# Smart Home Suite Manager 1.3.0 · STABLE
+# Smart Home Suite Manager 1.4.0 · PRE-RELEASE
 
 ## Instalar / actualizar / reparar
 
-1. Selecciona `validate_only` si quieres comprobar primero la instalación actual.
+1. Selecciona `validate_only` para comprobar primero la instalación actual.
 2. Para actualizar, selecciona `install_repair`.
 3. Mantén `create_backup: true`.
 4. Inicia la App una vez.
@@ -13,6 +13,21 @@
 9. Reinicia Home Assistant.
 
 El Manager conserva el mecanismo existente de staging, backup y rollback.
+
+## Smart Lighting 1.1.0
+
+La versión 1.1.0 conserva Smart Lighting Panel 1.0.3 como base y añade `smart-lighting-layout.js` 1.0.0.
+
+### Reordenamiento
+
+- **Áreas → Orden de áreas:** mueve áreas completas con ↑ / ↓.
+- **Áreas → Orden de dispositivos:** mueve cada luz o interruptor con ↑ / ↓ dentro de su propia área.
+- La vista previa usa la copia de trabajo actual.
+- **Guardar** persiste el orden en la configuración existente.
+- **Cancelar** descarta el cambio.
+- No se crea una nueva clave `.storage` ni una nueva versión de storage.
+- Áreas y dispositivos futuros aparecen automáticamente.
+- No se cambia la pertenencia de un dispositivo a un área; solo su posición dentro de ella.
 
 ## Smart Energy Advanced 1.4.0
 

@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.4.0 - 2026-08-18 · TEST
+
+- Actualiza **Smart Lighting a 1.1.0** mediante `smart-lighting-layout.js` V1.0.0.
+- Mantiene **Smart Lighting Panel V1.0.3** como frontend base sin reconstruirlo.
+- Añade orden configurable de áreas con controles ↑ / ↓ y vista previa inmediata.
+- Añade orden configurable de luces e interruptores dentro de su propia área.
+- Las áreas y dispositivos futuros aparecen automáticamente en los controles de orden.
+- Guardar persiste el orden utilizando los arrays `areas` y `area.devices` existentes; Cancelar descarta la copia de trabajo.
+- Conserva `.storage/smart_lighting_panel.config` versión 1 y los WebSocket `smart_lighting_panel/config/*`.
+- Conserva selector de entidades, selector MDI, navegación, responsive, acciones tap/hold, Importar/Exportar/Restablecer y aislamiento del módulo.
+- No requiere migración destructiva de configuración.
+- Mantiene sin cambios funcionales Smart Home 1.4.0, Smart Energy Advanced 1.4.0, Smart Automations 1.0.0 y Smart Support 1.1.2.
+- Refuerza `validate_release.py` para validar la presencia, versión y tokens esenciales del nuevo runtime de Lighting.
+- Publicar inicialmente como pre-release y promover el mismo tag a estable solo después de completar el checklist en HAOS real.
+
 ## 1.3.0 - 2026-08-18 · STABLE
 
 - Promueve a estable la versión 1.3.0 validada previamente como pre-release en Home Assistant OS.

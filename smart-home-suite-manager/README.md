@@ -1,4 +1,4 @@
-# Smart Home Suite Manager 1.3.0
+# Smart Home Suite Manager 1.4.0
 
 Instala, actualiza, valida, repara y restaura Smart Home Suite en Home Assistant OS sin HACS.
 
@@ -8,6 +8,6 @@ Acciones disponibles:
 - `validate_only`
 - `restore_latest`
 
-Smart Home Suite 1.3.0 mantiene los cinco módulos oficiales y actualiza **Smart Energy Advanced a 1.4.0** mediante una extensión runtime que permite reordenar secciones y widgets sin cambiar su `.storage`, WebSocket ni frontend base V1.3.1.
+Smart Home Suite 1.4.0 mantiene los cinco módulos oficiales, conserva Smart Energy Advanced 1.4.0 y actualiza **Smart Lighting a 1.1.0** mediante una extensión runtime que permite reordenar áreas y dispositivos sin cambiar su `.storage`, WebSocket ni frontend base V1.0.3.
 
-**Smart Home Suite 1.3.0 es una versión STABLE**, validada previamente como pre-release en Home Assistant OS.
+**Smart Home Suite 1.4.0 se publica inicialmente como PRE-RELEASE** para validación en Home Assistant OS real. Después de completar `TEST-CHECKLIST-1.4.0.md` sin regresiones puede promoverse el mismo tag a estable.
