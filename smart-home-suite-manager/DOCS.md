@@ -1,48 +1,47 @@
-# Smart Home Suite Manager 1.6.0 · STABLE
+# Smart Home Suite Manager 1.7.0 · PRE-RELEASE
 
 ## Instalar / actualizar / reparar
 
-1. Selecciona `validate_only` para comprobar primero la instalación actual.
-2. Para actualizar, selecciona `install_repair`.
-3. Mantén `create_backup: true`.
-4. Inicia la App una vez.
-5. Confirma `PAYLOAD_VALIDATION_OK`.
-6. Confirma `STAGED_VALIDATION_OK`.
-7. Confirma `POST_INSTALL_VALIDATION_OK`.
-8. Confirma `INSTALLATION_OK`.
-9. Reinicia Home Assistant.
+1. Selecciona `validate_only`.
+2. Confirma `VALIDATION_OK`.
+3. Selecciona `install_repair`.
+4. Mantén `create_backup: true`.
+5. Inicia la App.
+6. Confirma `PAYLOAD_VALIDATION_OK`.
+7. Confirma `STAGED_VALIDATION_OK`.
+8. Confirma `POST_INSTALL_VALIDATION_OK`.
+9. Confirma `INSTALLATION_OK`.
+10. Reinicia Home Assistant.
 
-El Manager conserva staging, backup y rollback.
+## Smart Automations 1.1.0
 
-## Smart Lighting 1.3.0
+### Orden
 
-Conserva Smart Lighting Panel V1.0.3 como base y utiliza `smart-lighting-layout.js` V1.2.0.
+En **Personalización → Orden**:
 
-### Orden de áreas
+- las categorías pueden moverse con ↑ / ↓;
+- las automatizaciones pueden moverse con ↑ / ↓ dentro de su categoría;
+- el orden de tarjetas persiste utilizando el array `instances` existente;
+- el orden de categorías se guarda en `automation_layout.category_order`;
+- cada categoría puede personalizar texto, icono y colores.
 
-- **Acciones globales** aparece junto con las áreas normales en **Áreas → Orden de áreas**.
-- Usa ↑ / ↓ para colocarla arriba, abajo o entre otras áreas.
-- El orden de las áreas normales continúa persistiendo en `areas[]`.
-- La posición especial se guarda en `global_actions.position`.
+### Tarjetas
 
-### Orden de botones globales
+En **Personalización → Tarjetas** se puede personalizar cada automatización creada:
 
-En **Áreas → Acciones globales → Orden de botones**:
+- título visible;
+- texto secundario;
+- icono MDI;
+- colores de icono, título, detalle, fondo y borde;
+- colores de estado activo/pausado/no disponible;
+- tamaños de icono, título y detalle;
+- mostrar/ocultar detalle y estado.
 
-- reordena **Apagar todo** y **Encender todo** con ↑ / ↓;
-- el orden se guarda en `global_actions.button_order`;
-- Guardar persiste y Cancelar descarta.
+Esta personalización vive dentro de `instances[].params.appearance` y **no participa en `_buildNativeConfig()`**. Cambiarla no llama al endpoint de guardado de automatizaciones nativas.
 
-### Colores por estado
+### Restablecer
 
-Cada botón dispone de:
-
-- **Color activo**;
-- **Color inactivo**.
-
-**Apagar todo** está activo cuando todas las entidades objetivo están apagadas. **Encender todo** está activo cuando todas están encendidas. Con estados mezclados ambos usan el color inactivo. Sin entidades válidas permanecen deshabilitados.
-
-Los campos `color` existentes de 1.5.0 se conservan como fallback para el nuevo color activo, por lo que no se pierde personalización previa.
+`Restablecer panel` continúa preservando `instances`, por lo que conserva automatizaciones administradas y su apariencia individual. Restablece la apariencia global, navegación y el orden/estilo de categorías.
 
 ## Restaurar
 

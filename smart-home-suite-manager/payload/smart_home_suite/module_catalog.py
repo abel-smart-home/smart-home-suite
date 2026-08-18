@@ -104,12 +104,15 @@ MODULE_CATALOG: tuple[ModuleSpec, ...] = (
         module_id="smart_automations",
         name="Smart Automations",
         option_label="Automatizaciones",
-        version="1.0.0",
+        version="1.1.0",
         panel_path="smart-automations",
         enabled_by_default=True,
         setup=setup_smart_automations,
         unload=unload_smart_automations,
-        notes="Creates and manages native Home Assistant automations",
+        notes=(
+            "Base panel 1.0.0 + Suite layout runtime 1.0.0; category/instance "
+            "ordering and per-card visual metadata without changing native automations"
+        ),
     ),
     ModuleSpec(
         module_id="smart_support",

@@ -224,6 +224,7 @@ def validate() -> None:
         "smart-lighting-layout.js",
         "smart-energy-advanced-panel.js",
         "smart-automations-panel.js",
+        "smart-automations-layout.js",
         "smart-support-panel.js",
     ):
         path = PAYLOAD / "frontend" / filename
@@ -251,10 +252,10 @@ def validate() -> None:
     )
     for required_token in (
         'SMART_HOME_CARD_LAYOUT_RUNTIME_VERSION = "1.0.0"',
-        'card_layout.order',
-        'extra_cards',
-        'history/history_during_period',
-        'move-smart-card',
+        "card_layout.order",
+        "extra_cards",
+        "history/history_during_period",
+        "move-smart-card",
     ):
         if required_token not in smart_home_cards:
             fail(
@@ -272,7 +273,7 @@ def validate() -> None:
         'RUNTIME_VERSION = "1.1.0"',
         'RUNTIME_GUARD_VERSION = "1.0.0"',
         'CARD_LAYOUT_RUNTIME_VERSION = "1.0.0"',
-        '?v=205-guard100-cards100-module140',
+        "?v=205-guard100-cards100-module140",
     ):
         if required_token not in smart_home_wrapper:
             fail(f"smart_home wrapper is missing required token {required_token!r}")
@@ -291,18 +292,18 @@ def validate() -> None:
         'SMART_LIGHTING_ORDERING_RUNTIME_VERSION = "1.1.0"',
         'SMART_LIGHTING_GLOBAL_ACTIONS_RUNTIME_VERSION = "1.1.0"',
         'SMART_LIGHTING_EFFECTIVE_VERSION = "1.3.0"',
-        'move-lighting-area',
-        'move-lighting-device',
-        'lighting-global-turn-off',
-        'lighting-global-turn-on',
-        'move-lighting-global-button',
-        'global_actions',
-        'global_actions.position',
-        'button_order',
-        'active_color',
-        'inactive_color',
-        'collectGlobalEntities',
-        'smart_lighting_panel.config',
+        "move-lighting-area",
+        "move-lighting-device",
+        "lighting-global-turn-off",
+        "lighting-global-turn-on",
+        "move-lighting-global-button",
+        "global_actions",
+        "global_actions.position",
+        "button_order",
+        "active_color",
+        "inactive_color",
+        "collectGlobalEntities",
+        "smart_lighting_panel.config",
     ):
         if required_token not in smart_lighting_layout:
             fail(
@@ -321,10 +322,52 @@ def validate() -> None:
         'LAYOUT_RUNTIME_VERSION = "1.2.0"',
         'ORDERING_RUNTIME_VERSION = "1.1.0"',
         'GLOBAL_ACTIONS_RUNTIME_VERSION = "1.1.0"',
-        '?v=120-module130-suite160',
+        "?v=120-module130-suite160",
     ):
         if required_token not in smart_lighting_wrapper:
             fail(f"smart_lighting wrapper is missing required token {required_token!r}")
+
+    smart_automations_base = (
+        PAYLOAD / "frontend" / "smart-automations-panel.js"
+    ).read_text(encoding="utf-8")
+    if 'const PANEL_VERSION = "1.0.0";' not in smart_automations_base:
+        fail("smart-automations-panel.js must remain on validated base V1.0.0")
+
+    smart_automations_layout = (
+        PAYLOAD / "frontend" / "smart-automations-layout.js"
+    ).read_text(encoding="utf-8")
+    for required_token in (
+        'SMART_AUTOMATIONS_LAYOUT_RUNTIME_VERSION = "1.0.0"',
+        'SMART_AUTOMATIONS_EFFECTIVE_VERSION = "1.1.0"',
+        "automation_layout",
+        "category_order",
+        "move-automation-category",
+        "move-automation-instance",
+        "params.appearance",
+        "reset-automation-appearance",
+        "smart_automations.config",
+    ):
+        if required_token not in smart_automations_layout:
+            fail(
+                "smart-automations-layout.js is missing required feature token "
+                f"{required_token!r}"
+            )
+
+    smart_automations_wrapper = (
+        PAYLOAD / "modules" / "smart_automations" / "__init__.py"
+    ).read_text(encoding="utf-8")
+    for required_token in (
+        'BASE_FRONTEND_FILE = "smart-automations-panel.js"',
+        'FRONTEND_FILE = "smart-automations-layout.js"',
+        'MODULE_VERSION = "1.1.0"',
+        'BASE_PANEL_VERSION = "1.0.0"',
+        'LAYOUT_RUNTIME_VERSION = "1.0.0"',
+        "?v=100-module110-suite170",
+    ):
+        if required_token not in smart_automations_wrapper:
+            fail(
+                f"smart_automations wrapper is missing required token {required_token!r}"
+            )
 
     print(f"RELEASE_VALIDATION_OK version={version} modules={len(catalog_ids)}")
 

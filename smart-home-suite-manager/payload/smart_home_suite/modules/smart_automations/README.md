@@ -1,30 +1,48 @@
-# Smart Automations 1.0.0
+# Smart Automations 1.1.0
 
-Módulo oficial de Smart Home Suite para crear y administrar automatizaciones sencillas mediante una interfaz orientada al usuario común. Home Assistant continúa siendo el motor de ejecución: las automatizaciones generadas son automatizaciones nativas.
+Smart Automations 1.1.0 conserva **Smart Automations Panel V1.0.0** como base funcional y añade `smart-automations-layout.js` V1.0.0.
 
-## Recetas iniciales
+Home Assistant continúa siendo el motor de ejecución: las automatizaciones generadas son automatizaciones nativas.
 
-- encender/apagar una o varias luces al amanecer o anochecer;
-- apagar luces cuando las personas/dispositivos seleccionados están fuera de casa;
-- notificación por potencia elevada configurable en W;
-- notificación al alcanzar/cruzar un límite configurable de kWh.
+## Recetas conservadas
 
-Entidades de energía recomendadas/validadas durante el piloto:
+- encender/apagar luces al amanecer/anochecer;
+- apagar luces cuando la casa queda vacía;
+- notificación por potencia elevada;
+- notificación por límite de kWh.
 
-- `sensor.power_record_ciclo_kwh_mes_facturado`
-- `sensor.power_record_ciclo_kwh_diario_facturado`
+## Orden
 
-## Panel Standard
+**Personalización → Orden** permite:
 
-- editor lateral en escritorio y adaptable a móvil;
-- Guardar/Cancelar con copia de trabajo;
-- vista previa visual en tiempo real sin autosave;
-- Importar/Exportar/Restablecer;
-- selector de entidades e iconos MDI;
-- navegación configurable;
-- ancho, columnas, gaps, tamaños, radios, colores y tipografía configurables;
-- persistencia propia en `smart_automations.config`;
-- aislamiento como módulo de Smart Home Suite;
-- versión y estado disponibles en diagnósticos de la Suite.
+- mover categorías;
+- mover automatizaciones dentro de cada categoría;
+- personalizar texto/icono/colores de categoría.
 
-La clave de almacenamiento se mantiene desde el piloto 0.1.x para permitir actualización sin perder la configuración existente.
+Las instancias siguen almacenadas en el mismo array `instances`; no existe migración destructiva.
+
+## Apariencia individual
+
+**Personalización → Tarjetas** permite configurar por automatización:
+
+- título visible;
+- texto secundario;
+- icono MDI;
+- colores de icono, título, detalle, fondo y borde;
+- colores de estado;
+- tamaños;
+- visibilidad del detalle/estado.
+
+Los datos viven en `instances[].params.appearance`.
+
+## Seguridad funcional
+
+La apariencia y el orden **no se incorporan a `_buildNativeConfig()`** y no alteran triggers, conditions ni actions. El editor funcional original continúa siendo el único que guarda la automatización nativa.
+
+## Persistencia y rollback
+
+- clave: `smart_automations.config`;
+- Storage version: 1;
+- WebSocket: sin cambios;
+- rollback a 1.6.0/Smart Automations 1.0.0 compatible: las claves nuevas son ignoradas;
+- Importar/Exportar conserva los metadatos nuevos.

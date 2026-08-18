@@ -1,4 +1,4 @@
-# Smart Home Suite Manager 1.6.0
+# Smart Home Suite Manager 1.7.0
 
 Instala, actualiza, valida, repara y restaura Smart Home Suite en Home Assistant OS sin HACS.
 
@@ -8,8 +8,8 @@ Acciones disponibles:
 - `validate_only`
 - `restore_latest`
 
-Smart Home Suite 1.6.0 mantiene los cinco módulos oficiales y actualiza **Smart Lighting a 1.3.0** mediante `smart-lighting-layout.js` V1.2.0. Acciones globales puede reordenarse como cualquier otra área, sus dos botones pueden cambiar de orden y cada botón tiene colores activo/inactivo configurables.
+Smart Home Suite 1.7.0 actualiza **Smart Automations a 1.1.0** manteniendo Smart Automations Panel V1.0.0 como base y añadiendo `smart-automations-layout.js` V1.0.0.
 
-No cambia `.storage`, WebSocket ni Smart Lighting Panel V1.0.3.
+El nuevo runtime añade orden de categorías, orden de instancias dentro de cada categoría y personalización visual por automatización sin modificar la configuración nativa de Home Assistant.
 
-**Smart Home Suite 1.6.0 es una versión STABLE**, validada previamente en Home Assistant OS. La promoción no modifica el payload funcional probado.
+**Estado: PRE-RELEASE.** Último release estable: **1.6.0**.

@@ -1,7 +1,9 @@
-"""Smart Automations module for Smart Home Suite.
+"""Smart Automations 1.1.0 module for Smart Home Suite.
 
-The module provides a simplified UI for creating and managing native Home
-Assistant automations. Home Assistant remains the execution engine.
+The validated Smart Automations Panel V1.0.0 remains the functional base.
+Suite 1.7.0 loads a small UI/layout runtime that adds category/instance ordering
+and visual card customization without changing the native Home Assistant
+automation generation contract, WebSocket namespace or .storage key.
 """
 
 from __future__ import annotations
@@ -29,8 +31,16 @@ STORAGE_VERSION = 1
 PANEL_PATH = "smart-automations"
 WEB_COMPONENT = "smart-automations-panel"
 STATIC_URL = "/smart_home_suite_static"
-FRONTEND_FILE = "smart-automations-panel.js"
-MODULE_VERSION = "1.0.0"
+BASE_FRONTEND_FILE = "smart-automations-panel.js"
+FRONTEND_FILE = "smart-automations-layout.js"
+
+MODULE_VERSION = "1.1.0"
+BASE_PANEL_VERSION = "1.0.0"
+LAYOUT_RUNTIME_VERSION = "1.0.0"
+
+
+def _frontend_dir() -> Path:
+    return Path(__file__).resolve().parents[2] / "frontend"
 
 
 def _data(hass: HomeAssistant) -> dict[str, Any]:
@@ -45,8 +55,43 @@ def _store(hass: HomeAssistant) -> Store[dict[str, Any]]:
 
 
 async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Register Smart Automations backend and panel."""
+    """Register Smart Automations 1.1.0 backend and panel."""
     data = _data(hass)
+
+    frontend_dir = _frontend_dir()
+    base_file = frontend_dir / BASE_FRONTEND_FILE
+    runtime_file = frontend_dir / FRONTEND_FILE
+
+    if not base_file.is_file() or not runtime_file.is_file():
+        _LOGGER.error(
+            "Smart Automations frontend is incomplete: base=%s runtime=%s",
+            base_file.is_file(),
+            runtime_file.is_file(),
+        )
+        return False
+
+    base_text = await hass.async_add_executor_job(base_file.read_text, "utf-8")
+    if 'const PANEL_VERSION = "1.0.0";' not in base_text:
+        _LOGGER.error("Smart Automations base frontend is not validated V1.0.0")
+        return False
+
+    runtime_text = await hass.async_add_executor_job(runtime_file.read_text, "utf-8")
+    for required_token in (
+        'SMART_AUTOMATIONS_LAYOUT_RUNTIME_VERSION = "1.0.0"',
+        'SMART_AUTOMATIONS_EFFECTIVE_VERSION = "1.1.0"',
+        "automation_layout",
+        "category_order",
+        "move-automation-category",
+        "move-automation-instance",
+        "params.appearance",
+        "smart_automations.config",
+    ):
+        if required_token not in runtime_text:
+            _LOGGER.error(
+                "Smart Automations layout runtime is missing token %s",
+                required_token,
+            )
+            return False
 
     if not data.get("websocket_registered"):
         websocket_api.async_register_command(hass, websocket_get_config)
@@ -55,7 +100,6 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         data["websocket_registered"] = True
 
     if not data.get("static_registered"):
-        frontend_dir = Path(__file__).resolve().parents[2] / "frontend"
         try:
             await hass.http.async_register_static_paths(
                 [StaticPathConfig(STATIC_URL, str(frontend_dir), False)]
@@ -83,16 +127,20 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         webcomponent_name=WEB_COMPONENT,
         sidebar_title="Automatizaciones",
         sidebar_icon="mdi:robot",
-        module_url=f"{STATIC_URL}/{FRONTEND_FILE}?v=100-suite110",
+        module_url=f"{STATIC_URL}/{FRONTEND_FILE}?v=100-module110-suite170",
         require_admin=False,
         handle_safe_area=True,
         config={
             "suite_version": SUITE_VERSION,
             "module_id": "smart_automations",
             "module_version": MODULE_VERSION,
+            "base_panel_version": BASE_PANEL_VERSION,
+            "layout_runtime_version": LAYOUT_RUNTIME_VERSION,
         },
     )
     data["panel_registered"] = True
+    data["base_panel_version"] = BASE_PANEL_VERSION
+    data["layout_runtime_version"] = LAYOUT_RUNTIME_VERSION
     return True
 
 
@@ -135,7 +183,7 @@ async def websocket_save_config(hass, connection, msg) -> None:
     {vol.Required("type"): f"{DOMAIN}/config/reset_ui"}
 )
 async def websocket_reset_ui_config(hass, connection, msg) -> None:
-    """Reset panel appearance/navigation while preserving automation ownership."""
+    """Reset global panel appearance/navigation while preserving instances."""
     current = await _store(hass).async_load() or {}
     preserved = {
         "schema_version": current.get("schema_version", 1),

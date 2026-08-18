@@ -1,15 +1,20 @@
 {
   "id": "smart_automations",
   "name": "Smart Automations",
-  "version": "1.0.0",
-  "source": "Smart Automations Panel 1.0.0 validated from LAB 0.1.3",
+  "version": "1.1.0",
+  "base_panel_version": "1.0.0",
+  "source": "Smart Automations Panel V1.0.0 exact + Suite layout runtime V1.0.0",
   "enabled_by_default": true,
   "panel_path": "smart-automations",
   "sidebar_title": "Automatizaciones",
   "sidebar_icon": "mdi:robot",
   "storage_key": "smart_automations.config",
   "storage_version": 1,
-  "suite_version": "1.6.0",
-  "frontend_source": "Smart Automations Panel 1.0.0",
-  "notes": "Creates and manages native Home Assistant automations while Smart Home Suite stores ownership and UI metadata"
+  "suite_version": "1.7.0",
+  "frontend_source": "Smart Automations Panel V1.0.0 + smart-automations-layout.js",
+  "layout_runtime_version": "1.0.0",
+  "layout_runtime_source": "Adds category ordering, instance ordering and per-instance visual metadata through the existing Personalización working copy",
+  "migration": "none; existing smart_automations.config remains valid",
+  "native_automation_contract": "unchanged; visual metadata is ignored by native automation generation",
+  "notes": "Home Assistant remains the execution engine; ordering and card appearance are UI-only metadata"
 }
