@@ -1,18 +1,21 @@
 {
   "id": "smart_lighting",
   "name": "Smart Lighting",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "base_panel_version": "1.0.3",
-  "source": "Smart Lighting Panel V1.0.3 exact + Suite ordering runtime V1.0.0",
+  "source": "Smart Lighting Panel V1.0.3 exact + Suite layout runtime V1.1.0 (ordering V1.0.0 + global actions V1.0.0)",
   "enabled_by_default": true,
   "panel_path": "lighting",
   "sidebar_title": "Iluminación",
   "sidebar_icon": "mdi:lightbulb-group",
   "storage_key": "smart_lighting_panel.config",
   "storage_version": 1,
-  "suite_version": "1.4.0",
+  "suite_version": "1.5.0",
   "frontend_source": "Smart Lighting Panel V1.0.3 + smart-lighting-layout.js",
-  "layout_runtime_version": "1.0.0",
-  "layout_runtime_source": "Reorders existing/future areas and devices by mutating only the existing areas/devices arrays in the editor working copy",
-  "migration": "none; existing .storage configuration remains valid"
+  "layout_runtime_version": "1.1.0",
+  "layout_runtime_source": "Preserves area/device ordering and adds optional global on/off controls without modifying the validated base frontend",
+  "migration": "none; existing .storage configuration remains valid and global actions default to hidden",
+  "ordering_runtime_version": "1.0.0",
+  "global_actions_runtime_version": "1.0.0",
+  "global_actions_storage": "optional global_actions object inside existing smart_lighting_panel.config; no storage migration"
 }

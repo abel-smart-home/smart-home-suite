@@ -9,7 +9,7 @@
   "sidebar_icon": "mdi:headset",
   "storage_key": "smart_support_panel.config",
   "session_storage_key": "smart_support_panel.session",
-  "suite_version": "1.4.0",
+  "suite_version": "1.5.0",
   "frontend_source": "exact Smart Support Panel V1.1.2",
   "external_runtime_dependency": "Spook services homeassistant.enable_user/disable_user",
   "dependency_supervision": "Suite Health + Home Assistant Repairs"

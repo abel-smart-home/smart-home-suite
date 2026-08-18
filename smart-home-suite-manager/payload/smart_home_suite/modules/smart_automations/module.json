@@ -9,7 +9,7 @@
   "sidebar_icon": "mdi:robot",
   "storage_key": "smart_automations.config",
   "storage_version": 1,
-  "suite_version": "1.4.0",
+  "suite_version": "1.5.0",
   "frontend_source": "Smart Automations Panel 1.0.0",
   "notes": "Creates and manages native Home Assistant automations while Smart Home Suite stores ownership and UI metadata"
 }

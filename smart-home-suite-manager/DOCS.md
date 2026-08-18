@@ -1,4 +1,4 @@
-# Smart Home Suite Manager 1.4.0 · PRE-RELEASE
+# Smart Home Suite Manager 1.5.0 · PRE-RELEASE
 
 ## Instalar / actualizar / reparar
 
@@ -12,48 +12,37 @@
 8. Confirma `INSTALLATION_OK`.
 9. Reinicia Home Assistant.
 
-El Manager conserva el mecanismo existente de staging, backup y rollback.
+El Manager conserva staging, backup y rollback.
 
-## Smart Lighting 1.1.0
+## Smart Lighting 1.2.0
 
-La versión 1.1.0 conserva Smart Lighting Panel 1.0.3 como base y añade `smart-lighting-layout.js` 1.0.0.
+Conserva Smart Lighting Panel V1.0.3 como base y utiliza `smart-lighting-layout.js` V1.1.0.
 
-### Reordenamiento
+### Reordenamiento conservado
 
 - **Áreas → Orden de áreas:** mueve áreas completas con ↑ / ↓.
-- **Áreas → Orden de dispositivos:** mueve cada luz o interruptor con ↑ / ↓ dentro de su propia área.
-- La vista previa usa la copia de trabajo actual.
-- **Guardar** persiste el orden en la configuración existente.
-- **Cancelar** descarta el cambio.
-- No se crea una nueva clave `.storage` ni una nueva versión de storage.
-- Áreas y dispositivos futuros aparecen automáticamente.
-- No se cambia la pertenencia de un dispositivo a un área; solo su posición dentro de ella.
+- **Áreas → Orden de dispositivos:** mueve cada luz o interruptor dentro de su propia área.
+- Guardar persiste y Cancelar descarta.
 
-## Smart Energy Advanced 1.4.0
+### Acciones globales
 
-La versión 1.4.0 conserva Smart Energy Advanced Panel 1.3.1 como base y añade `smart-energy-advanced-layout.js` 1.0.0.
+En **Áreas → Acciones globales**:
 
-### Reordenamiento
+- activa `Mostrar área de acciones`;
+- configura título, icono y color del área;
+- activa/desactiva **Apagar todo** y **Encender todo** por separado;
+- configura texto, icono MDI y color de cada botón;
+- elige alcance `Todos los configurados` o `Solo dispositivos visibles`;
+- opcionalmente muestra el número de entidades disponibles.
 
-- **General → Orden de secciones:** mueve secciones completas con ↑ / ↓.
-- **Datos → Orden de widgets eléctricos:** mueve cada widget con ↑ / ↓ dentro de su propia sección.
-- La vista previa usa la copia de trabajo actual.
-- **Guardar** persiste el orden en la configuración existente.
-- **Cancelar** descarta el cambio.
-- No se crea una nueva clave `.storage`.
-- Widgets y secciones futuros aparecen automáticamente.
-- El gráfico nativo de fuentes de energía sigue unido a `realtime`.
+Las acciones admiten `light.*` y `switch.*`, eliminan duplicados y omiten entidades inexistentes, `unavailable` o `unknown`.
+
+No se crea una nueva clave `.storage`; la nueva configuración se guarda como `global_actions` dentro de `smart_lighting_panel.config`.
 
 ## Restaurar
 
-Selecciona `restore_latest` y ejecuta la App.
-
-Resultado correcto:
-
-`RESTORE_OK`
-
-Después reinicia Home Assistant.
+Selecciona `restore_latest`, ejecuta la App, confirma `RESTORE_OK` y reinicia Home Assistant.
 
 ## Importante
 
-No instales simultáneamente versiones standalone de los paneles ya incluidos en Smart Home Suite, porque podrían competir por rutas, servicios o almacenamiento.
+No instales simultáneamente versiones standalone de paneles ya incluidos en Smart Home Suite.

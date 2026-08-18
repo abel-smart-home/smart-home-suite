@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.5.0 - 2026-08-18 · TEST
+
+- Actualiza **Smart Lighting a 1.2.0** manteniendo Smart Lighting Panel V1.0.3 como frontend base intacto.
+- Actualiza `smart-lighting-layout.js` a V1.1.0.
+- Conserva el reordenamiento de áreas/dispositivos V1.0.0 ya validado en Suite 1.4.0.
+- Añade acciones globales opcionales V1.0.0 dentro de una sección visual separada.
+- Añade botones configurables **Apagar todo** y **Encender todo**.
+- Permite alcance sobre todos los dispositivos configurados o solo los visibles.
+- Recopila dinámicamente cualquier cantidad de `light.*` y `switch.*`, elimina duplicados y omite entidades inexistentes/unavailable/unknown.
+- Los botones quedan deshabilitados si no existen entidades válidas.
+- Conserva selector MDI para iconos del área y botones.
+- Conserva `.storage/smart_lighting_panel.config` versión 1 y los WebSocket `smart_lighting_panel/config/*`.
+- La configuración anterior no requiere migración; `global_actions` es opcional y permanece oculto por defecto.
+- Rollback compatible: builds anteriores ignoran la clave `global_actions` desconocida.
+- Mantiene sin cambios funcionales Smart Home 1.4.0, Smart Energy Advanced 1.4.0, Smart Automations 1.0.0 y Smart Support 1.1.2.
+- Refuerza `validate_release.py` para validar layout runtime, ordering runtime, global actions runtime, handlers y cache-buster.
+- Publicar inicialmente como pre-release y promover el mismo tag a estable tras completar el checklist HAOS.
+
 ## 1.4.0 - 2026-08-18 · TEST
 
 - Actualiza **Smart Lighting a 1.1.0** mediante `smart-lighting-layout.js` V1.0.0.
