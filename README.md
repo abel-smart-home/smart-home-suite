@@ -2,9 +2,9 @@
 
 Repositorio de distribución de **Smart Home Suite** para Home Assistant OS sin HACS.
 
-## Smart Home Suite 1.6.0 — PRE-RELEASE
+## Smart Home Suite 1.6.0 — STABLE
 
-**Smart Home Suite 1.6.0** amplía **Smart Lighting a 1.3.0** sobre la versión 1.5.0 de acciones globales ya probada.
+**Smart Home Suite 1.6.0** promueve a **estable** el payload 1.6.0 validado previamente en Home Assistant OS y mantiene **Smart Lighting 1.3.0**.
 
 La actualización conserva **Smart Lighting Panel V1.0.3** como frontend base sin modificar y actualiza `smart-lighting-layout.js` a V1.2.0. El runtime mantiene Encender/Apagar todo y el reordenamiento anterior, y añade reordenamiento completo del área **Acciones globales**, orden configurable de sus botones y colores activo/inactivo.
 
@@ -58,7 +58,9 @@ Conserva Smart Home Panel V2.0.5, Native Dashboard Bridge V1.3.0 y Suite Runtime
 
 La Suite se distribuye mediante Smart Home Suite Manager e imágenes multi-arquitectura en GHCR. Incluye staging, validación previa/posterior, backups, rollback, `validate_only`, Repairs y diagnóstico.
 
-## Instalación de pre-release
+La promoción a **STABLE** no modifica el payload funcional validado durante el pre-release: solo actualiza documentación y estado de publicación.
+
+## Instalación
 
 1. Agrega o actualiza el repositorio `https://github.com/abel-smart-home/smart-home-suite`.
 2. Actualiza **Smart Home Suite Manager** a 1.6.0.
@@ -66,4 +68,4 @@ La Suite se distribuye mediante Smart Home Suite Manager e imágenes multi-arqui
 4. Ejecuta `install_repair` con `create_backup: true`.
 5. Confirma `INSTALLATION_OK`.
 6. Reinicia Home Assistant.
-7. Completa `TEST-CHECKLIST-1.6.0.md` antes de promover el release a estable.
+7. Verifica que Smart Lighting conserve la configuración y el funcionamiento esperado.
