@@ -225,6 +225,7 @@ def validate() -> None:
         "smart-energy-advanced-panel.js",
         "smart-automations-panel.js",
         "smart-automations-layout.js",
+        "smart-automations-runtime.js",
         "smart-support-panel.js",
     ):
         path = PAYLOAD / "frontend" / filename
@@ -353,16 +354,36 @@ def validate() -> None:
                 f"{required_token!r}"
             )
 
+    smart_automations_runtime = (
+        PAYLOAD / "frontend" / "smart-automations-runtime.js"
+    ).read_text(encoding="utf-8")
+    for required_token in (
+        'SMART_AUTOMATIONS_RUNTIME_VERSION = "1.0.0"',
+        'SMART_AUTOMATIONS_COLOR_PICKER_GUARD_VERSION = "1.0.0"',
+        'SMART_AUTOMATIONS_EFFECTIVE_VERSION = "1.1.1"',
+        'target?.type === "color"',
+        'bind?.startsWith("settings.")',
+        "this._setSettingsPath",
+        "originalOnInput.call(this, ev)",
+    ):
+        if required_token not in smart_automations_runtime:
+            fail(
+                "smart-automations-runtime.js is missing required feature token "
+                f"{required_token!r}"
+            )
+
     smart_automations_wrapper = (
         PAYLOAD / "modules" / "smart_automations" / "__init__.py"
     ).read_text(encoding="utf-8")
     for required_token in (
         'BASE_FRONTEND_FILE = "smart-automations-panel.js"',
-        'FRONTEND_FILE = "smart-automations-layout.js"',
-        'MODULE_VERSION = "1.1.0"',
+        'LAYOUT_FRONTEND_FILE = "smart-automations-layout.js"',
+        'FRONTEND_FILE = "smart-automations-runtime.js"',
+        'MODULE_VERSION = "1.1.1"',
         'BASE_PANEL_VERSION = "1.0.0"',
         'LAYOUT_RUNTIME_VERSION = "1.0.0"',
-        "?v=100-module110-suite170",
+        'COLOR_PICKER_GUARD_VERSION = "1.0.0"',
+        "?v=100-layout100-color100-module111-suite171",
     ):
         if required_token not in smart_automations_wrapper:
             fail(

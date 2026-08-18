@@ -1,52 +1,46 @@
-# Smart Home Suite Manager 1.7.0 · PRE-RELEASE
+# Smart Home Suite Manager 1.7.1 · PRE-RELEASE
 
-## Instalar / actualizar / reparar
+## Instalación
 
-1. Selecciona `validate_only`.
+1. Ejecuta `validate_only`.
 2. Confirma `VALIDATION_OK`.
-3. Selecciona `install_repair`.
+3. Ejecuta `install_repair`.
 4. Mantén `create_backup: true`.
-5. Inicia la App.
-6. Confirma `PAYLOAD_VALIDATION_OK`.
-7. Confirma `STAGED_VALIDATION_OK`.
-8. Confirma `POST_INSTALL_VALIDATION_OK`.
-9. Confirma `INSTALLATION_OK`.
-10. Reinicia Home Assistant.
+5. Confirma:
+   - `PAYLOAD_VALIDATION_OK`
+   - `STAGED_VALIDATION_OK`
+   - `POST_INSTALL_VALIDATION_OK`
+   - `INSTALLATION_OK`
+6. Reinicia Home Assistant.
+7. Haz una recarga dura del navegador/app.
 
-## Smart Automations 1.1.0
+## Smart Automations 1.1.1
 
-### Orden
+Conserva todas las funciones de Smart Automations 1.1.0.
 
-En **Personalización → Orden**:
+### Color Picker Guard
 
-- las categorías pueden moverse con ↑ / ↓;
-- las automatizaciones pueden moverse con ↑ / ↓ dentro de su categoría;
-- el orden de tarjetas persiste utilizando el array `instances` existente;
-- el orden de categorías se guarda en `automation_layout.category_order`;
-- cada categoría puede personalizar texto, icono y colores.
+Los selectores de color ya no provocan un rerender completo mientras su ventana nativa está abierta.
 
-### Tarjetas
+Flujo esperado:
 
-En **Personalización → Tarjetas** se puede personalizar cada automatización creada:
+1. Haz clic en un campo de color.
+2. Mueve la barra RGB/tono.
+3. Mueve el punto dentro del campo grande de color tantas veces como quieras.
+4. La ventana permanece abierta.
+5. Al hacer clic fuera/terminar la selección, se aplica el preview normal.
+6. Guardar persiste.
+7. Cancelar revierte.
 
-- título visible;
-- texto secundario;
-- icono MDI;
-- colores de icono, título, detalle, fondo y borde;
-- colores de estado activo/pausado/no disponible;
-- tamaños de icono, título y detalle;
-- mostrar/ocultar detalle y estado.
+El guard se aplica a cualquier `settings.*` de tipo `color`, incluyendo:
 
-Esta personalización vive dentro de `instances[].params.appearance` y **no participa en `_buildNativeConfig()`**. Cambiarla no llama al endpoint de guardado de automatizaciones nativas.
-
-### Restablecer
-
-`Restablecer panel` continúa preservando `instances`, por lo que conserva automatizaciones administradas y su apariencia individual. Restablece la apariencia global, navegación y el orden/estilo de categorías.
+- encabezado;
+- apariencia global;
+- navegación;
+- categorías;
+- tarjetas individuales;
+- estados Activa/Pausada/No encontrada.
 
 ## Restaurar
 
-Selecciona `restore_latest`, ejecuta la App, confirma `RESTORE_OK` y reinicia Home Assistant.
-
-## Importante
-
-No instales simultáneamente versiones standalone de paneles ya incluidos en Smart Home Suite.
+Usa `restore_latest`, confirma `RESTORE_OK` y reinicia Home Assistant.

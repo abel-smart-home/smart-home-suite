@@ -1,9 +1,11 @@
-"""Smart Automations 1.1.0 module for Smart Home Suite.
+"""Smart Automations 1.1.1 module for Smart Home Suite.
 
-The validated Smart Automations Panel V1.0.0 remains the functional base.
-Suite 1.7.0 loads a small UI/layout runtime that adds category/instance ordering
-and visual card customization without changing the native Home Assistant
-automation generation contract, WebSocket namespace or .storage key.
+The validated Smart Automations Panel V1.0.0 and layout runtime V1.0.0 remain
+intact. Suite 1.7.1 adds a color-picker guard runtime that prevents full panel
+rerenders while a native color chooser is actively emitting input events.
+
+The native Home Assistant automation generation contract, WebSocket namespace
+and .storage key are unchanged.
 """
 
 from __future__ import annotations
@@ -32,11 +34,13 @@ PANEL_PATH = "smart-automations"
 WEB_COMPONENT = "smart-automations-panel"
 STATIC_URL = "/smart_home_suite_static"
 BASE_FRONTEND_FILE = "smart-automations-panel.js"
-FRONTEND_FILE = "smart-automations-layout.js"
+LAYOUT_FRONTEND_FILE = "smart-automations-layout.js"
+FRONTEND_FILE = "smart-automations-runtime.js"
 
-MODULE_VERSION = "1.1.0"
+MODULE_VERSION = "1.1.1"
 BASE_PANEL_VERSION = "1.0.0"
 LAYOUT_RUNTIME_VERSION = "1.0.0"
+COLOR_PICKER_GUARD_VERSION = "1.0.0"
 
 
 def _frontend_dir() -> Path:
@@ -55,17 +59,19 @@ def _store(hass: HomeAssistant) -> Store[dict[str, Any]]:
 
 
 async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Register Smart Automations 1.1.0 backend and panel."""
+    """Register Smart Automations 1.1.1 backend and panel."""
     data = _data(hass)
 
     frontend_dir = _frontend_dir()
     base_file = frontend_dir / BASE_FRONTEND_FILE
+    layout_file = frontend_dir / LAYOUT_FRONTEND_FILE
     runtime_file = frontend_dir / FRONTEND_FILE
 
-    if not base_file.is_file() or not runtime_file.is_file():
+    if not base_file.is_file() or not layout_file.is_file() or not runtime_file.is_file():
         _LOGGER.error(
-            "Smart Automations frontend is incomplete: base=%s runtime=%s",
+            "Smart Automations frontend is incomplete: base=%s layout=%s runtime=%s",
             base_file.is_file(),
+            layout_file.is_file(),
             runtime_file.is_file(),
         )
         return False
@@ -75,7 +81,7 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER.error("Smart Automations base frontend is not validated V1.0.0")
         return False
 
-    runtime_text = await hass.async_add_executor_job(runtime_file.read_text, "utf-8")
+    layout_text = await hass.async_add_executor_job(layout_file.read_text, "utf-8")
     for required_token in (
         'SMART_AUTOMATIONS_LAYOUT_RUNTIME_VERSION = "1.0.0"',
         'SMART_AUTOMATIONS_EFFECTIVE_VERSION = "1.1.0"',
@@ -86,9 +92,26 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         "params.appearance",
         "smart_automations.config",
     ):
-        if required_token not in runtime_text:
+        if required_token not in layout_text:
             _LOGGER.error(
                 "Smart Automations layout runtime is missing token %s",
+                required_token,
+            )
+            return False
+
+    runtime_text = await hass.async_add_executor_job(runtime_file.read_text, "utf-8")
+    for required_token in (
+        'SMART_AUTOMATIONS_RUNTIME_VERSION = "1.0.0"',
+        'SMART_AUTOMATIONS_COLOR_PICKER_GUARD_VERSION = "1.0.0"',
+        'SMART_AUTOMATIONS_EFFECTIVE_VERSION = "1.1.1"',
+        'target?.type === "color"',
+        'bind?.startsWith("settings.")',
+        "this._setSettingsPath",
+        "originalOnInput.call(this, ev)",
+    ):
+        if required_token not in runtime_text:
+            _LOGGER.error(
+                "Smart Automations color-picker runtime is missing token %s",
                 required_token,
             )
             return False
@@ -127,7 +150,10 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         webcomponent_name=WEB_COMPONENT,
         sidebar_title="Automatizaciones",
         sidebar_icon="mdi:robot",
-        module_url=f"{STATIC_URL}/{FRONTEND_FILE}?v=100-module110-suite170",
+        module_url=(
+            f"{STATIC_URL}/{FRONTEND_FILE}"
+            "?v=100-layout100-color100-module111-suite171"
+        ),
         require_admin=False,
         handle_safe_area=True,
         config={
@@ -136,11 +162,13 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             "module_version": MODULE_VERSION,
             "base_panel_version": BASE_PANEL_VERSION,
             "layout_runtime_version": LAYOUT_RUNTIME_VERSION,
+            "color_picker_guard_version": COLOR_PICKER_GUARD_VERSION,
         },
     )
     data["panel_registered"] = True
     data["base_panel_version"] = BASE_PANEL_VERSION
     data["layout_runtime_version"] = LAYOUT_RUNTIME_VERSION
+    data["color_picker_guard_version"] = COLOR_PICKER_GUARD_VERSION
     return True
 
 

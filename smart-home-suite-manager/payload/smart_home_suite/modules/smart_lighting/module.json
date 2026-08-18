@@ -10,7 +10,7 @@
   "sidebar_icon": "mdi:lightbulb-group",
   "storage_key": "smart_lighting_panel.config",
   "storage_version": 1,
-  "suite_version": "1.7.0",
+  "suite_version": "1.7.1",
   "frontend_source": "Smart Lighting Panel V1.0.3 + smart-lighting-layout.js",
   "layout_runtime_version": "1.2.0",
   "layout_runtime_source": "Preserves device ordering, lets Global Actions participate in area ordering, reorders global buttons, and adds active/inactive colors without modifying the validated base frontend",
