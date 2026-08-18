@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.2.0 - 2026-08-18 · STABLE
+
+- Promueve a estable la versión 1.2.0 validada previamente como pre-release.
+- Incorpora **Smart Home module 1.4.0** mediante extensión del runtime de la Suite.
+- Mantiene **Smart Home Panel V2.0.5** y **Native Dashboard Bridge V1.3.0** sin reconstruir ni sustituir.
+- Permite reordenar las cuatro tarjetas existentes dentro del bloque de tarjetas.
+- Permite agregar tarjetas opcionales para otras entidades.
+- Añade tipos de tarjeta adicional: valor, barra de progreso y gráfica de historial.
+- Conserva el selector de entidades y el selector visual MDI nativo.
+- Añade personalización de tamaños, fondos, bordes, radios, padding, colores, iconos, textos y unidades.
+- Conserva acciones independientes tap/hold: `more-info`, `none`, `navigate`, `url` y `toggle`.
+- Cada tarjeta adicional utiliza un ID estable y la configuración anterior mantiene el orden histórico si no existe `card_layout`.
+- Las gráficas consultan historial por WebSocket con caché para reducir consultas repetidas al Recorder.
+- Encabezado, navegación, avisos y demás estructura del panel no participan en el reordenamiento.
+- Mantiene sin cambios Smart Lighting 1.0.3, Smart Energy Advanced 1.3.1, Smart Automations 1.0.0 y Smart Support 1.1.2.
+- La promoción a estable no cambia el payload funcional probado; solo actualiza documentación y estado del release.
+
 ## 1.1.1 - 2026-08-17 · STABLE
 
 - Corrige en Smart Home el cierre involuntario de la ventana **Buscar icono MDI**.

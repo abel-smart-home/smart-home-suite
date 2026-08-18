@@ -1,4 +1,4 @@
-# Smart Home Suite Manager 1.2.0 — PRE-RELEASE
+# Smart Home Suite Manager 1.2.0
 
 ## Instalar / actualizar / reparar
 
