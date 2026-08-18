@@ -2,12 +2,12 @@
 
 Repositorio de distribución de **Smart Home Suite** para Home Assistant OS sin HACS.
 
-## Smart Home Suite 1.1.1
+## Smart Home Suite 1.2.0 — PRE-RELEASE
 
-**Smart Home Suite 1.1.1** mantiene los cinco módulos oficiales de 1.1.0 y corrige la estabilidad del selector visual MDI de Smart Home.
+**Smart Home Suite 1.2.0** amplía Smart Home sin reconstruir el panel validado: mantiene Smart Home Panel 2.0.5 y Native Dashboard Bridge 1.3.0, y añade mediante el runtime de la Suite tarjetas opcionales, reordenables y personalizables.
 
-- Smart Home Suite / Manager: **1.1.1**
-- Smart Home: Panel **2.0.5** + Native Dashboard Bridge **1.3.0** + runtime guard **1.0.0**
+- Smart Home Suite / Manager: **1.2.0**
+- Smart Home: Panel **2.0.5** + Native Dashboard Bridge **1.3.0** + Suite Runtime **1.1.0** + módulo **1.4.0**
 - Smart Lighting: **1.0.3**
 - Smart Energy Advanced: **1.3.1**
 - Smart Automations: **1.0.0**
@@ -15,9 +15,23 @@ Repositorio de distribución de **Smart Home Suite** para Home Assistant OS sin 
 
 Todos los módulos se instalan bajo `custom_components/smart_home_suite` y se administran desde una sola Config Entry.
 
-## Corrección Smart Home 1.1.1
+## Smart Home 1.4.0
 
-Smart Home conserva intactos Panel 2.0.5 y Native Dashboard Bridge 1.3.0. La Suite añade un pequeño runtime guard que evita rerenders redundantes cuando el estado `narrow` (móvil/escritorio) no ha cambiado. Esto mantiene abierta la ventana nativa **Buscar icono** mientras Home Assistant recibe actualizaciones de entidades y permite buscar/seleccionar iconos MDI normalmente.
+La ampliación de Smart Home se aplica desde el runtime de la Suite; `smart-home-panel.js` V2.0.5 y `smart-home-native.js` V1.3.0 permanecen sin cambios.
+
+Novedades principales:
+
+- orden configurable de las cuatro tarjetas existentes;
+- tarjetas adicionales opcionales para otras entidades;
+- tipos iniciales: valor, barra de progreso y gráfica de historial;
+- selector de entidades existente y selector MDI nativo;
+- personalización de tamaño, fondo, borde, radio, padding, colores, iconos, texto, unidad y valor;
+- acciones independientes tap/hold: más información, ninguna, navegar, URL y toggle;
+- ID estable por tarjeta adicional;
+- compatibilidad con configuraciones anteriores: si no existe `card_layout`, se conserva el orden histórico;
+- las gráficas consultan el historial mediante WebSocket y usan caché para evitar consultas continuas al Recorder.
+
+Solo las tarjetas participan en el reordenamiento. Encabezado, navegación, avisos, configuración y demás estructura del panel mantienen su posición y comportamiento actuales.
 
 ## Smart Automations
 
@@ -29,8 +43,6 @@ Recetas iniciales:
 - apagado de luces por ausencia;
 - notificación por potencia elevada;
 - notificación por límite de kWh.
-
-El panel incluye editor responsive, Guardar/Cancelar, Importar/Exportar/Restablecer, selector de entidades e iconos MDI, navegación configurable, persistencia propia y vista previa visual en tiempo real durante la personalización.
 
 ## Distribución
 
