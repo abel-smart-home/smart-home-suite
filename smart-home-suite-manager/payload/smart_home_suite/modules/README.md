@@ -1,4 +1,4 @@
-# Smart Home Suite modules · 1.7.1 PRE-RELEASE
+# Smart Home Suite modules · 1.7.1 STABLE
 
 | Módulo | Versión | Ruta |
 |---|---:|---|
@@ -8,6 +8,8 @@
 | Smart Automations | 1.1.1 · base 1.0.0 + layout 1.0.0 + color guard 1.0.0 | `/smart-automations` |
 | Smart Support | 1.1.2 | `/support` |
 
-Smart Automations 1.1.1 conserva ordering/personalización de 1.1.0 y corrige únicamente el ciclo de rerender de los selectores nativos de color.
+Los módulos permanecen aislados y activables desde las opciones de Smart Home Suite.
 
-Último release estable: **1.6.0**.
+Smart Automations 1.1.1 incorpora ordering, personalización visual por categoría/tarjeta y Color Picker Guard sin modificar `.storage` ni las automatizaciones nativas.
+
+Suite 1.7.1 fue validada como pre-release en HAOS real y posteriormente promovida sin cambios funcionales a **STABLE**.

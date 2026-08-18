@@ -1,46 +1,65 @@
-# Smart Home Suite Manager 1.7.1 · PRE-RELEASE
+# Smart Home Suite Manager 1.7.1 · STABLE
 
-## Instalación
+## Instalar / actualizar / reparar
 
-1. Ejecuta `validate_only`.
+1. Selecciona `validate_only` si deseas comprobar primero la instalación.
 2. Confirma `VALIDATION_OK`.
-3. Ejecuta `install_repair`.
+3. Selecciona `install_repair`.
 4. Mantén `create_backup: true`.
-5. Confirma:
+5. Inicia la App.
+6. Confirma:
    - `PAYLOAD_VALIDATION_OK`
    - `STAGED_VALIDATION_OK`
    - `POST_INSTALL_VALIDATION_OK`
    - `INSTALLATION_OK`
-6. Reinicia Home Assistant.
-7. Haz una recarga dura del navegador/app.
+7. Reinicia Home Assistant.
+8. Si el navegador/app conserva recursos antiguos, realiza una recarga dura.
 
 ## Smart Automations 1.1.1
 
-Conserva todas las funciones de Smart Automations 1.1.0.
+### Orden
 
-### Color Picker Guard
+En **Personalización → Orden**:
 
-Los selectores de color ya no provocan un rerender completo mientras su ventana nativa está abierta.
+- las categorías pueden moverse con ↑ / ↓;
+- las automatizaciones pueden moverse dentro de su propia categoría;
+- las categorías pueden personalizar texto, icono y colores.
 
-Flujo esperado:
+### Tarjetas
+
+En **Personalización → Tarjetas** se puede personalizar por automatización:
+
+- título visible;
+- texto secundario;
+- icono MDI;
+- color y tamaño del icono;
+- color y tamaño de título/detalle;
+- fondo y borde;
+- colores Activa/Pausada/No encontrada;
+- mostrar/ocultar detalle y estado.
+
+### Selector de colores
+
+El Color Picker Guard V1.0.0 evita un rerender completo mientras el selector nativo está abierto.
+
+Flujo normal:
 
 1. Haz clic en un campo de color.
 2. Mueve la barra RGB/tono.
-3. Mueve el punto dentro del campo grande de color tantas veces como quieras.
-4. La ventana permanece abierta.
-5. Al hacer clic fuera/terminar la selección, se aplica el preview normal.
+3. Mueve el punto dentro del campo grande las veces necesarias.
+4. El selector permanece abierto.
+5. Al terminar/hacer clic fuera se aplica el preview.
 6. Guardar persiste.
 7. Cancelar revierte.
 
-El guard se aplica a cualquier `settings.*` de tipo `color`, incluyendo:
+## Compatibilidad
 
-- encabezado;
-- apariencia global;
-- navegación;
-- categorías;
-- tarjetas individuales;
-- estados Activa/Pausada/No encontrada.
+La personalización visual se almacena en `smart_automations.config` y no modifica triggers, conditions ni actions de las automatizaciones nativas.
 
 ## Restaurar
 
-Usa `restore_latest`, confirma `RESTORE_OK` y reinicia Home Assistant.
+Selecciona `restore_latest`, ejecuta la App, confirma `RESTORE_OK` y reinicia Home Assistant.
+
+## Importante
+
+No instales simultáneamente versiones standalone de paneles ya incluidos en Smart Home Suite.

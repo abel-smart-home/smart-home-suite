@@ -1,33 +1,42 @@
-# Smart Automations 1.1.1
+# Smart Automations 1.1.1 · STABLE
 
-Bugfix sobre Smart Automations 1.1.0.
+Versión estable validada en Home Assistant OS.
 
-## Corrección
+Smart Automations 1.1.1 conserva **Smart Automations Panel V1.0.0** como base funcional.
 
-Smart Automations Panel V1.0.0 realiza preview inmediato de los campos `settings.*`. Los controles `input[type="color"]` emiten múltiples eventos `input` mientras el selector nativo está abierto.
+## Layout runtime V1.0.0
 
-En 1.1.0 esos eventos causaban un rerender completo, cerrando el selector de color antes de terminar.
+Añade:
 
-Smart Automations 1.1.1 añade `smart-automations-runtime.js` V1.0.0:
+- orden de categorías;
+- orden de automatizaciones dentro de cada categoría;
+- personalización de categorías;
+- personalización visual individual por tarjeta.
 
-- intercepta únicamente `input` de campos de color en Personalización;
-- actualiza `_editSettings` sin renderizar;
-- deja que el evento `change` existente haga el render normal;
-- no altera otros tipos de campo.
+## Color Picker Guard V1.0.0
+
+Corrige el cierre prematuro del selector nativo de colores.
+
+Los controles `<input type="color">` generan múltiples eventos `input` mientras el selector está abierto. El guard:
+
+- intercepta únicamente esos eventos de color;
+- actualiza la copia `_editSettings` sin reconstruir el DOM;
+- deja que el evento `change` normal realice el preview al finalizar;
+- conserva Guardar/Cancelar.
 
 ## Se conserva
 
-- Smart Automations Panel V1.0.0;
-- Layout runtime V1.0.0;
-- orden de categorías;
-- orden de automatizaciones;
-- personalización individual;
 - `.storage` `smart_automations.config`;
 - Storage version 1;
 - WebSocket existentes;
+- recetas;
+- `RECIPE_VERSION`;
 - generación de automatizaciones nativas;
-- Guardar/Cancelar;
+- activar/pausar;
+- botón HA;
 - Importar/Exportar/Restablecer;
-- navegación, responsive y selectores.
+- navegación;
+- responsive;
+- selectores MDI y entidades.
 
 No requiere migración.
