@@ -2,70 +2,64 @@
 
 Repositorio de distribución de **Smart Home Suite** para Home Assistant OS sin HACS.
 
-## Smart Home Suite 1.6.0 — STABLE
+## Smart Home Suite 1.7.0 — PRE-RELEASE
 
-**Smart Home Suite 1.6.0** promueve a **estable** el payload 1.6.0 validado previamente en Home Assistant OS y mantiene **Smart Lighting 1.3.0**.
+**Último release estable:** Smart Home Suite **1.6.0**.
 
-La actualización conserva **Smart Lighting Panel V1.0.3** como frontend base sin modificar y actualiza `smart-lighting-layout.js` a V1.2.0. El runtime mantiene Encender/Apagar todo y el reordenamiento anterior, y añade reordenamiento completo del área **Acciones globales**, orden configurable de sus botones y colores activo/inactivo.
+`main` 1.7.0 actualiza **Smart Automations a 1.1.0** mediante `smart-automations-layout.js` V1.0.0, conservando **Smart Automations Panel V1.0.0** como frontend funcional base.
 
-- Smart Home Suite / Manager: **1.6.0**
-- Smart Home: módulo **1.4.0** · Panel **2.0.5** + Native Dashboard Bridge **1.3.0** + Suite Runtime **1.1.0**
+La ampliación añade orden configurable de categorías y automatizaciones, además de personalización visual por tarjeta, sin cambiar la automatización nativa de Home Assistant.
+
+- Smart Home Suite / Manager: **1.7.0**
+- Smart Home: módulo **1.4.0** · Panel **2.0.5** + Bridge **1.3.0** + runtime **1.1.0**
 - Smart Lighting: **1.3.0** · base **1.0.3** + layout runtime **1.2.0**
 - Smart Energy Advanced: **1.4.0** · base **1.3.1** + ordering runtime **1.0.0**
-- Smart Automations: **1.0.0**
+- Smart Automations: **1.1.0** · base **1.0.0** + layout runtime **1.0.0**
 - Smart Support: **1.1.2**
 
-Todos los módulos se instalan bajo `custom_components/smart_home_suite` y se administran desde una sola Config Entry.
+## Smart Automations 1.1.0
 
-## Smart Lighting 1.3.0
+En **Personalización → Orden**:
 
-La ampliación se aplica mediante `smart-lighting-layout.js` V1.2.0; `smart-lighting-panel.js` V1.0.3 permanece intacto.
+- reordena Iluminación, Presencia y Energía con ↑ / ↓;
+- reordena las automatizaciones dentro de su propia categoría;
+- personaliza texto/icono/colores de cada categoría.
 
-### Acciones globales mejoradas
+En **Personalización → Tarjetas** cada automatización puede configurar:
 
-En **Personalización → Áreas**:
+- título visible independiente del nombre nativo;
+- texto secundario independiente del resumen automático;
+- icono MDI;
+- color de icono;
+- color/tamaño de título y detalle;
+- fondo y borde;
+- colores para Activa, Pausada y No encontrada;
+- visibilidad del detalle y del estado.
 
-- **Acciones globales** aparece dentro de **Orden de áreas** y puede moverse con ↑ / ↓ entre cualquier área normal;
-- los botones **Apagar todo** y **Encender todo** pueden reordenarse entre sí;
-- cada botón permite configurar **Color activo** y **Color inactivo**;
-- **Apagar todo** se considera activo cuando todas las entidades objetivo están apagadas;
-- **Encender todo** se considera activo cuando todas las entidades objetivo están encendidas;
-- con estados mezclados ambos botones usan su color inactivo;
-- sin entidades válidas los botones permanecen deshabilitados.
+Todo lo anterior es **metadato visual en `smart_automations.config`**. Home Assistant continúa siendo el motor de ejecución y no se reescriben triggers/actions al cambiar apariencia u orden.
 
-Se conservan título, iconos MDI, alcance, conteo, visibilidad individual y ejecución sobre cualquier cantidad de `light.*` y `switch.*`.
+## Compatibilidad
 
-### Compatibilidad
+- `.storage` permanece en versión 1;
+- se conserva la clave `smart_automations.config`;
+- se conservan los WebSocket existentes;
+- no se cambia `RECIPE_VERSION`;
+- no se cambia la generación de automatizaciones nativas;
+- rollback compatible: Smart Automations 1.0.0 ignora `automation_layout` y `params.appearance`;
+- Importar/Exportar/Restablecer, navegación, responsive, selectores y permisos permanecen.
 
-- `.storage/smart_lighting_panel.config` permanece en versión 1;
-- se conservan `smart_lighting_panel/config/get|save|reset`;
-- `global_actions.position` guarda la posición del área;
-- `global_actions.button_order` guarda el orden de botones;
-- los colores antiguos `color` de 1.5.0 siguen siendo válidos como fallback del nuevo color activo;
-- no existe migración destructiva;
-- rollback compatible: builds anteriores ignoran campos nuevos que no reconocen;
-- se conservan selector de entidades, selector MDI, navegación, responsive, tap/hold, More Info, Importar/Exportar/Restablecer y aislamiento del módulo.
+## Distribución
 
-## Smart Energy Advanced 1.4.0
+La Suite se distribuye mediante Smart Home Suite Manager e imágenes multi-arquitectura en GHCR.
 
-Conserva el frontend base V1.3.1 y el ordering runtime V1.0.0 para reordenar secciones y widgets sin cambiar `.storage`.
+## Instalación de prueba
 
-## Smart Home 1.4.0
-
-Conserva Smart Home Panel V2.0.5, Native Dashboard Bridge V1.3.0 y Suite Runtime V1.1.0 con tarjetas configurables/reordenables.
-
-## Distribución y robustez
-
-La Suite se distribuye mediante Smart Home Suite Manager e imágenes multi-arquitectura en GHCR. Incluye staging, validación previa/posterior, backups, rollback, `validate_only`, Repairs y diagnóstico.
-
-La promoción a **STABLE** no modifica el payload funcional validado durante el pre-release: solo actualiza documentación y estado de publicación.
-
-## Instalación
-
-1. Agrega o actualiza el repositorio `https://github.com/abel-smart-home/smart-home-suite`.
-2. Actualiza **Smart Home Suite Manager** a 1.6.0.
-3. Ejecuta primero `validate_only`.
+1. Actualiza el repositorio.
+2. Instala/actualiza **Smart Home Suite Manager 1.7.0**.
+3. Ejecuta `validate_only`.
 4. Ejecuta `install_repair` con `create_backup: true`.
 5. Confirma `INSTALLATION_OK`.
 6. Reinicia Home Assistant.
-7. Verifica que Smart Lighting conserve la configuración y el funcionamiento esperado.
+7. Completa `TEST-CHECKLIST-1.7.0.md`.
+
+Esta versión debe mantenerse como **pre-release** hasta terminar las pruebas reales en HAOS.
