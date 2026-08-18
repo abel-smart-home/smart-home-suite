@@ -12,7 +12,7 @@ CREATE_BACKUP="$(bashio::config 'create_backup')"
 KEEP_BACKUPS="$(bashio::config 'keep_backups')"
 
 log_header() {
-  bashio::log.info "Smart Home Suite Manager 1.1.0"
+  bashio::log.info "Smart Home Suite Manager 1.1.1"
   bashio::log.info "Action: ${ACTION}"
 }
 
@@ -72,6 +72,18 @@ validate_component() {
       test -f "${path}/frontend/smart-automations-panel.js"
       test -f "${path}/modules/smart_automations/module.json"
       test -f "${path}/modules/smart_automations/__init__.py"
+      ;;
+  esac
+
+  # Suite 1.1.1 adds the Smart Home narrow-render guard. Keep 1.1.0
+  # backups restorable even though they predate this frontend entrypoint.
+  case "${version}" in
+    0.*|1.0.*|1.1.0)
+      ;;
+    *)
+      test -f "${path}/frontend/smart-home-panel-runtime.js"
+      grep -Fq 'SMART_HOME_RUNTIME_GUARD_VERSION = "1.0.0"' \
+        "${path}/frontend/smart-home-panel-runtime.js"
       ;;
   esac
 

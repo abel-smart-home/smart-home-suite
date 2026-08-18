@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.1.1 - 2026-08-17 · STABLE
+
+- Corrige en Smart Home el cierre involuntario de la ventana **Buscar icono MDI**.
+- La causa era un rerender redundante: el bridge sincronizaba `panel.narrow` en cada actualización de Home Assistant aunque móvil/escritorio no hubiera cambiado.
+- Añade `smart-home-panel-runtime.js` como guard de compatibilidad de la Suite; carga Smart Home Panel V2.0.5 exacto y evita ejecutar el setter `narrow` cuando el valor efectivo es el mismo.
+- Mantiene intactos Smart Home Panel V2.0.5 y Native Dashboard Bridge V1.3.0.
+- El selector MDI puede permanecer abierto durante actualizaciones frecuentes de sensores, permitiendo buscar y seleccionar iconos normalmente.
+- No cambia configuración persistida, entidades, navegación, dashboard, almacenamiento ni permisos.
+- Mantiene sin cambios Smart Lighting 1.0.3, Smart Energy Advanced 1.3.1, Smart Automations 1.0.0 y Smart Support 1.1.2.
+- Manager 1.1.1 valida el nuevo runtime guard para instalaciones 1.1.1+, pero conserva compatibilidad de `restore_latest` con backups 1.1.0 y anteriores.
+
 ## 1.1.0 - 2026-08-17 · STABLE
 
 - Incorpora **Smart Automations 1.0.0** como quinto módulo oficial de Smart Home Suite.
