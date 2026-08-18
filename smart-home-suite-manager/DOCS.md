@@ -1,59 +1,43 @@
-# Smart Home Suite Manager 1.2.0
+# Smart Home Suite Manager 1.3.0
 
 ## Instalar / actualizar / reparar
 
-1. Selecciona `install_repair`.
-2. Mantén `create_backup: true`.
-3. Inicia la App una vez.
-4. Confirma `PAYLOAD_VALIDATION_OK`.
-5. Confirma `STAGED_VALIDATION_OK`.
-6. Confirma `POST_INSTALL_VALIDATION_OK`.
-7. Confirma `INSTALLATION_OK`.
-8. Reinicia Home Assistant.
+1. Selecciona `validate_only` si quieres comprobar primero la instalación actual.
+2. Para actualizar, selecciona `install_repair`.
+3. Mantén `create_backup: true`.
+4. Inicia la App una vez.
+5. Confirma `PAYLOAD_VALIDATION_OK`.
+6. Confirma `STAGED_VALIDATION_OK`.
+7. Confirma `POST_INSTALL_VALIDATION_OK`.
+8. Confirma `INSTALLATION_OK`.
+9. Reinicia Home Assistant.
 
-Si ya existe una instalación, el Manager crea un backup antes del reemplazo y conserva temporalmente la instalación anterior hasta que la nueva versión supere la validación final.
+El Manager conserva el mecanismo existente de staging, backup y rollback.
 
-## Validar sin modificar
+## Smart Energy Advanced 1.4.0
 
-Selecciona `validate_only` para comprobar la integridad estructural del payload y, si existe, de la Suite instalada.
+La versión 1.4.0 conserva Smart Energy Advanced Panel 1.3.1 como base y añade `smart-energy-advanced-layout.js` 1.0.0.
 
-Esta acción no reemplaza archivos ni crea un nuevo backup.
+### Reordenamiento
 
-Resultado correcto:
-
-`VALIDATION_OK`
+- **General → Orden de secciones:** mueve secciones completas con ↑ / ↓.
+- **Datos → Orden de widgets eléctricos:** mueve cada widget con ↑ / ↓ dentro de su propia sección.
+- La vista previa usa la copia de trabajo actual.
+- **Guardar** persiste el orden en la configuración existente.
+- **Cancelar** descarta el cambio.
+- No se crea una nueva clave `.storage`.
+- Widgets y secciones futuros aparecen automáticamente.
+- El gráfico nativo de fuentes de energía sigue unido a `realtime`.
 
 ## Restaurar
 
 Selecciona `restore_latest` y ejecuta la App.
-
-El Manager verifica el archivo de backup y su contenido antes de activarlo.
 
 Resultado correcto:
 
 `RESTORE_OK`
 
 Después reinicia Home Assistant.
-
-## Smart Home 1.4.0
-
-Suite 1.2.0 conserva Smart Home Panel 2.0.5 y Native Dashboard Bridge 1.3.0 y amplía el runtime de la Suite para permitir:
-
-- reordenar las cuatro tarjetas existentes;
-- agregar tarjetas opcionales de valor, barra o gráfica;
-- usar selector de entidad e icono MDI;
-- configurar estilos y acciones tap/hold;
-- conservar configuraciones anteriores sin migración destructiva.
-
-La gráfica de historial se obtiene mediante WebSocket y utiliza caché para evitar consultar Recorder en cada actualización de estado.
-
-## Smart Automations
-
-Smart Automations 1.0.0 continúa como módulo oficial en `/smart-automations` y genera automatizaciones nativas de Home Assistant.
-
-## Smart Support
-
-La Suite continúa supervisando la disponibilidad de las acciones de cuenta utilizadas por Smart Support.
 
 ## Importante
 
