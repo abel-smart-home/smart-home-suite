@@ -2,18 +2,35 @@
 
 Repositorio de distribución de **Smart Home Suite** para Home Assistant OS sin HACS.
 
-## Smart Home Suite 1.2.0 — STABLE
+## Smart Home Suite 1.3.0 — STABLE
 
-**Smart Home Suite 1.2.0** amplía Smart Home sin reconstruir el panel validado: mantiene Smart Home Panel 2.0.5 y Native Dashboard Bridge 1.3.0, y añade mediante el runtime de la Suite tarjetas opcionales, reordenables y personalizables.
+**Smart Home Suite 1.3.0** promueve a estable la versión validada previamente como pre-release y actualiza **Smart Energy Advanced a 1.4.0**.
 
-- Smart Home Suite / Manager: **1.2.0**
-- Smart Home: Panel **2.0.5** + Native Dashboard Bridge **1.3.0** + Suite Runtime **1.1.0** + módulo **1.4.0**
+La actualización conserva Smart Energy Advanced Panel V1.3.1 como frontend base y añade mediante el runtime de la Suite el reordenamiento de secciones y widgets, sin cambiar su `.storage`, WebSocket, entidades ni comportamiento existente.
+
+- Smart Home Suite / Manager: **1.3.0**
+- Smart Home: módulo **1.4.0** · Panel **2.0.5** + Native Dashboard Bridge **1.3.0** + Suite Runtime **1.1.0**
 - Smart Lighting: **1.0.3**
-- Smart Energy Advanced: **1.3.1**
+- Smart Energy Advanced: **1.4.0** · base **1.3.1** + ordering runtime **1.0.0**
 - Smart Automations: **1.0.0**
 - Smart Support: **1.1.2**
 
 Todos los módulos se instalan bajo `custom_components/smart_home_suite` y se administran desde una sola Config Entry.
+
+## Smart Energy Advanced 1.4.0
+
+La ampliación de Energy Advanced se aplica mediante `smart-energy-advanced-layout.js` V1.0.0; el frontend base `smart-energy-advanced-panel.js` V1.3.1 permanece sin reconstruir.
+
+Novedades principales:
+
+- orden configurable de las secciones;
+- orden configurable de widgets dentro de su propia sección;
+- vista previa inmediata mientras se edita;
+- Guardar persiste el nuevo orden y Cancelar lo descarta;
+- widgets y secciones futuros aparecen automáticamente en los controles de orden;
+- el gráfico nativo `power-sources-graph` conserva su integración y acompaña a la sección Tiempo real;
+- no requiere migración de `.storage`;
+- conserva selectores, navegación, responsive, acciones tap/hold, Importar/Exportar/Restablecer y aislamiento del módulo.
 
 ## Smart Home 1.4.0
 
