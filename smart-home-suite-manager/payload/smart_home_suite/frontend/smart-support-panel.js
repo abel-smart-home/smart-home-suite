@@ -1,5 +1,5 @@
 /**
- * Smart Support Panel V1.1.2
+ * Smart Support Panel V1.2.0
  * Custom support center for Home Assistant.
  *
  * Suite conventions:
@@ -14,7 +14,7 @@
  * - no external JavaScript dependencies
  */
 
-const PANEL_VERSION = "1.1.2";
+const PANEL_VERSION = "1.2.0";
 const BACKEND_DOMAIN = "smart_support_panel";
 const HOLD_MS = 550;
 const MOVE_CANCEL_PX = 12;
@@ -88,11 +88,25 @@ const DEFAULTS = {
     show: true,
     title: "¿Cómo podemos ayudarte?",
     subtitle: "El acceso técnico solo se habilita cuando tú lo autorizas",
+    heading_align: "left",
+    title_color: "",
+    subtitle_color: "",
+    title_size: 15,
+    subtitle_size: 12,
     columns_mobile: 2,
     columns_desktop: 2,
     gap: 10,
     button_height: 98,
     radius: 18,
+    button_align: "left",
+    button_background: "",
+    button_border_color: "",
+    button_border_width: 1,
+    button_label_color: "",
+    button_secondary_color: "",
+    button_icon_size: 31,
+    button_label_size: 14,
+    button_secondary_size: 11,
     buttons: [
       {
         id: "start_support",
@@ -663,26 +677,56 @@ class SmartSupportPanel extends HTMLElement {
     </section>`;
   }
 
+  _actionVisual(button, cfg) {
+    const actions = cfg.actions || {};
+    const design = cfg.design || {};
+    const layoutSetting = button?.layout || "auto";
+    const layout = layoutSetting === "horizontal" || (layoutSetting === "auto" && button?.wide)
+      ? "horizontal"
+      : "vertical";
+    const alignSetting = button?.align || "inherit";
+    const align = alignSetting === "inherit" ? (actions.button_align || "left") : alignSetting;
+    return {
+      layout,
+      align: ["left", "center", "right"].includes(align) ? align : "left",
+      background: button?.background || actions.button_background || design.card_background,
+      border: button?.border_color || actions.button_border_color || design.card_border_color,
+      borderWidth: Math.min(6, Math.max(0, this._num(button?.border_width, this._num(actions.button_border_width, 1)))),
+      iconColor: button?.icon_color || design.accent_color,
+      iconSize: Math.min(72, Math.max(14, this._num(button?.icon_size, 0) || this._num(actions.button_icon_size, 31))),
+      labelColor: button?.label_color || actions.button_label_color || design.value_color,
+      secondaryColor: button?.secondary_color || actions.button_secondary_color || design.muted_color,
+      labelSize: Math.min(30, Math.max(9, this._num(button?.label_size, 0) || this._num(actions.button_label_size, 14))),
+      secondarySize: Math.min(24, Math.max(8, this._num(button?.secondary_size, 0) || this._num(actions.button_secondary_size, 11)))
+    };
+  }
+
   _renderActions(cfg) {
     if (!cfg.actions.show) return "";
     const status = this._statusInfo(cfg);
     const buttons = (cfg.actions.buttons || []).map((b, index) => {
       if (!this._visibleForUser(b, status)) return "";
       const disabled = this._actionDisabled(b, status);
-      const bg = b.background || cfg.design.card_background;
-      const border = b.border_color || cfg.design.card_border_color;
+      const visual = this._actionVisual(b, cfg);
       let secondary = b.secondary || "";
       if (b.type === "support_extend" && (!b.hours || Number(b.hours) <= 0)) secondary = `+${this._num(cfg.remote_support.extension_hours,2)} horas`;
-      return `<button class="support-action ${b.wide ? "wide" : ""} ${disabled ? "disabled" : ""}"
+      return `<button class="support-action ${b.wide ? "wide" : ""} layout-${visual.layout} align-${visual.align} ${disabled ? "disabled" : ""}"
         data-action-index="${index}" ${disabled ? "aria-disabled=\"true\"" : ""}
-        style="--action-bg:${this._escape(bg)};--action-border:${this._escape(border)};--action-icon:${this._escape(b.icon_color || cfg.design.accent_color)}">
-        <span class="action-icon">${this._icon(b.icon, 31, b.icon_color || cfg.design.accent_color)}</span>
-        <span class="action-label">${this._escape(b.label)}</span>
-        ${secondary ? `<span class="action-secondary">${this._escape(secondary)}</span>` : ""}
+        style="--action-bg:${this._escape(visual.background)};--action-border:${this._escape(visual.border)};--action-border-width:${visual.borderWidth}px;--action-icon:${this._escape(visual.iconColor)};--action-label-color:${this._escape(visual.labelColor)};--action-secondary-color:${this._escape(visual.secondaryColor)};--action-label-size:${visual.labelSize}px;--action-secondary-size:${visual.secondarySize}px">
+        <span class="action-icon">${this._icon(b.icon, visual.iconSize, visual.iconColor)}</span>
+        <span class="action-copy">
+          <span class="action-label">${this._escape(b.label)}</span>
+          ${secondary ? `<span class="action-secondary">${this._escape(secondary)}</span>` : ""}
+        </span>
       </button>`;
     }).join("");
+    const titleColor = cfg.actions.title_color || cfg.design.value_color;
+    const subtitleColor = cfg.actions.subtitle_color || cfg.design.muted_color;
+    const headingAlign = ["left","center","right"].includes(cfg.actions.heading_align) ? cfg.actions.heading_align : "left";
+    const titleSize = Math.min(40, Math.max(10, this._num(cfg.actions.title_size,15)));
+    const subtitleSize = Math.min(30, Math.max(9, this._num(cfg.actions.subtitle_size,12)));
     return `<section class="actions-section">
-      ${(cfg.actions.title || cfg.actions.subtitle) ? `<div class="section-heading">
+      ${(cfg.actions.title || cfg.actions.subtitle) ? `<div class="section-heading" style="text-align:${headingAlign};--actions-title-color:${this._escape(titleColor)};--actions-subtitle-color:${this._escape(subtitleColor)};--actions-title-size:${titleSize}px;--actions-subtitle-size:${subtitleSize}px">
         ${cfg.actions.title ? `<div class="section-title">${this._escape(cfg.actions.title)}</div>` : ""}
         ${cfg.actions.subtitle ? `<div class="section-subtitle">${this._escape(cfg.actions.subtitle)}</div>` : ""}
       </div>` : ""}
@@ -744,7 +788,7 @@ class SmartSupportPanel extends HTMLElement {
       .version{text-align:center;color:${d.muted_color};font-size:9px;padding:2px 0 4px}
       .toast{position:fixed;left:50%;bottom:max(18px,calc(env(safe-area-inset-bottom) + 12px));transform:translateX(-50%);z-index:1000;background:#182129;color:#f5f7fa;border:1px solid #2b3943;border-radius:12px;padding:10px 14px;box-shadow:0 12px 34px rgba(0,0,0,.35);font-size:13px;max-width:min(90vw,420px);text-align:center}.toast.error{border-color:rgba(239,100,97,.55);color:#ffb0ae}.toast.ok{border-color:rgba(102,209,122,.45)}
       .drawer-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.46);z-index:200}.drawer{position:fixed;right:0;top:0;bottom:0;width:min(520px,100vw);background:#0c1217;border-left:1px solid #26323a;z-index:201;display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;box-shadow:-18px 0 55px rgba(0,0,0,.36)}.drawer-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 16px 12px;border-bottom:1px solid #1f2a31}.drawer-title{font-size:20px;font-weight:720}.drawer-close{border:0;background:transparent;width:40px;height:40px;border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}.tabs{display:flex;gap:5px;overflow-x:auto;padding:10px 12px;border-bottom:1px solid #1f2a31;scrollbar-width:thin}.tab{border:1px solid #26323a;background:#11181e;color:#9ba7b0;border-radius:12px;padding:8px 10px;white-space:nowrap;cursor:pointer;font-size:12px}.tab.active{color:#eefdfc;border-color:rgba(53,221,213,.55);background:rgba(53,221,213,.10)}.drawer-body{overflow:auto;padding:14px 14px 24px;overscroll-behavior:contain}.drawer-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 14px calc(12px + env(safe-area-inset-bottom));border-top:1px solid #1f2a31;background:#0c1217}.foot-left,.foot-right{display:flex;gap:7px;flex-wrap:wrap}.editor-btn{border:1px solid #2b3943;background:#11181e;color:#d9e0e5;border-radius:11px;padding:9px 11px;cursor:pointer;font-size:12px}.editor-btn.primary{background:#35ddd5;color:#061113;border-color:#35ddd5;font-weight:700}.editor-btn.danger{color:#ff9d9b;border-color:rgba(239,100,97,.42)}
-      .editor-section{display:flex;flex-direction:column;gap:12px}.editor-card{border:1px solid #26323a;border-radius:16px;background:#10171c;padding:13px}.editor-card-title{font-size:14px;font-weight:700;margin-bottom:11px}.editor-card-subtitle{font-size:11px;color:#7f8b94;margin:-6px 0 11px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{display:flex;flex-direction:column;gap:5px;min-width:0}.field.full{grid-column:1/-1}.field label{font-size:11px;color:#9aa6af;font-weight:600}.field input,.field select,.field textarea{width:100%;border:1px solid #2b3943;background:#0a1014;color:#f5f7fa;border-radius:10px;padding:9px 10px;outline:none;font-size:12px}.field input:focus,.field select:focus,.field textarea:focus{border-color:#35ddd5}.field textarea{min-height:90px;resize:vertical}.inline-field{display:grid;grid-template-columns:1fr auto;gap:7px}.tiny-btn{border:1px solid #2b3943;background:#151e24;color:#d9e0e5;border-radius:10px;padding:8px 9px;cursor:pointer;font-size:11px;white-space:nowrap}.switch-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:4px 0}.switch-row span{font-size:12px}.switch-row input{width:18px;height:18px}.helper{font-size:10px;color:#73808a;line-height:1.35}.verification{margin-top:10px;padding:10px 11px;border-radius:11px;font-size:11px;line-height:1.45}.verification.ok{border:1px solid rgba(102,209,122,.38);background:rgba(102,209,122,.08);color:#9be6aa}.verification.bad{border:1px solid rgba(246,183,60,.42);background:rgba(246,183,60,.08);color:#f6c55d}.list-item{border:1px solid #26323a;border-radius:14px;padding:12px;background:#0d1419;margin-bottom:10px}.list-item-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}.list-item-title{font-size:13px;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.list-controls{display:flex;gap:5px}.icon-mini{width:31px;height:31px;border:1px solid #2b3943;background:#151e24;border-radius:9px;display:flex;align-items:center;justify-content:center;cursor:pointer}.add-btn{width:100%;border:1px dashed #3b4b56;background:rgba(53,221,213,.04);color:#9edbd7;border-radius:13px;padding:11px;cursor:pointer}.json-area{min-height:360px!important;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px!important;line-height:1.45}
+      .editor-section{display:flex;flex-direction:column;gap:12px}.editor-card{border:1px solid #26323a;border-radius:16px;background:#10171c;padding:13px}.editor-card-title{font-size:14px;font-weight:700;margin-bottom:11px}.editor-card-subtitle{font-size:11px;color:#7f8b94;margin:-6px 0 11px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{display:flex;flex-direction:column;gap:5px;min-width:0}.field.full{grid-column:1/-1}.field label{font-size:11px;color:#9aa6af;font-weight:600}.field input,.field select,.field textarea{width:100%;border:1px solid #2b3943;background:#0a1014;color:#f5f7fa;border-radius:10px;padding:9px 10px;outline:none;font-size:12px}.field input:focus,.field select:focus,.field textarea:focus{border-color:#35ddd5}.field textarea{min-height:90px;resize:vertical}.inline-field{display:grid;grid-template-columns:1fr auto;gap:7px}.tiny-btn{border:1px solid #2b3943;background:#151e24;color:#d9e0e5;border-radius:10px;padding:8px 9px;cursor:pointer;font-size:11px;white-space:nowrap}.switch-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:4px 0}.switch-row span{font-size:12px}.switch-row input{width:18px;height:18px}.helper{font-size:10px;color:#73808a;line-height:1.35}.verification{margin-top:10px;padding:10px 11px;border-radius:11px;font-size:11px;line-height:1.45}.verification.ok{border:1px solid rgba(102,209,122,.38);background:rgba(102,209,122,.08);color:#9be6aa}.verification.bad{border:1px solid rgba(246,183,60,.42);background:rgba(246,183,60,.08);color:#f6c55d}.list-item{border:1px solid #26323a;border-radius:14px;padding:12px;background:#0d1419;margin-bottom:10px}.list-item-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}.list-item-title{font-size:13px;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.list-controls{display:flex;gap:5px}.icon-mini{width:31px;height:31px;border:1px solid #2b3943;background:#151e24;border-radius:9px;display:flex;align-items:center;justify-content:center;cursor:pointer}.add-btn{width:100%;border:1px dashed #3b4b56;background:rgba(53,221,213,.04);color:#9edbd7;border-radius:13px;padding:11px;cursor:pointer}.support-order-list{display:flex;flex-direction:column;gap:7px}.support-order-row{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid #26323a;border-radius:12px;background:#0d1419;padding:8px 9px}.support-order-main{display:flex;align-items:center;gap:9px;min-width:0}.support-order-icon{width:34px;height:34px;border-radius:10px;background:#151e24;display:flex;align-items:center;justify-content:center;flex:0 0 auto}.support-order-copy{display:flex;flex-direction:column;min-width:0}.support-order-copy b{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.support-order-copy small,.list-item-meta{font-size:9.5px;color:#73808a;line-height:1.3}.support-order-controls{display:flex;gap:5px;flex:0 0 auto}.support-order-button:disabled,.optional-color .tiny-btn:disabled{opacity:.35;cursor:not-allowed}.support-editor-title-wrap{display:flex;align-items:center;gap:9px;min-width:0}.support-editor-group-title{font-size:10px;font-weight:750;text-transform:uppercase;letter-spacing:.55px;color:#7f8b94;margin:13px 0 8px;padding-top:10px;border-top:1px solid #202b32}.support-action-editor .support-editor-group-title:first-of-type{margin-top:4px}.inherit-note{font-size:9px;color:#6f7d86;font-weight:500}.optional-color input[type="color"]{min-height:38px;padding:4px}.json-area{min-height:360px!important;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px!important;line-height:1.45}
       .dialog-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.60);z-index:400;display:flex;align-items:center;justify-content:center;padding:18px}.dialog{width:min(520px,100%);max-height:min(80vh,720px);overflow:auto;border:1px solid #31404a;background:#0d1419;border-radius:18px;box-shadow:0 22px 70px rgba(0,0,0,.5);padding:16px}.dialog-title{font-size:17px;font-weight:720;margin-bottom:12px}.dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}.native-picker-host{min-height:52px;border:1px solid #26323a;border-radius:12px;padding:10px;background:#0a1014}.confirm-copy{color:#c8d0d6;font-size:13px;line-height:1.5}.system-grid{display:grid;grid-template-columns:auto 1fr;gap:7px 12px;font-size:12px}.system-grid .k{color:#84919a}.system-grid .v{color:#f5f7fa;word-break:break-word}.diagnostic-box{margin-top:12px;border:1px solid #26323a;background:#080d11;border-radius:12px;padding:10px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;white-space:pre-wrap;color:#aab5bc}
       @media(min-width:680px){.actions-grid{grid-template-columns:repeat(var(--cols-desktop),minmax(0,1fr))}.page{padding-top:18px}.drawer-backdrop{background:rgba(0,0,0,.22)}}
       @media(max-width:560px){.drawer{width:100vw}.drawer-backdrop{display:none}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.settings-btn{position:absolute}.page{position:relative}.drawer-head{padding-top:calc(14px + env(safe-area-inset-top))}}
@@ -796,6 +840,19 @@ class SmartSupportPanel extends HTMLElement {
     const min = extra.min !== undefined ? `min="${this._escape(extra.min)}"` : "";
     const max = extra.max !== undefined ? `max="${this._escape(extra.max)}"` : "";
     return `<div class="field ${full}"><label>${this._escape(label)}</label><input type="${inputType}" value="${this._escape(value ?? "")}" data-path="${this._escape(path)}" data-type="${inputType === "number" ? "number" : "string"}" ${step} ${min} ${max}>${extra.help ? `<div class="helper">${this._escape(extra.help)}</div>` : ""}</div>`;
+  }
+
+  _safeHexColor(value, fallback = "#000000") {
+    const raw = String(value || "").trim();
+    return /^#[0-9a-f]{6}$/i.test(raw) ? raw : fallback;
+  }
+
+  _optionalColorField(path, label, fallback, full = false) {
+    const cfg = this._editConfig || this._config();
+    const stored = this._getPath(cfg, path);
+    const inherited = !String(stored || "").trim();
+    const value = this._safeHexColor(stored, this._safeHexColor(fallback, "#000000"));
+    return `<div class="field ${full ? "full" : ""}"><label>${this._escape(label)}${inherited ? ' <span class="inherit-note">· heredado</span>' : ""}</label><div class="inline-field optional-color"><input type="color" value="${this._escape(value)}" data-path="${this._escape(path)}" data-type="string"><button class="tiny-btn" type="button" data-command="clear-setting" data-setting-path="${this._escape(path)}" ${inherited ? "disabled" : ""}>Heredar</button></div></div>`;
   }
 
   _iconField(path, label, full = false) {
@@ -875,20 +932,89 @@ class SmartSupportPanel extends HTMLElement {
     </div>`;
   }
 
-  _buttonEditor(button, index) {
+  _actionTypeLabel(type) {
+    return ({
+      support_start: "Permitir soporte",
+      support_stop: "Finalizar soporte",
+      support_extend: "Extender soporte",
+      entity: "Entidad",
+      whatsapp: "WhatsApp",
+      url: "URL externa",
+      navigate: "Navegación",
+      system_info: "Información"
+    })[type] || "Acción";
+  }
+
+  _actionOrderEditor(buttons, cfg) {
+    const rows = buttons.map((button, index) => {
+      const visual = this._actionVisual(button, cfg);
+      const visibility = button.show === false || button.visibility === "hidden"
+        ? "Oculto"
+        : button.visibility === "admin"
+          ? "Solo administradores"
+          : "Todos";
+      const condition = button.show_when === "active"
+        ? "solo soporte activo"
+        : button.show_when === "inactive"
+          ? "solo soporte inactivo"
+          : "siempre";
+      return `<div class="support-order-row">
+        <div class="support-order-main">
+          <span class="support-order-icon">${this._icon(button.icon || "mdi:gesture-tap-button", 20, visual.iconColor)}</span>
+          <span class="support-order-copy">
+            <b>${this._escape(button.label || `Acción ${index + 1}`)}</b>
+            <small>${this._escape(this._actionTypeLabel(button.type))} · ${visibility} · ${condition}</small>
+          </span>
+        </div>
+        <div class="support-order-controls">
+          <button class="icon-mini support-order-button" type="button" data-command="move-action-up" data-index="${index}" ${index === 0 ? "disabled" : ""} title="Subir acción" aria-label="Subir acción">${this._icon("mdi:chevron-up",18,"#aeb7be")}</button>
+          <button class="icon-mini support-order-button" type="button" data-command="move-action-down" data-index="${index}" ${index === buttons.length - 1 ? "disabled" : ""} title="Bajar acción" aria-label="Bajar acción">${this._icon("mdi:chevron-down",18,"#aeb7be")}</button>
+        </div>
+      </div>`;
+    }).join("");
+    return `<div class="support-order-list">${rows || '<div class="helper">No hay acciones configuradas.</div>'}</div>`;
+  }
+
+  _buttonEditor(button, index, cfg) {
     const p = `actions.buttons.${index}`;
-    return `<div class="list-item">
-      <div class="list-item-head"><div class="list-item-title">${this._escape(button.label || `Acción ${index+1}`)}</div><div class="list-controls">
-        <button class="icon-mini" data-command="move-action-up" data-index="${index}" title="Subir">${this._icon("mdi:chevron-up",18,"#aeb7be")}</button>
-        <button class="icon-mini" data-command="move-action-down" data-index="${index}" title="Bajar">${this._icon("mdi:chevron-down",18,"#aeb7be")}</button>
-        <button class="icon-mini" data-command="delete-action" data-index="${index}" title="Eliminar">${this._icon("mdi:delete-outline",18,"#ef8c89")}</button>
-      </div></div>
+    const visual = this._actionVisual(button, cfg);
+    return `<div class="list-item support-action-editor">
+      <div class="list-item-head">
+        <div class="support-editor-title-wrap">
+          <span class="support-order-icon">${this._icon(button.icon || "mdi:gesture-tap-button",20,visual.iconColor)}</span>
+          <div><div class="list-item-title">${this._escape(button.label || `Acción ${index+1}`)}</div><div class="list-item-meta">${this._escape(this._actionTypeLabel(button.type))}</div></div>
+        </div>
+        <div class="list-controls">
+          <button class="icon-mini" data-command="delete-action" data-index="${index}" title="Eliminar">${this._icon("mdi:delete-outline",18,"#ef8c89")}</button>
+        </div>
+      </div>
+      <div class="support-editor-group-title">Contenido y visibilidad</div>
       <div class="form-grid">
         ${this._field(`${p}.show`,"Mostrar","checkbox")}
         ${this._field(`${p}.visibility`,"Visibilidad","select",{options:[["all","Todos"],["admin","Solo administradores"],["hidden","Oculto"]]})}
         ${this._field(`${p}.show_when`,"Mostrar según soporte","select",{options:[["always","Siempre"],["active","Solo activo"],["inactive","Solo inactivo"]]})}
+        ${this._field(`${p}.wide`,"Ocupar fila completa","checkbox")}
         ${this._field(`${p}.label`,"Texto")}${this._field(`${p}.secondary`,"Texto secundario")}
         ${this._iconField(`${p}.icon`,"Icono",true)}
+      </div>
+
+      <div class="support-editor-group-title">Apariencia</div>
+      <div class="form-grid">
+        ${this._field(`${p}.layout`,"Distribución","select",{options:[["auto","Automática"],["vertical","Vertical"],["horizontal","Horizontal"]]})}
+        ${this._field(`${p}.align`,"Alineación","select",{options:[["inherit","Usar global"],["left","Izquierda"],["center","Centro"],["right","Derecha"]]})}
+        ${this._field(`${p}.icon_size`,"Tamaño icono (0 = global)","number",{min:0,max:72})}
+        ${this._field(`${p}.label_size`,"Tamaño texto (0 = global)","number",{min:0,max:30})}
+        ${this._field(`${p}.secondary_size`,"Tamaño secundario (0 = global)","number",{min:0,max:24})}
+        ${this._field(`${p}.border_width`,"Grosor borde (vacío = global)","number",{min:0,max:6})}
+        ${this._field(`${p}.icon_color`,"Color icono","color")}
+        ${this._optionalColorField(`${p}.label_color`,"Color texto",cfg.actions.button_label_color || cfg.design.value_color)}
+        ${this._optionalColorField(`${p}.secondary_color`,"Color secundario",cfg.actions.button_secondary_color || cfg.design.muted_color)}
+        ${this._optionalColorField(`${p}.background`,"Fondo",cfg.actions.button_background || cfg.design.card_background)}
+        ${this._optionalColorField(`${p}.border_color`,"Borde",cfg.actions.button_border_color || cfg.design.card_border_color)}
+      </div>
+
+      <div class="support-editor-group-title">Comportamiento</div>
+      <div class="form-grid">
         ${this._field(`${p}.type`,"Tipo","select",{options:[["support_start","Permitir soporte"],["support_stop","Finalizar soporte"],["support_extend","Extender soporte"],["entity","Entidad"],["whatsapp","WhatsApp"],["url","URL externa"],["navigate","Navegación interna"],["system_info","Información del sistema"]],full:true})}
         ${button.type === "support_extend" ? this._field(`${p}.hours`,"Horas a extender (0 = valor global)","number",{min:0,max:168,full:true}) : ""}
         ${button.type === "entity" ? `${this._entityField(`${p}.entity`,"Entidad","",true)}${this._field(`${p}.entity_action`,"Acción de entidad","select",{options:[["press","Presionar button.*"],["turn_on","Encender"],["turn_off","Apagar"],["toggle","Alternar"],["more_info","Más información"],["none","Ninguna"]],full:true})}` : ""}
@@ -900,9 +1026,6 @@ class SmartSupportPanel extends HTMLElement {
         ${this._field(`${p}.confirmation`,"Pedir confirmación","checkbox")}
         ${this._field(`${p}.disable_when`,"Desactivar según estado","select",{options:[["never","Nunca"],["active","Cuando soporte esté activo"],["inactive","Cuando soporte esté inactivo"]]})}
         ${button.confirmation ? this._field(`${p}.confirmation_text`,"Texto de confirmación","text",{full:true}) : ""}
-        ${this._field(`${p}.wide`,"Ocupar fila completa","checkbox")}
-        ${this._field(`${p}.icon_color`,"Color icono","color")}
-        ${this._field(`${p}.background`,"Fondo opcional")}${this._field(`${p}.border_color`,"Borde opcional")}
       </div>
     </div>`;
   }
@@ -910,15 +1033,31 @@ class SmartSupportPanel extends HTMLElement {
   _editorActions(cfg) {
     const buttons = cfg.actions.buttons || [];
     return `<div class="editor-section">
+      <div class="editor-card"><div class="editor-card-title">Orden de acciones</div><div class="editor-card-subtitle">Mueve cada acción con ↑ / ↓. El orden cambia inmediatamente en la vista previa; Guardar persiste y Cancelar restaura el último orden guardado.</div>
+        ${this._actionOrderEditor(buttons, cfg)}
+      </div>
+
       <div class="editor-card"><div class="editor-card-title">Presentación de acciones</div><div class="form-grid">
         ${this._field("actions.show","Mostrar acciones","checkbox",{full:true})}
         ${this._field("actions.title","Título")}${this._field("actions.subtitle","Subtítulo")}
+        ${this._field("actions.heading_align","Alineación encabezado","select",{options:[["left","Izquierda"],["center","Centro"],["right","Derecha"]]})}
+        ${this._field("actions.button_align","Alineación botones","select",{options:[["left","Izquierda"],["center","Centro"],["right","Derecha"]]})}
+        ${this._field("actions.title_size","Tamaño título","number",{min:10,max:40})}${this._field("actions.subtitle_size","Tamaño subtítulo","number",{min:9,max:30})}
+        ${this._optionalColorField("actions.title_color","Color título",cfg.design.value_color)}
+        ${this._optionalColorField("actions.subtitle_color","Color subtítulo",cfg.design.muted_color)}
         ${this._field("actions.columns_mobile","Columnas móvil","number",{min:1,max:4})}${this._field("actions.columns_desktop","Columnas escritorio","number",{min:1,max:6})}
         ${this._field("actions.button_height","Altura botones","number",{min:58,max:180})}${this._field("actions.radius","Radio","number",{min:0,max:50})}
-        ${this._field("actions.gap","Separación","number",{min:0,max:40})}
+        ${this._field("actions.gap","Separación","number",{min:0,max:40})}${this._field("actions.button_border_width","Grosor borde global","number",{min:0,max:6})}
+        ${this._field("actions.button_icon_size","Tamaño icono global","number",{min:14,max:72})}${this._field("actions.button_label_size","Tamaño texto global","number",{min:9,max:30})}
+        ${this._field("actions.button_secondary_size","Tamaño secundario global","number",{min:8,max:24})}
+        ${this._optionalColorField("actions.button_background","Fondo global",cfg.design.card_background)}
+        ${this._optionalColorField("actions.button_border_color","Borde global",cfg.design.card_border_color)}
+        ${this._optionalColorField("actions.button_label_color","Texto global",cfg.design.value_color)}
+        ${this._optionalColorField("actions.button_secondary_color","Texto secundario global",cfg.design.muted_color)}
       </div></div>
-      <div class="editor-card"><div class="editor-card-title">Botones</div><div class="editor-card-subtitle">Puedes agregar, eliminar y reordenar acciones. Los tipos Permitir/Finalizar/Extender usan el backend integrado; las demás acciones siguen siendo totalmente configurables.</div>
-        ${buttons.map((b,i)=>this._buttonEditor(b,i)).join("")}
+
+      <div class="editor-card"><div class="editor-card-title">Personalización por botón</div><div class="editor-card-subtitle">Texto, icono, colores, distribución, alineación y tamaños pueden heredarse de la presentación global o ajustarse individualmente. La lógica de cada acción se conserva.</div>
+        ${buttons.map((b,i)=>this._buttonEditor(b,i,cfg)).join("")}
         <button class="add-btn" data-command="add-action">+ Agregar acción</button>
       </div>
     </div>`;
@@ -1138,8 +1277,12 @@ class SmartSupportPanel extends HTMLElement {
     if (el.dataset.type === "number") value = this._num(value, 0);
     if (el.dataset.type === "bool") value = Boolean(el.checked);
     this._setPath(this._editConfig, path, value);
+    // Color Picker Guard: native color inputs emit many `input` events while
+    // the picker is open. Keep the working copy updated without rebuilding
+    // the drawer; the normal `change` event applies the preview when finished.
+    if (el.type === "color") return;
     // Do not rerender on every keystroke; keeps typing stable.
-    if (el.type === "color" || el.type === "checkbox" || el.tagName === "SELECT") this._rerenderEditorPreserve();
+    if (el.type === "checkbox" || el.tagName === "SELECT") this._rerenderEditorPreserve();
   }
 
   _onChange(ev) {
@@ -1396,6 +1539,7 @@ class SmartSupportPanel extends HTMLElement {
     else if (cmd === "start-confirm") { const input = this.shadowRoot.querySelector("[data-start-hours]"); const cfg = this._config().remote_support; const min = this._num(cfg.min_hours,2); const max = this._num(cfg.max_hours,24); const hours = Math.min(max, Math.max(min, this._num(input?.value,cfg.default_hours))); this._startSupport(hours); }
     else if (cmd === "dialog-cancel") { this._dialog = null; this._queueRender(); }
     else if (cmd === "dialog-confirm") { const b = this._dialog?.button; this._dialog = null; this._queueRender(); if (b) this._executeButton(b); }
+    else if (cmd === "clear-setting") { const path = el.dataset.settingPath; if (path && this._editConfig) { this._setPath(this._editConfig, path, ""); this._rerenderEditorPreserve(); } }
     else if (cmd === "copy-diagnostics") this._copyDiagnostics();
   }
 
@@ -1404,7 +1548,9 @@ class SmartSupportPanel extends HTMLElement {
     list.push({
       id: `action_${Date.now()}`, show: true, visibility: "all", show_when: "always", label: "Nueva acción", secondary: "", icon: "mdi:gesture-tap-button",
       type: "entity", entity: "", entity_action: "press", tap_behavior: "execute", hold_behavior: "more_info", confirmation: false,
-      confirmation_text: "", disable_when: "never", wide: false, icon_color: this._editConfig.design.accent_color, background: "", border_color: ""
+      confirmation_text: "", disable_when: "never", wide: false, icon_color: this._editConfig.design.accent_color,
+      layout: "auto", align: "inherit", icon_size: 0, label_size: 0, secondary_size: 0,
+      label_color: "", secondary_color: "", background: "", border_color: ""
     });
     this._rerenderEditorPreserve();
   }

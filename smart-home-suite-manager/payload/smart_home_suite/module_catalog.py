@@ -118,14 +118,14 @@ MODULE_CATALOG: tuple[ModuleSpec, ...] = (
         module_id="smart_support",
         name="Smart Support",
         option_label="Soporte remoto",
-        version="1.1.2",
+        version="1.2.0",
         panel_path="support",
         enabled_by_default=True,
         setup=setup_smart_support,
         unload=unload_smart_support,
         notes=(
-            "Remote account actions use Spook; Suite health and Repairs supervise "
-            "provider availability"
+            "V1.1.2 backend/session contract preserved; V1.2.0 adds compact action "
+            "ordering, inherited global/per-action visual customization and color guard"
         ),
     ),
 )

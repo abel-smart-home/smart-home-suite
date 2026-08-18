@@ -1,20 +1,19 @@
-# Smart Home Suite Manager 1.7.1
+# Smart Home Suite Manager 1.8.0
 
 Instala, actualiza, valida, repara y restaura Smart Home Suite en Home Assistant OS sin HACS.
 
-**Smart Home Suite 1.7.1 es STABLE**, validada previamente como pre-release en Home Assistant OS.
+**Smart Home Suite 1.8.0 es PRE-RELEASE.** Último release estable: **1.7.1**.
 
-Smart Automations queda en **1.1.1** con:
+Esta versión actualiza **Smart Support a 1.2.0** y conserva sin cambios funcionales los demás módulos.
 
-- Smart Automations Panel V1.0.0 intacto;
-- Layout runtime V1.0.0;
-- Color Picker Guard V1.0.0;
-- orden de categorías;
-- orden de automatizaciones dentro de cada categoría;
-- personalización visual por categoría y tarjeta;
-- selector de colores estable durante toda la interacción.
+Smart Support 1.2.0 añade:
 
-No cambia `.storage` ni la configuración nativa de las automatizaciones.
+- orden compacto e intuitivo de acciones con ↑ / ↓;
+- personalización global de colores, textos, tamaños y alineación;
+- personalización individual de cada botón;
+- distribución vertical/horizontal por botón;
+- Color Picker Guard;
+- compatibilidad con el mismo `.storage` y el mismo backend de soporte remoto.
 
 Acciones del Manager:
 

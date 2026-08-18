@@ -1,64 +1,86 @@
-# Smart Home Suite Manager 1.7.1 · STABLE
+# Smart Home Suite Manager 1.8.0 · PRE-RELEASE
+
+Último release estable: **1.7.1**.
 
 ## Instalar / actualizar / reparar
 
-1. Selecciona `validate_only` si deseas comprobar primero la instalación.
-2. Confirma `VALIDATION_OK`.
-3. Selecciona `install_repair`.
-4. Mantén `create_backup: true`.
-5. Inicia la App.
-6. Confirma:
+1. En una instancia laboratorio, actualiza Smart Home Suite Manager a 1.8.0.
+2. Selecciona `validate_only` y ejecuta la App.
+3. Confirma `VALIDATION_OK`.
+4. Selecciona `install_repair`.
+5. Mantén `create_backup: true`.
+6. Inicia la App.
+7. Confirma:
    - `PAYLOAD_VALIDATION_OK`
    - `STAGED_VALIDATION_OK`
    - `POST_INSTALL_VALIDATION_OK`
    - `INSTALLATION_OK`
-7. Reinicia Home Assistant.
-8. Si el navegador/app conserva recursos antiguos, realiza una recarga dura.
+8. Reinicia Home Assistant.
+9. Realiza recarga dura del navegador/app si conserva recursos antiguos.
 
-## Smart Automations 1.1.1
+## Smart Support 1.2.0
 
-### Orden
+### Orden de acciones
 
-En **Personalización → Orden**:
+En **Soporte → Personalización → Acciones** aparece primero **Orden de acciones**:
 
-- las categorías pueden moverse con ↑ / ↓;
-- las automatizaciones pueden moverse dentro de su propia categoría;
-- las categorías pueden personalizar texto, icono y colores.
+- cada fila muestra icono, nombre, tipo, visibilidad y condición de aparición;
+- ↑ / ↓ cambia solo el orden de `actions.buttons`;
+- la vista previa cambia inmediatamente;
+- Guardar persiste;
+- Cancelar revierte al último orden guardado.
 
-### Tarjetas
+### Presentación global
 
-En **Personalización → Tarjetas** se puede personalizar por automatización:
+Se puede personalizar:
 
-- título visible;
-- texto secundario;
-- icono MDI;
-- color y tamaño del icono;
-- color y tamaño de título/detalle;
-- fondo y borde;
-- colores Activa/Pausada/No encontrada;
-- mostrar/ocultar detalle y estado.
+- título y subtítulo;
+- alineación del encabezado;
+- alineación de botones;
+- colores de título/subtítulo;
+- fondo, borde, texto y texto secundario de botones;
+- grosor de borde;
+- tamaños de icono y textos;
+- columnas, altura, radio y separación.
+
+Los colores globales pueden quedar en modo **heredado**, manteniendo los valores de Diseño general.
+
+### Personalización por botón
+
+Cada botón conserva su lógica actual y puede ajustar individualmente:
+
+- texto y texto secundario;
+- icono e icon color;
+- distribución Automática / Vertical / Horizontal;
+- alineación Global / Izquierda / Centro / Derecha;
+- tamaño de icono, texto y texto secundario;
+- fondo, borde, color de texto y color secundario;
+- grosor de borde;
+- visibilidad, condición, ancho completo, tap/hold y confirmación.
 
 ### Selector de colores
 
-El Color Picker Guard V1.0.0 evita un rerender completo mientras el selector nativo está abierto.
-
-Flujo normal:
-
-1. Haz clic en un campo de color.
-2. Mueve la barra RGB/tono.
-3. Mueve el punto dentro del campo grande las veces necesarias.
-4. El selector permanece abierto.
-5. Al terminar/hacer clic fuera se aplica el preview.
-6. Guardar persiste.
-7. Cancelar revierte.
+El Color Picker Guard actualiza la copia de trabajo durante `input` sin reconstruir el drawer. El preview completo ocurre en `change`, de modo que el selector no parpadea ni se cierra antes de terminar.
 
 ## Compatibilidad
 
-La personalización visual se almacena en `smart_automations.config` y no modifica triggers, conditions ni actions de las automatizaciones nativas.
+No cambia el backend de Smart Support 1.1.2 ni:
+
+- `smart_support_panel.config`;
+- `smart_support_panel.session`;
+- servicios/WebSocket;
+- temporizador de soporte;
+- Spook;
+- entidades de estado;
+- navegación;
+- selectores;
+- responsive.
+
+No requiere migración.
 
 ## Restaurar
 
-Selecciona `restore_latest`, ejecuta la App, confirma `RESTORE_OK` y reinicia Home Assistant.
+Si la prueba falla, selecciona `restore_latest`, ejecuta la App, confirma `RESTORE_OK` y reinicia Home Assistant. También puedes reinstalar el release estable 1.7.1.
 
 ## Importante
 

@@ -1,7 +1,8 @@
-"""Smart Support Panel V1.1.2 module for Smart Home Suite.
+"""Smart Support Panel V1.2.0 module for Smart Home Suite.
 
-The frontend, session manager, constants and entity classes come from the
-original V1.1.2 package. Suite-specific code only adapts lifecycle/registration.
+The frontend, session manager, constants and entity classes preserve the
+validated Smart Support V1.1.2 backend contract. V1.2.0 changes only the
+Support frontend ordering/personalization layer and Suite version metadata.
 """
 
 from __future__ import annotations
@@ -40,7 +41,7 @@ PANEL_PATH = "support"
 WEB_COMPONENT = "smart-support-panel"
 STATIC_URL = "/smart_home_suite_static"
 FRONTEND_FILE = "smart-support-panel.js"
-MODULE_VERSION = "1.1.2"
+MODULE_VERSION = "1.2.0"
 
 HOURS_SCHEMA = vol.Schema(
     {vol.Optional("hours"): vol.All(
@@ -144,7 +145,7 @@ def _register_service_descriptions(hass: HomeAssistant) -> None:
 
 
 async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Register Smart Support V1.1.2 while preserving its legacy contract."""
+    """Register Smart Support V1.2.0 while preserving its legacy contract."""
     data = _data(hass)
     store = _store(hass)
 
@@ -177,7 +178,7 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         webcomponent_name=WEB_COMPONENT,
         sidebar_title="Soporte",
         sidebar_icon="mdi:headset",
-        module_url=f"{STATIC_URL}/{FRONTEND_FILE}?v=112-suite050",
+        module_url=f"{STATIC_URL}/{FRONTEND_FILE}?v=120-module120-suite180",
         require_admin=False,
         handle_safe_area=True,
         config={
