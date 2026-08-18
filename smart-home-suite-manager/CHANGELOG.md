@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.6.0 - 2026-08-18 · TEST
+
+- Actualiza **Smart Lighting a 1.3.0** manteniendo Smart Lighting Panel V1.0.3 como frontend base intacto.
+- Actualiza `smart-lighting-layout.js` a V1.2.0.
+- Amplía ordering runtime a V1.1.0 para incluir **Acciones globales** dentro del orden de áreas.
+- Permite mover Acciones globales arriba, abajo o entre áreas normales mediante ↑ / ↓.
+- Conserva el orden real de las áreas normales en `areas[]` y guarda únicamente la inserción especial en `global_actions.position`.
+- Amplía Global Actions runtime a V1.1.0.
+- Añade orden configurable de **Apagar todo** / **Encender todo** mediante `global_actions.button_order`.
+- Añade **Color activo** y **Color inactivo** por botón.
+- Apagar todo se considera activo cuando todas las entidades objetivo están apagadas; Encender todo cuando todas están encendidas; estados mezclados usan color inactivo.
+- Mantiene compatibilidad con el campo `color` de Suite 1.5.0 usándolo como fallback del color activo.
+- Conserva alcance, visibilidad, contador, selector MDI y ejecución dinámica sobre `light.*`/`switch.*`.
+- Conserva `.storage/smart_lighting_panel.config` versión 1 y WebSocket `smart_lighting_panel/config/*`.
+- No requiere migración destructiva y mantiene rollback compatible.
+- Mantiene sin cambios funcionales Smart Home 1.4.0, Smart Energy Advanced 1.4.0, Smart Automations 1.0.0 y Smart Support 1.1.2.
+- Refuerza `validate_release.py` para validar nuevas versiones, posición del área, orden de botones, colores por estado y cache-buster.
+- Publicar inicialmente como pre-release y promover el mismo tag a estable tras completar el checklist HAOS.
+
 ## 1.5.0 - 2026-08-18 · TEST
 
 - Actualiza **Smart Lighting a 1.2.0** manteniendo Smart Lighting Panel V1.0.3 como frontend base intacto.

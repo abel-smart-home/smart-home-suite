@@ -1,8 +1,9 @@
-"""Smart Lighting 1.2.0 module for Smart Home Suite.
+"""Smart Lighting 1.3.0 module for Smart Home Suite.
 
 The validated Smart Lighting Panel V1.0.3 frontend and its storage/API contract
-remain intact. Suite 1.5.0 loads a small layout runtime that preserves area/device
-ordering and adds optional global on/off actions without changing the legacy
+remain intact. Suite 1.6.0 loads a small layout runtime that preserves device
+ordering, lets Global Actions participate in area ordering, reorders its buttons,
+and adds active/inactive state colors without changing the legacy
 WebSocket namespace or .storage key.
 """
 
@@ -34,11 +35,11 @@ STATIC_URL = "/smart_home_suite_static"
 BASE_FRONTEND_FILE = "smart-lighting-panel.js"
 FRONTEND_FILE = "smart-lighting-layout.js"
 
-MODULE_VERSION = "1.2.0"
+MODULE_VERSION = "1.3.0"
 BASE_PANEL_VERSION = "1.0.3"
-LAYOUT_RUNTIME_VERSION = "1.1.0"
-ORDERING_RUNTIME_VERSION = "1.0.0"
-GLOBAL_ACTIONS_RUNTIME_VERSION = "1.0.0"
+LAYOUT_RUNTIME_VERSION = "1.2.0"
+ORDERING_RUNTIME_VERSION = "1.1.0"
+GLOBAL_ACTIONS_RUNTIME_VERSION = "1.1.0"
 
 
 def _frontend_dir() -> Path:
@@ -59,7 +60,7 @@ def _store(hass: HomeAssistant) -> Store[dict[str, Any]]:
 
 
 async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Register Smart Lighting 1.2.0 API and panel."""
+    """Register Smart Lighting 1.3.0 API and panel."""
     data = _data(hass)
 
     frontend_dir = _frontend_dir()
@@ -75,14 +76,17 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     runtime_text = await hass.async_add_executor_job(runtime_file.read_text, "utf-8")
     for required_token in (
-        'SMART_LIGHTING_LAYOUT_RUNTIME_VERSION = "1.1.0"',
-        'SMART_LIGHTING_ORDERING_RUNTIME_VERSION = "1.0.0"',
-        'SMART_LIGHTING_GLOBAL_ACTIONS_RUNTIME_VERSION = "1.0.0"',
-        'SMART_LIGHTING_EFFECTIVE_VERSION = "1.2.0"',
+        'SMART_LIGHTING_LAYOUT_RUNTIME_VERSION = "1.2.0"',
+        'SMART_LIGHTING_ORDERING_RUNTIME_VERSION = "1.1.0"',
+        'SMART_LIGHTING_GLOBAL_ACTIONS_RUNTIME_VERSION = "1.1.0"',
+        'SMART_LIGHTING_EFFECTIVE_VERSION = "1.3.0"',
         'move-lighting-area',
         'move-lighting-device',
         'lighting-global-turn-off',
         'lighting-global-turn-on',
+        'move-lighting-global-button',
+        'active_color',
+        'inactive_color',
     ):
         if required_token not in runtime_text:
             _LOGGER.error(
@@ -128,7 +132,7 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         webcomponent_name=WEB_COMPONENT,
         sidebar_title="Iluminación",
         sidebar_icon="mdi:lightbulb-group",
-        module_url=f"{STATIC_URL}/{FRONTEND_FILE}?v=110-module120-suite150",
+        module_url=f"{STATIC_URL}/{FRONTEND_FILE}?v=120-module130-suite160",
         require_admin=False,
         handle_safe_area=True,
         config={

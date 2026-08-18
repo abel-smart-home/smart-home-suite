@@ -1,4 +1,4 @@
-# Smart Home Suite Manager 1.5.0 · PRE-RELEASE
+# Smart Home Suite Manager 1.6.0 · PRE-RELEASE
 
 ## Instalar / actualizar / reparar
 
@@ -14,30 +14,35 @@
 
 El Manager conserva staging, backup y rollback.
 
-## Smart Lighting 1.2.0
+## Smart Lighting 1.3.0
 
-Conserva Smart Lighting Panel V1.0.3 como base y utiliza `smart-lighting-layout.js` V1.1.0.
+Conserva Smart Lighting Panel V1.0.3 como base y utiliza `smart-lighting-layout.js` V1.2.0.
 
-### Reordenamiento conservado
+### Orden de áreas
 
-- **Áreas → Orden de áreas:** mueve áreas completas con ↑ / ↓.
-- **Áreas → Orden de dispositivos:** mueve cada luz o interruptor dentro de su propia área.
+- **Acciones globales** aparece junto con las áreas normales en **Áreas → Orden de áreas**.
+- Usa ↑ / ↓ para colocarla arriba, abajo o entre otras áreas.
+- El orden de las áreas normales continúa persistiendo en `areas[]`.
+- La posición especial se guarda en `global_actions.position`.
+
+### Orden de botones globales
+
+En **Áreas → Acciones globales → Orden de botones**:
+
+- reordena **Apagar todo** y **Encender todo** con ↑ / ↓;
+- el orden se guarda en `global_actions.button_order`;
 - Guardar persiste y Cancelar descarta.
 
-### Acciones globales
+### Colores por estado
 
-En **Áreas → Acciones globales**:
+Cada botón dispone de:
 
-- activa `Mostrar área de acciones`;
-- configura título, icono y color del área;
-- activa/desactiva **Apagar todo** y **Encender todo** por separado;
-- configura texto, icono MDI y color de cada botón;
-- elige alcance `Todos los configurados` o `Solo dispositivos visibles`;
-- opcionalmente muestra el número de entidades disponibles.
+- **Color activo**;
+- **Color inactivo**.
 
-Las acciones admiten `light.*` y `switch.*`, eliminan duplicados y omiten entidades inexistentes, `unavailable` o `unknown`.
+**Apagar todo** está activo cuando todas las entidades objetivo están apagadas. **Encender todo** está activo cuando todas están encendidas. Con estados mezclados ambos usan el color inactivo. Sin entidades válidas permanecen deshabilitados.
 
-No se crea una nueva clave `.storage`; la nueva configuración se guarda como `global_actions` dentro de `smart_lighting_panel.config`.
+Los campos `color` existentes de 1.5.0 se conservan como fallback para el nuevo color activo, por lo que no se pierde personalización previa.
 
 ## Restaurar
 

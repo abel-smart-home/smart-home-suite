@@ -1,28 +1,29 @@
 /**
- * Smart Home Suite · Smart Lighting layout runtime v1.1.0
+ * Smart Home Suite · Smart Lighting layout runtime v1.2.0
  *
  * Base frontend preserved:
  *   Smart Lighting Panel V1.0.3
  *
  * Runtime features:
- * - ordering runtime v1.0.0: reorderable areas and devices;
- * - global actions runtime v1.0.0: optional Turn all off / Turn all on area;
+ * - ordering runtime v1.1.0: reorderable areas, including Global Actions, and devices;
+ * - global actions runtime v1.1.0: reorderable Turn all off / Turn all on buttons
+ *   with configurable active/inactive colors;
  * - live preview through the existing editor working copy;
- * - effective module version label 1.2.0.
+ * - effective module version label 1.3.0.
  *
  * Storage remains smart_lighting_panel.config (storage version 1).
  * No migration is required. Existing arrays keep their current schema and the
  * optional global_actions object is ignored by older builds if rolled back.
  */
 
-import "./smart-lighting-panel.js?v=103-suite150-base";
+import "./smart-lighting-panel.js?v=103-suite160-base";
 
-const SMART_LIGHTING_LAYOUT_RUNTIME_VERSION = "1.1.0";
-const SMART_LIGHTING_ORDERING_RUNTIME_VERSION = "1.0.0";
-const SMART_LIGHTING_GLOBAL_ACTIONS_RUNTIME_VERSION = "1.0.0";
-const SMART_LIGHTING_EFFECTIVE_VERSION = "1.2.0";
+const SMART_LIGHTING_LAYOUT_RUNTIME_VERSION = "1.2.0";
+const SMART_LIGHTING_ORDERING_RUNTIME_VERSION = "1.1.0";
+const SMART_LIGHTING_GLOBAL_ACTIONS_RUNTIME_VERSION = "1.1.0";
+const SMART_LIGHTING_EFFECTIVE_VERSION = "1.3.0";
 const LAYOUT_MARKER = Symbol.for(
-  "smart-home-suite-smart-lighting-layout-v1.1.0"
+  "smart-home-suite-smart-lighting-layout-v1.2.0"
 );
 
 const GLOBAL_ACTION_DEFAULTS = Object.freeze({
@@ -32,17 +33,23 @@ const GLOBAL_ACTION_DEFAULTS = Object.freeze({
   icon_color: "#ffd66b",
   show_count: true,
   scope: "all",
+  position: null,
+  button_order: ["off", "on"],
   off_button: {
     show: true,
     label: "Apagar todo",
     icon: "mdi:lightbulb-group-off",
     color: "#ef6461",
+    active_color: "#ef6461",
+    inactive_color: "#7e8b96",
   },
   on_button: {
     show: true,
     label: "Encender todo",
     icon: "mdi:lightbulb-group",
     color: "#ffd66b",
+    active_color: "#ffd66b",
+    inactive_color: "#7e8b96",
   },
 });
 
@@ -60,14 +67,58 @@ function globalActionsConfig(cfg) {
   const on = source.on_button && typeof source.on_button === "object"
     ? source.on_button
     : {};
+  const areaCount = Array.isArray(cfg?.areas) ? cfg.areas.length : 0;
+  const hasPosition = source.position !== undefined && source.position !== null && source.position !== "";
+  const rawPosition = hasPosition ? Number(source.position) : Number.NaN;
+  const position = Number.isFinite(rawPosition)
+    ? Math.max(0, Math.min(areaCount, Math.round(rawPosition)))
+    : areaCount;
+
+  const requestedOrder = Array.isArray(source.button_order)
+    ? source.button_order.map((item) => String(item))
+    : [];
+  const buttonOrder = [];
+  for (const key of [...requestedOrder, "off", "on"]) {
+    if ((key === "off" || key === "on") && !buttonOrder.includes(key)) buttonOrder.push(key);
+  }
+
+  const offButton = {
+    ...GLOBAL_ACTION_DEFAULTS.off_button,
+    ...off,
+    active_color: off.active_color || off.color || GLOBAL_ACTION_DEFAULTS.off_button.active_color,
+    inactive_color: off.inactive_color || GLOBAL_ACTION_DEFAULTS.off_button.inactive_color,
+  };
+  const onButton = {
+    ...GLOBAL_ACTION_DEFAULTS.on_button,
+    ...on,
+    active_color: on.active_color || on.color || GLOBAL_ACTION_DEFAULTS.on_button.active_color,
+    inactive_color: on.inactive_color || GLOBAL_ACTION_DEFAULTS.on_button.inactive_color,
+  };
 
   return {
     ...GLOBAL_ACTION_DEFAULTS,
     ...source,
     scope: source.scope === "visible" ? "visible" : "all",
-    off_button: { ...GLOBAL_ACTION_DEFAULTS.off_button, ...off },
-    on_button: { ...GLOBAL_ACTION_DEFAULTS.on_button, ...on },
+    position,
+    button_order: buttonOrder,
+    off_button: offButton,
+    on_button: onButton,
   };
+}
+
+function areaOrderEntries(cfg) {
+  const areas = Array.isArray(cfg?.areas) ? cfg.areas : [];
+  const actions = globalActionsConfig(cfg);
+  const entries = areas.map((area, areaIndex) => ({
+    kind: "area",
+    area,
+    areaIndex,
+  }));
+  entries.splice(actions.position, 0, {
+    kind: "global",
+    actions,
+  });
+  return entries;
 }
 
 function moveButton(action, direction, attrs, disabled, label) {
@@ -84,14 +135,35 @@ function moveButton(action, direction, attrs, disabled, label) {
 }
 
 function renderAreaOrderEditor(panel, cfg) {
-  const areas = Array.isArray(cfg?.areas) ? cfg.areas : [];
-  const rows = areas.map((area, index) => {
+  const entries = areaOrderEntries(cfg);
+  const rows = entries.map((entry, index) => {
+    if (entry.kind === "global") {
+      const actions = entry.actions;
+      const attrs = 'data-area-kind="global"';
+      return `
+        <div class="lighting-order-row lighting-order-global-area-row">
+          <div class="lighting-order-main">
+            <span class="lighting-order-icon">${panel._icon(actions.icon || "mdi:lightbulb-group", 21, actions.icon_color || cfg?.design?.accent_color || "#ffd66b")}</span>
+            <span class="lighting-order-copy">
+              <span class="lighting-order-name">${escapeValue(panel, actions.title || "Acciones globales")}</span>
+              <span class="lighting-order-meta">${actions.show ? "Visible" : "Oculta"} · área especial</span>
+            </span>
+          </div>
+          <div class="row-actions">
+            ${moveButton("move-lighting-area", -1, attrs, index === 0, "Subir Acciones globales")}
+            ${moveButton("move-lighting-area", 1, attrs, index === entries.length - 1, "Bajar Acciones globales")}
+          </div>
+        </div>`;
+    }
+
+    const area = entry.area;
+    const areaIndex = entry.areaIndex;
     const id = String(area?.id || "");
-    const label = area?.name || id || `Área ${index + 1}`;
+    const label = area?.name || id || `Área ${areaIndex + 1}`;
     const icon = area?.icon || "mdi:home-outline";
     const color = area?.icon_color || cfg?.design?.accent_color || "#ffd66b";
     const count = Array.isArray(area?.devices) ? area.devices.length : 0;
-    const attrs = `data-area-id="${escapeValue(panel, id)}" data-area-index="${index}"`;
+    const attrs = `data-area-kind="area" data-area-id="${escapeValue(panel, id)}" data-area-index="${areaIndex}"`;
 
     return `
       <div class="lighting-order-row">
@@ -104,7 +176,7 @@ function renderAreaOrderEditor(panel, cfg) {
         </div>
         <div class="row-actions">
           ${moveButton("move-lighting-area", -1, attrs, index === 0, "Subir área")}
-          ${moveButton("move-lighting-area", 1, attrs, index === areas.length - 1, "Bajar área")}
+          ${moveButton("move-lighting-area", 1, attrs, index === entries.length - 1, "Bajar área")}
         </div>
       </div>`;
   }).join("");
@@ -112,7 +184,7 @@ function renderAreaOrderEditor(panel, cfg) {
   return panel._section(
     "Orden de áreas",
     `<div class="help">
-      Cambia la posición completa de las áreas. El orden se refleja inmediatamente en la vista previa.
+      Cambia la posición completa de las áreas, incluida <b>Acciones globales</b>. El orden se refleja inmediatamente en la vista previa.
       Guardar lo persiste; Cancelar vuelve al último orden guardado. Las áreas nuevas aparecen aquí automáticamente.
     </div>
     <div class="lighting-order-list">
@@ -187,6 +259,39 @@ function renderDeviceOrderEditor(panel, cfg) {
   );
 }
 
+function renderGlobalButtonOrder(panel, actions) {
+  const buttons = {
+    off: actions.off_button,
+    on: actions.on_button,
+  };
+  const rows = actions.button_order.map((key, index) => {
+    const button = buttons[key];
+    if (!button) return "";
+    const label = button.label || (key === "off" ? "Apagar todo" : "Encender todo");
+    const icon = button.icon || (key === "off" ? "mdi:lightbulb-group-off" : "mdi:lightbulb-group");
+    const color = button.active_color || button.color || "#ffd66b";
+    const attrs = `data-global-button="${key}"`;
+    return `
+      <div class="lighting-order-row lighting-order-device-row">
+        <div class="lighting-order-main">
+          <span class="lighting-order-icon">${panel._icon(icon, 20, color)}</span>
+          <span class="lighting-order-copy">
+            <span class="lighting-order-name">${escapeValue(panel, label)}</span>
+            <span class="lighting-order-meta">${button.show === false ? "Oculto" : "Visible"}</span>
+          </span>
+        </div>
+        <div class="row-actions">
+          ${moveButton("move-lighting-global-button", -1, attrs, index === 0, "Mover botón a la izquierda/arriba")}
+          ${moveButton("move-lighting-global-button", 1, attrs, index === actions.button_order.length - 1, "Mover botón a la derecha/abajo")}
+        </div>
+      </div>`;
+  }).join("");
+  return `<div class="lighting-global-editor-group">
+    <div class="lighting-global-editor-title">Orden de botones</div>
+    <div class="lighting-order-list lighting-global-button-order">${rows}</div>
+  </div>`;
+}
+
 function renderGlobalActionsEditor(panel, cfg) {
   const actions = globalActionsConfig(cfg);
   return panel._section(
@@ -198,16 +303,18 @@ function renderGlobalActionsEditor(panel, cfg) {
      ${panel._input("global_actions.show_count", "Mostrar cantidad disponible", actions.show_count !== false, { type: "checkbox" })}
      ${panel._input("global_actions.scope", "Alcance", actions.scope, { type: "select", options: [["all", "Todos los configurados"], ["visible", "Solo dispositivos visibles"]] })}
      <div class="help">
-       Los botones actúan sobre entidades <b>light.*</b> y <b>switch.*</b> configuradas en este panel.
+       La posición de esta área se cambia desde <b>Orden de áreas</b>. Los botones actúan sobre entidades <b>light.*</b> y <b>switch.*</b> configuradas en este panel.
        Se eliminan duplicados y se omiten entidades inexistentes, <b>unavailable</b> o <b>unknown</b>.
      </div>
+     ${renderGlobalButtonOrder(panel, actions)}
      <div class="lighting-global-editor-group">
        <div class="lighting-global-editor-title">Botón Apagar todo</div>
        <div class="device-editor-grid">
          ${panel._input("global_actions.off_button.show", "Mostrar botón", actions.off_button.show !== false, { type: "checkbox" })}
          ${panel._input("global_actions.off_button.label", "Texto", actions.off_button.label)}
          ${panel._iconInput("global_actions.off_button.icon", "Icono", actions.off_button.icon)}
-         ${panel._input("global_actions.off_button.color", "Color", actions.off_button.color, { type: "color" })}
+         ${panel._input("global_actions.off_button.active_color", "Color activo", actions.off_button.active_color, { type: "color" })}
+         ${panel._input("global_actions.off_button.inactive_color", "Color inactivo", actions.off_button.inactive_color, { type: "color" })}
        </div>
      </div>
      <div class="lighting-global-editor-group">
@@ -216,8 +323,13 @@ function renderGlobalActionsEditor(panel, cfg) {
          ${panel._input("global_actions.on_button.show", "Mostrar botón", actions.on_button.show !== false, { type: "checkbox" })}
          ${panel._input("global_actions.on_button.label", "Texto", actions.on_button.label)}
          ${panel._iconInput("global_actions.on_button.icon", "Icono", actions.on_button.icon)}
-         ${panel._input("global_actions.on_button.color", "Color", actions.on_button.color, { type: "color" })}
+         ${panel._input("global_actions.on_button.active_color", "Color activo", actions.on_button.active_color, { type: "color" })}
+         ${panel._input("global_actions.on_button.inactive_color", "Color inactivo", actions.on_button.inactive_color, { type: "color" })}
        </div>
+     </div>
+     <div class="help">
+       <b>Activo</b>: Encender todo cuando todas las entidades están encendidas; Apagar todo cuando todas están apagadas.
+       Con estados mezclados ambos botones usan su color inactivo. Sin entidades disponibles permanecen deshabilitados.
      </div>`
   );
 }
@@ -258,14 +370,53 @@ function moveArea(panel, target) {
   const areas = panel?._editConfig?.areas;
   if (!Array.isArray(areas)) return false;
 
-  const index = findAreaIndex(panel, target);
+  const actions = globalActionsConfig(panel._editConfig);
+  const entries = areas.map((area) => ({ kind: "area", area }));
+  entries.splice(actions.position, 0, { kind: "global" });
+
+  let index = -1;
+  if (target?.dataset?.areaKind === "global") {
+    index = entries.findIndex((entry) => entry.kind === "global");
+  } else {
+    const areaIndex = findAreaIndex(panel, target);
+    if (areaIndex >= 0) {
+      const area = areas[areaIndex];
+      index = entries.findIndex((entry) => entry.kind === "area" && entry.area === area);
+    }
+  }
   if (index < 0) return false;
 
   const direction = Number(target?.dataset?.direction) < 0 ? -1 : 1;
   const next = index + direction;
-  if (next < 0 || next >= areas.length) return false;
+  if (next < 0 || next >= entries.length) return false;
 
-  [areas[index], areas[next]] = [areas[next], areas[index]];
+  [entries[index], entries[next]] = [entries[next], entries[index]];
+  panel._editConfig.areas = entries
+    .filter((entry) => entry.kind === "area")
+    .map((entry) => entry.area);
+  const globalPosition = entries.findIndex((entry) => entry.kind === "global");
+  if (!panel._editConfig.global_actions || typeof panel._editConfig.global_actions !== "object") {
+    panel._editConfig.global_actions = {};
+  }
+  panel._editConfig.global_actions.position = globalPosition;
+  return true;
+}
+
+function moveGlobalButton(panel, target) {
+  if (!panel?._editConfig) return false;
+  const key = String(target?.dataset?.globalButton || "");
+  if (key !== "off" && key !== "on") return false;
+  const order = [...globalActionsConfig(panel._editConfig).button_order];
+  const index = order.indexOf(key);
+  if (index < 0) return false;
+  const direction = Number(target?.dataset?.direction) < 0 ? -1 : 1;
+  const next = index + direction;
+  if (next < 0 || next >= order.length) return false;
+  [order[index], order[next]] = [order[next], order[index]];
+  if (!panel._editConfig.global_actions || typeof panel._editConfig.global_actions !== "object") {
+    panel._editConfig.global_actions = {};
+  }
+  panel._editConfig.global_actions.button_order = order;
   return true;
 }
 
@@ -290,10 +441,10 @@ function moveDevice(panel, target) {
   return true;
 }
 
-function collectGlobalEntities(panel, cfg) {
+function collectGlobalTargets(panel, cfg) {
   const actions = globalActionsConfig(cfg);
   const onlyVisible = actions.scope === "visible";
-  const entities = new Set();
+  const entities = new Map();
 
   for (const area of Array.isArray(cfg?.areas) ? cfg.areas : []) {
     if (onlyVisible && area?.show === false) continue;
@@ -305,23 +456,38 @@ function collectGlobalEntities(panel, cfg) {
       if (!stateObj) continue;
       const state = String(stateObj.state || "").toLowerCase();
       if (["unavailable", "unknown", "none"].includes(state)) continue;
-      entities.add(entity);
+      if (!entities.has(entity)) entities.set(entity, { entity, state });
     }
   }
 
-  return [...entities];
+  return [...entities.values()];
 }
 
-function globalButton(panel, cfg, button, action, disabled) {
+function collectGlobalEntities(panel, cfg) {
+  return collectGlobalTargets(panel, cfg).map((target) => target.entity);
+}
+
+function globalAggregateState(targets) {
+  if (!targets.length) return { allOn: false, allOff: false };
+  return {
+    allOn: targets.every((target) => target.state === "on"),
+    allOff: targets.every((target) => target.state === "off"),
+  };
+}
+
+function globalButton(panel, cfg, button, key, action, disabled, active) {
   if (button?.show === false) return "";
-  const color = button?.color || cfg?.design?.accent_color || "#ffd66b";
-  const label = button?.label || (action === "lighting-global-turn-off" ? "Apagar todo" : "Encender todo");
-  const icon = button?.icon || (action === "lighting-global-turn-off" ? "mdi:lightbulb-group-off" : "mdi:lightbulb-group");
+  const activeColor = button?.active_color || button?.color || cfg?.design?.accent_color || "#ffd66b";
+  const inactiveColor = button?.inactive_color || cfg?.design?.muted_color || "#7e8b96";
+  const color = active ? activeColor : inactiveColor;
+  const label = button?.label || (key === "off" ? "Apagar todo" : "Encender todo");
+  const icon = button?.icon || (key === "off" ? "mdi:lightbulb-group-off" : "mdi:lightbulb-group");
 
   return `<button
-    class="smart-global-action-button"
+    class="smart-global-action-button ${active ? "is-active" : "is-inactive"}"
     type="button"
     data-action="${action}"
+    data-global-state="${active ? "active" : "inactive"}"
     style="--global-action-color:${escapeValue(panel, color)}"
     ${disabled ? "disabled" : ""}
     aria-label="${escapeValue(panel, label)}"
@@ -335,12 +501,34 @@ function renderGlobalActionsArea(panel, cfg) {
   const actions = globalActionsConfig(cfg);
   if (!actions.show) return "";
 
-  const entities = collectGlobalEntities(panel, cfg);
-  const count = entities.length;
-  const buttons = [
-    globalButton(panel, cfg, actions.off_button, "lighting-global-turn-off", count === 0),
-    globalButton(panel, cfg, actions.on_button, "lighting-global-turn-on", count === 0),
-  ].filter(Boolean).join("");
+  const targets = collectGlobalTargets(panel, cfg);
+  const count = targets.length;
+  const state = globalAggregateState(targets);
+  const definitions = {
+    off: {
+      button: actions.off_button,
+      action: "lighting-global-turn-off",
+      active: state.allOff,
+    },
+    on: {
+      button: actions.on_button,
+      action: "lighting-global-turn-on",
+      active: state.allOn,
+    },
+  };
+  const buttons = actions.button_order.map((key) => {
+    const definition = definitions[key];
+    if (!definition) return "";
+    return globalButton(
+      panel,
+      cfg,
+      definition.button,
+      key,
+      definition.action,
+      count === 0,
+      definition.active
+    );
+  }).filter(Boolean).join("");
   if (!buttons) return "";
 
   const title = actions.title || "Acciones globales";
@@ -365,9 +553,21 @@ function mountGlobalActionsArea(panel, cfg) {
   areas.querySelector?.(".smart-global-actions-area")?.remove?.();
   const html = renderGlobalActionsArea(panel, cfg);
   if (!html) return;
+
   const template = document.createElement("template");
   template.innerHTML = html.trim();
-  if (template.content.firstElementChild) areas.append(template.content.firstElementChild);
+  const node = template.content.firstElementChild;
+  if (!node) return;
+
+  const actions = globalActionsConfig(cfg);
+  const configuredAreas = Array.isArray(cfg?.areas) ? cfg.areas : [];
+  const rendersArea = (area) => area?.show !== false &&
+    Array.isArray(area?.devices) && area.devices.some((device) => device?.show !== false);
+  const visibleBefore = configuredAreas
+    .slice(0, actions.position)
+    .filter(rendersArea).length;
+  const regularNodes = [...areas.children].filter((child) => !child.classList?.contains("smart-global-actions-area"));
+  areas.insertBefore(node, regularNodes[visibleBefore] || null);
 }
 
 async function executeGlobalAction(panel, turnOn) {
@@ -408,6 +608,7 @@ function layoutStyles() {
     .lighting-order-group .lighting-order-list{padding:8px}
     .lighting-order-row{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0;padding:9px 10px;border:1px solid #26323a;border-radius:12px;background:#10181e}
     .lighting-order-device-row{background:#0f171c}
+    .lighting-order-global-area-row{border-color:#665d31;background:#15170f}
     .lighting-order-main{display:flex;align-items:center;gap:9px;min-width:0}
     .lighting-order-icon{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:rgba(255,255,255,.035);flex:none}
     .lighting-order-copy{display:flex;flex-direction:column;gap:2px;min-width:0}
@@ -418,8 +619,11 @@ function layoutStyles() {
     .lighting-order-button[disabled]{opacity:.32;cursor:not-allowed}
     .lighting-global-editor-group{grid-column:1/-1;border:1px solid #26323a;border-radius:14px;background:#0d151a;overflow:hidden}
     .lighting-global-editor-title{padding:10px 11px;border-bottom:1px solid #26323a;color:#dce3e8;font-size:12px;font-weight:700}
+    .lighting-global-button-order{padding:8px}
     .smart-global-actions-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--global-action-gap,10px)}
     .smart-global-action-button{min-width:0;min-height:104px;border:1px solid color-mix(in srgb,var(--global-action-color) 36%,#26323a);border-radius:18px;padding:14px;background:color-mix(in srgb,var(--global-action-color) 8%,#11181e);color:#f5f7fa;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:14px;text-align:left;cursor:pointer;box-shadow:0 10px 30px rgba(0,0,0,.14);transition:transform .12s ease,background .18s ease,border-color .18s ease}
+    .smart-global-action-button.is-active{background:color-mix(in srgb,var(--global-action-color) 14%,#11181e);border-color:color-mix(in srgb,var(--global-action-color) 58%,#26323a);box-shadow:0 10px 30px rgba(0,0,0,.14),0 0 0 1px color-mix(in srgb,var(--global-action-color) 12%,transparent)}
+    .smart-global-action-button.is-inactive{background:color-mix(in srgb,var(--global-action-color) 6%,#11181e);border-color:color-mix(in srgb,var(--global-action-color) 30%,#26323a)}
     .smart-global-action-button:hover{background:color-mix(in srgb,var(--global-action-color) 12%,#11181e);border-color:color-mix(in srgb,var(--global-action-color) 52%,#26323a)}
     .smart-global-action-button:active{transform:scale(.985)}
     .smart-global-action-button[disabled]{opacity:.42;cursor:not-allowed;transform:none}
@@ -474,6 +678,14 @@ function installLightingLayoutRuntime() {
 
       if (action === "move-lighting-device") {
         if (moveDevice(this, target)) {
+          this._lastSignature = "";
+          this._queueRender?.(true);
+        }
+        return;
+      }
+
+      if (action === "move-lighting-global-button") {
+        if (moveGlobalButton(this, target)) {
           this._lastSignature = "";
           this._queueRender?.(true);
         }

@@ -287,15 +287,20 @@ def validate() -> None:
         encoding="utf-8"
     )
     for required_token in (
-        'SMART_LIGHTING_LAYOUT_RUNTIME_VERSION = "1.1.0"',
-        'SMART_LIGHTING_ORDERING_RUNTIME_VERSION = "1.0.0"',
-        'SMART_LIGHTING_GLOBAL_ACTIONS_RUNTIME_VERSION = "1.0.0"',
-        'SMART_LIGHTING_EFFECTIVE_VERSION = "1.2.0"',
+        'SMART_LIGHTING_LAYOUT_RUNTIME_VERSION = "1.2.0"',
+        'SMART_LIGHTING_ORDERING_RUNTIME_VERSION = "1.1.0"',
+        'SMART_LIGHTING_GLOBAL_ACTIONS_RUNTIME_VERSION = "1.1.0"',
+        'SMART_LIGHTING_EFFECTIVE_VERSION = "1.3.0"',
         'move-lighting-area',
         'move-lighting-device',
         'lighting-global-turn-off',
         'lighting-global-turn-on',
+        'move-lighting-global-button',
         'global_actions',
+        'global_actions.position',
+        'button_order',
+        'active_color',
+        'inactive_color',
         'collectGlobalEntities',
         'smart_lighting_panel.config',
     ):
@@ -311,12 +316,12 @@ def validate() -> None:
     for required_token in (
         'BASE_FRONTEND_FILE = "smart-lighting-panel.js"',
         'FRONTEND_FILE = "smart-lighting-layout.js"',
-        'MODULE_VERSION = "1.2.0"',
+        'MODULE_VERSION = "1.3.0"',
         'BASE_PANEL_VERSION = "1.0.3"',
-        'LAYOUT_RUNTIME_VERSION = "1.1.0"',
-        'ORDERING_RUNTIME_VERSION = "1.0.0"',
-        'GLOBAL_ACTIONS_RUNTIME_VERSION = "1.0.0"',
-        '?v=110-module120-suite150',
+        'LAYOUT_RUNTIME_VERSION = "1.2.0"',
+        'ORDERING_RUNTIME_VERSION = "1.1.0"',
+        'GLOBAL_ACTIONS_RUNTIME_VERSION = "1.1.0"',
+        '?v=120-module130-suite160',
     ):
         if required_token not in smart_lighting_wrapper:
             fail(f"smart_lighting wrapper is missing required token {required_token!r}")
