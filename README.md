@@ -2,7 +2,7 @@
 
 Repositorio de distribución de **Smart Home Suite** para Home Assistant OS sin HACS.
 
-## Smart Home Suite 1.2.0 — PRE-RELEASE
+## Smart Home Suite 1.2.0 — STABLE
 
 **Smart Home Suite 1.2.0** amplía Smart Home sin reconstruir el panel validado: mantiene Smart Home Panel 2.0.5 y Native Dashboard Bridge 1.3.0, y añade mediante el runtime de la Suite tarjetas opcionales, reordenables y personalizables.
 
