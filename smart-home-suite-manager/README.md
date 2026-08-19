@@ -1,6 +1,6 @@
-# Smart Home Suite Manager 1.12.0
+# Smart Home Suite Manager 1.12.1
 
-Smart Home Suite 1.12.0 es un **PRE-RELEASE** para validar el primer responsive de Smart Energy Advanced 1.5.0.
+Smart Home Suite 1.12.1 es un **PRE-RELEASE** para validar el refinamiento de tablet de Smart Energy Advanced 1.5.1.
 
 **Último release estable:** 1.11.0.
 
@@ -8,20 +8,19 @@ Smart Home Suite 1.12.0 es un **PRE-RELEASE** para validar el primer responsive 
 
 - Smart Home 1.4.0
 - Smart Lighting 1.4.1
-- Smart Energy Advanced 1.5.0
+- Smart Energy Advanced 1.5.1
 - Smart Automations 1.3.0
 - Smart Support 1.2.0
 
-## Smart Energy Advanced 1.5.0
+## Smart Energy Advanced 1.5.1
 
-Añade `smart-energy-advanced-responsive.js` V1.0.0 sobre la base V1.3.1 y ordering runtime V1.0.0, ambos intactos.
+Añade `smart-energy-advanced-responsive.js` V1.1.0 sobre la base V1.3.1 y ordering runtime V1.0.0, ambos intactos.
 
 Reglas de esta primera prueba:
 
 - móvil: 2 columnas;
-- tablet: 2 columnas;
-- PC: 4 columnas;
-- máximo adaptativo: 1000 px para el ancho heredado 520;
+- tablet: 2 columnas y máximo 780 px para el ancho heredado 520;
+- PC: 4 columnas y máximo adaptativo 1000 px;
 - `span-2`: fila completa en móvil/tablet, 2 columnas en PC;
 - `hero`: siempre ancho completo;
 - `power-sources-graph`: siempre ancho completo;
@@ -46,4 +45,4 @@ No cambia `.storage`, WebSocket, acciones, selectores, ordenamiento ni Personali
 
 ## Distribución
 
-`ghcr.io/abel-smart-home/smart-home-suite-manager:1.12.0`
+`ghcr.io/abel-smart-home/smart-home-suite-manager:1.12.1`

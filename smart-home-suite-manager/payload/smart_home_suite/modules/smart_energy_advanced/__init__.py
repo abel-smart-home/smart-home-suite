@@ -1,9 +1,9 @@
-"""Smart Energy Advanced 1.5.0 module for Smart Home Suite.
+"""Smart Energy Advanced 1.5.1 module for Smart Home Suite.
 
 The validated Smart Energy Advanced Panel V1.3.1 frontend, storage/API contract
 and ordering runtime V1.0.0 remain intact.
 
-Suite 1.12.0 adds an isolated responsive runtime V1.0.0 that changes only
+Suite 1.12.1 refines the isolated responsive runtime to V1.1.0 that changes only
 rendered panel width and metric-grid span behavior. WebSocket, .storage,
 entity actions, ordering, editor and native power-sources-graph remain unchanged.
 """
@@ -33,10 +33,10 @@ BASE_FRONTEND_FILE = "smart-energy-advanced-panel.js"
 LAYOUT_FRONTEND_FILE = "smart-energy-advanced-layout.js"
 FRONTEND_FILE = "smart-energy-advanced-responsive.js"
 
-MODULE_VERSION = "1.5.0"
+MODULE_VERSION = "1.5.1"
 BASE_PANEL_VERSION = "1.3.1"
 LAYOUT_RUNTIME_VERSION = "1.0.0"
-RESPONSIVE_RUNTIME_VERSION = "1.0.0"
+RESPONSIVE_RUNTIME_VERSION = "1.1.0"
 
 
 def _frontend_dir() -> Path:
@@ -57,7 +57,7 @@ def _store(hass: HomeAssistant) -> Store[dict[str, Any]]:
 
 
 async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Register Smart Energy Advanced 1.5.0 API and panel."""
+    """Register Smart Energy Advanced 1.5.1 API and panel."""
     data = _data(hass)
 
     frontend_dir = _frontend_dir()
@@ -104,8 +104,9 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         responsive_file.read_text, "utf-8"
     )
     for required_token in (
-        'SMART_ENERGY_RESPONSIVE_RUNTIME_VERSION = "1.0.0"',
-        'SMART_ENERGY_EFFECTIVE_VERSION = "1.5.0"',
+        'SMART_ENERGY_RESPONSIVE_RUNTIME_VERSION = "1.1.0"',
+        'SMART_ENERGY_EFFECTIVE_VERSION = "1.5.1"',
+        'SMART_ENERGY_TABLET_MAX_WIDTH = 780',
         'SMART_ENERGY_ADAPTIVE_MAX_WIDTH = 1000',
         'LEGACY_AUTO_WIDTHS = new Set([520])',
         'import "./smart-energy-advanced-layout.js?v=100-module140-suite130";',
@@ -149,7 +150,7 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         sidebar_icon="mdi:lightning-bolt-circle",
         module_url=(
             f"{STATIC_URL}/{FRONTEND_FILE}"
-            "?v=100-responsive-module150-suite1120"
+            "?v=110-responsive-module151-suite1121"
         ),
         require_admin=False,
         handle_safe_area=True,

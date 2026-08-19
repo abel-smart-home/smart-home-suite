@@ -346,9 +346,11 @@ def validate() -> None:
     require_tokens(
         PAYLOAD / "frontend" / "smart-energy-advanced-responsive.js",
         (
-            'SMART_ENERGY_RESPONSIVE_RUNTIME_VERSION = "1.0.0"',
-            'SMART_ENERGY_EFFECTIVE_VERSION = "1.5.0"',
+            'SMART_ENERGY_RESPONSIVE_RUNTIME_VERSION = "1.1.0"',
+            'SMART_ENERGY_EFFECTIVE_VERSION = "1.5.1"',
+            'SMART_ENERGY_TABLET_MAX_WIDTH = 780',
             'SMART_ENERGY_ADAPTIVE_MAX_WIDTH = 1000',
+            '@media (min-width:560px) and (max-width:899px)',
             'LEGACY_AUTO_WIDTHS = new Set([520])',
             'import "./smart-energy-advanced-layout.js?v=100-module140-suite130";',
             "container-type:inline-size",
@@ -370,11 +372,11 @@ def validate() -> None:
             'BASE_FRONTEND_FILE = "smart-energy-advanced-panel.js"',
             'LAYOUT_FRONTEND_FILE = "smart-energy-advanced-layout.js"',
             'FRONTEND_FILE = "smart-energy-advanced-responsive.js"',
-            'MODULE_VERSION = "1.5.0"',
+            'MODULE_VERSION = "1.5.1"',
             'BASE_PANEL_VERSION = "1.3.1"',
             'LAYOUT_RUNTIME_VERSION = "1.0.0"',
-            'RESPONSIVE_RUNTIME_VERSION = "1.0.0"',
-            "?v=100-responsive-module150-suite1120",
+            'RESPONSIVE_RUNTIME_VERSION = "1.1.0"',
+            "?v=110-responsive-module151-suite1121",
         ),
         "smart_energy_advanced wrapper",
     )

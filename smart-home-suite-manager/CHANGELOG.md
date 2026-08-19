@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.12.1 - 2026-08-19 · TEST
+
+- Actualiza **Smart Energy Advanced a 1.5.1**.
+- Mantiene base V1.3.1 y ordering runtime V1.0.0 intactos.
+- Actualiza `smart-energy-advanced-responsive.js` a V1.1.0.
+- Conserva móvil exactamente como en la prueba 1.12.0.
+- Conserva PC en 4 columnas hasta 1000 px, exactamente como en la prueba 1.12.0.
+- Tablet continúa en 2 columnas, pero el ancho heredado 520 se limita a **780 px** y se centra.
+- Conserva `span:1`, `span:2`, `kind-hero` y el gráfico nativo sin cambios de contrato.
+- Conserva `.storage/smart_energy_advanced_panel.config` versión 1.
+- No cambia WebSocket, entidades, cálculos, acciones, selectores, navegación, Personalización ni ordenamiento.
+- No requiere migración.
+- Debe permanecer como pre-release hasta validar visualmente tablet y repetir regresión móvil/PC.
+
 ## 1.12.0 - 2026-08-19 · TEST
 
 - Actualiza **Smart Energy Advanced a 1.5.0**.

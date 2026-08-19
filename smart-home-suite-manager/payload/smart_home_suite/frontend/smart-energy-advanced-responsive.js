@@ -1,17 +1,16 @@
 /**
- * Smart Home Suite · Smart Energy Advanced responsive runtime v1.0.0
+ * Smart Home Suite · Smart Energy Advanced responsive runtime v1.1.0
  *
  * Preserved chain:
  *   Smart Energy Advanced Panel V1.3.1
  *   -> smart-energy-advanced-layout.js V1.0.0
- *   -> this responsive runtime V1.0.0
+ *   -> this responsive runtime V1.1.0
  *
- * First-test scope only:
- * - legacy panel_max_width=520 can grow on tablet/desktop up to 1000px;
- * - mobile remains 2 columns;
- * - tablet remains 2 columns;
- * - desktop becomes 4 columns;
- * - existing span-1 / span-2 semantics are reused without storage changes;
+ * Second-test scope:
+ * - mobile remains exactly on the validated 2-column behavior;
+ * - legacy panel_max_width=520 is capped at 780px in tablet widths;
+ * - desktop keeps the validated V1.0.0 4-column behavior up to 1000px;
+ * - existing span-1 / span-2 semantics are unchanged;
  * - on desktop span-2 occupies 2 of 4 columns;
  * - hero cards always remain full width;
  * - native power-sources-graph remains outside metric-grid and full width;
@@ -22,13 +21,14 @@
 
 import "./smart-energy-advanced-layout.js?v=100-module140-suite130";
 
-const SMART_ENERGY_RESPONSIVE_RUNTIME_VERSION = "1.0.0";
-const SMART_ENERGY_EFFECTIVE_VERSION = "1.5.0";
+const SMART_ENERGY_RESPONSIVE_RUNTIME_VERSION = "1.1.0";
+const SMART_ENERGY_EFFECTIVE_VERSION = "1.5.1";
+const SMART_ENERGY_TABLET_MAX_WIDTH = 780;
 const SMART_ENERGY_ADAPTIVE_MAX_WIDTH = 1000;
 const LEGACY_AUTO_WIDTHS = new Set([520]);
 
 const RESPONSIVE_MARKER = Symbol.for(
-  "smart-home-suite-smart-energy-responsive-v1.0.0"
+  "smart-home-suite-smart-energy-responsive-v1.1.0"
 );
 
 function configuredWidth(cfg) {
@@ -45,7 +45,14 @@ function responsiveStyles(cfg) {
   const adaptive = usesLegacyAutoWidth(cfg);
 
   const widthRule = adaptive
-    ? `@media (min-width:560px){.page{max-width:min(${SMART_ENERGY_ADAPTIVE_MAX_WIDTH}px,100%)}}`
+    ? `
+      @media (min-width:560px) and (max-width:899px){
+        .page{max-width:min(${SMART_ENERGY_TABLET_MAX_WIDTH}px,100%)}
+      }
+      @media (min-width:900px){
+        .page{max-width:min(${SMART_ENERGY_ADAPTIVE_MAX_WIDTH}px,100%)}
+      }
+    `
     : "";
 
   const fallbackDesktopRule = adaptive || width >= 900
@@ -143,7 +150,7 @@ function installResponsiveRuntime() {
   });
 
   console.info(
-    `[Smart Energy Responsive] v${SMART_ENERGY_RESPONSIVE_RUNTIME_VERSION} · módulo v${SMART_ENERGY_EFFECTIVE_VERSION} · máximo adaptativo ${SMART_ENERGY_ADAPTIVE_MAX_WIDTH}px`
+    `[Smart Energy Responsive] v${SMART_ENERGY_RESPONSIVE_RUNTIME_VERSION} · módulo v${SMART_ENERGY_EFFECTIVE_VERSION} · tablet ${SMART_ENERGY_TABLET_MAX_WIDTH}px · desktop ${SMART_ENERGY_ADAPTIVE_MAX_WIDTH}px`
   );
 
   return true;

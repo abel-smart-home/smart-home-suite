@@ -10,13 +10,16 @@
   "sidebar_icon": "mdi:robot",
   "storage_key": "smart_automations.config",
   "storage_version": 1,
-  "suite_version": "1.12.0",
+  "suite_version": "1.12.1",
   "frontend_source": "Smart Automations Panel V1.0.0 + smart-automations-layout.js + smart-automations-runtime.js + smart-automations-responsive.js + smart-automations-alert-control.js",
   "layout_runtime_version": "1.0.0",
   "color_picker_guard_version": "1.0.0",
   "responsive_runtime_version": "1.0.0",
   "alert_control_runtime_version": "1.0.0",
-  "alert_control_recipes": ["high_power", "energy_limit"],
+  "alert_control_recipes": [
+    "high_power",
+    "energy_limit"
+  ],
   "alert_control_features": "1/2 notifications, optional time window, discard outside schedule, second-notification recheck, optional controlled rearm/hysteresis",
   "migration": "none; existing smart_automations.config version 1 remains valid; existing native automations are not rewritten automatically",
   "native_automation_contract": "Home Assistant remains the execution engine; only high_power and energy_limit configs are extended when saved from Smart Automations",
