@@ -1,10 +1,12 @@
 # Smart Home Suite Manager 1.10.0
 
-Instala, actualiza, valida, repara y restaura **Smart Home Suite 1.10.0 PRE-RELEASE** en Home Assistant OS sin HACS.
+Instala, actualiza, valida, repara y restaura **Smart Home Suite 1.10.0 STABLE** en Home Assistant OS sin HACS.
 
-**Último release estable:** 1.9.1.
+## Estado
 
-## Módulos incluidos
+**Stable:** 1.10.0
+
+### Módulos incluidos
 
 - Smart Home 1.4.0
 - Smart Lighting 1.4.1
@@ -14,21 +16,34 @@ Instala, actualiza, valida, repara y restaura **Smart Home Suite 1.10.0 PRE-RELE
 
 ## Smart Automations 1.2.0
 
-La prueba añade un runtime responsive aislado V1.0.0.
+La versión estable incorpora `smart-automations-responsive.js` V1.0.0 como una capa aislada.
 
-Se mantienen intactos el panel base V1.0.0, layout runtime V1.0.0 y Color Picker Guard V1.0.0.
+Se mantienen intactos:
 
-Responsive:
+- Smart Automations Panel V1.0.0;
+- `smart-automations-layout.js` V1.0.0;
+- `smart-automations-runtime.js` V1.0.0;
+- Color Picker Guard V1.0.0;
+- `.storage/smart_automations.config` versión 1;
+- REST de automatizaciones nativas;
+- recetas;
+- validaciones;
+- ownership/hash;
+- Personalización;
+- selectores;
+- navegación.
 
-- móvil conserva el ancho 520 heredado;
-- tablet/PC pueden aprovechar hasta 1000 px;
-- se respetan las columnas configurables móvil/tablet/PC;
-- las columnas responden al ancho real del panel mediante container queries;
+### Responsive
+
+- móvil conserva el layout heredado de 520 px;
+- tablet y PC pueden aprovechar hasta 1000 px;
+- se respetan las columnas móvil/tablet/PC ya configurables;
+- las container queries responden al ancho real disponible;
 - el resumen permanece a ancho completo;
 - las tarjetas se distribuyen desde la izquierda;
-- anchos máximos personalizados distintos de 520 se respetan.
+- un ancho máximo personalizado distinto de 520 se respeta.
 
-No cambia `.storage`, recetas ni automatizaciones nativas.
+No requiere migración.
 
 ## Acciones del Manager
 
@@ -38,19 +53,51 @@ No cambia `.storage`, recetas ni automatizaciones nativas.
 
 ## Flujo recomendado
 
-1. Ejecuta `validate_only` y confirma `VALIDATION_OK`.
-2. Ejecuta `install_repair` con `create_backup: true`.
-3. Confirma:
-   - `PAYLOAD_VALIDATION_OK`
-   - `STAGED_VALIDATION_OK`
-   - `POST_INSTALL_VALIDATION_OK`
-   - `INSTALLATION_OK`
-4. Reinicia Home Assistant.
-5. Haz recarga completa del frontend.
+### Validar
+
+Selecciona:
+
+`validate_only`
+
+El log debe terminar con:
+
+`VALIDATION_OK`
+
+### Instalar / reparar
+
+Selecciona:
+
+`install_repair`
+
+Recomendado:
+
+- `create_backup: true`
+- `keep_backups: 3`
+
+Debes observar:
+
+- `PAYLOAD_VALIDATION_OK`
+- `STAGED_VALIDATION_OK`
+- `POST_INSTALL_VALIDATION_OK`
+- `INSTALLATION_OK`
+
+Después reinicia Home Assistant.
+
+### Restaurar
+
+Selecciona:
+
+`restore_latest`
+
+Debes observar:
+
+`RESTORE_OK`
+
+Después reinicia Home Assistant.
 
 ## Distribución
 
-Imagen esperada:
+Imagen:
 
 `ghcr.io/abel-smart-home/smart-home-suite-manager:1.10.0`
 
@@ -59,6 +106,8 @@ Arquitecturas:
 - `amd64`
 - `aarch64`
 
-## Restaurar
+## Seguridad operativa
 
-Usa `restore_latest`, confirma `RESTORE_OK` y reinicia Home Assistant.
+El Manager valida el payload antes de sustituir la instalación existente y utiliza backup/rollback para reducir el riesgo de dejar la Suite incompleta.
+
+La configuración persistente de los módulos permanece separada de los archivos frontend distribuidos por el Manager.

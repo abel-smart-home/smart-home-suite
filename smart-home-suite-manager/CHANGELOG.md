@@ -1,20 +1,21 @@
 # Changelog
 
-## 1.10.0 - 2026-08-18 · TEST
+## 1.10.0 - 2026-08-19 · STABLE
 
+- Promueve a estable el mismo payload 1.10.0 validado previamente como pre-release en Home Assistant OS.
 - Actualiza **Smart Automations a 1.2.0**.
 - Mantiene Smart Automations Panel V1.0.0, layout runtime V1.0.0 y Color Picker Guard V1.0.0 intactos.
 - Añade `smart-automations-responsive.js` V1.0.0 como capa aislada.
 - Conserva móvil y permite que el ancho heredado 520 px aproveche hasta 1000 px en tablet/PC.
 - Usa container queries para adaptar `.cards` al ancho real disponible.
-- Respeta `columns_mobile`, `columns_tablet` y `columns_desktop` existentes.
+- Respeta `columns_mobile`, `columns_tablet` y `columns_desktop`.
 - Mantiene `.summary` a ancho completo y fuera del grid.
 - Mantiene tarjetas alineadas desde la izquierda; las celdas no utilizadas quedan libres.
 - Respeta cualquier `panel_max_width` personalizado distinto de 520.
 - Conserva `.storage/smart_automations.config` versión 1.
-- No cambia REST de automations nativas, recetas, ownership/hash, Personalización, selectores, navegación ni Color Picker Guard.
+- No cambia REST de automatizaciones nativas, recetas, ownership/hash, Personalización, selectores, navegación ni Color Picker Guard.
 - No requiere migración.
-- Debe publicarse inicialmente como pre-release y promover el mismo payload solo después de validarlo en HAOS real.
+- La promoción a estable no modifica el payload funcional que pasó las pruebas del pre-release.
 
 ## 1.9.1 - 2026-08-18 · STABLE
 
