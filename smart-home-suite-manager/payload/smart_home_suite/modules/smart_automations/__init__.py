@@ -1,11 +1,11 @@
-"""Smart Automations 1.1.1 module for Smart Home Suite.
+"""Smart Automations 1.2.0 module for Smart Home Suite.
 
-The validated Smart Automations Panel V1.0.0 and layout runtime V1.0.0 remain
-intact. Suite 1.7.1 adds a color-picker guard runtime that prevents full panel
-rerenders while a native color chooser is actively emitting input events.
+The validated Smart Automations Panel V1.0.0, layout runtime V1.0.0 and
+Color Picker Guard V1.0.0 remain intact.
 
-The native Home Assistant automation generation contract, WebSocket namespace
-and .storage key are unchanged.
+Suite 1.10.0 adds an isolated responsive runtime V1.0.0 that changes only
+rendered width/card columns. Native Home Assistant automation generation,
+REST API usage, WebSocket namespace and .storage key are unchanged.
 """
 
 from __future__ import annotations
@@ -35,12 +35,14 @@ WEB_COMPONENT = "smart-automations-panel"
 STATIC_URL = "/smart_home_suite_static"
 BASE_FRONTEND_FILE = "smart-automations-panel.js"
 LAYOUT_FRONTEND_FILE = "smart-automations-layout.js"
-FRONTEND_FILE = "smart-automations-runtime.js"
+RUNTIME_FRONTEND_FILE = "smart-automations-runtime.js"
+FRONTEND_FILE = "smart-automations-responsive.js"
 
-MODULE_VERSION = "1.1.1"
+MODULE_VERSION = "1.2.0"
 BASE_PANEL_VERSION = "1.0.0"
 LAYOUT_RUNTIME_VERSION = "1.0.0"
 COLOR_PICKER_GUARD_VERSION = "1.0.0"
+RESPONSIVE_RUNTIME_VERSION = "1.0.0"
 
 
 def _frontend_dir() -> Path:
@@ -59,20 +61,27 @@ def _store(hass: HomeAssistant) -> Store[dict[str, Any]]:
 
 
 async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Register Smart Automations 1.1.1 backend and panel."""
+    """Register Smart Automations 1.2.0 backend and panel."""
     data = _data(hass)
 
     frontend_dir = _frontend_dir()
     base_file = frontend_dir / BASE_FRONTEND_FILE
     layout_file = frontend_dir / LAYOUT_FRONTEND_FILE
-    runtime_file = frontend_dir / FRONTEND_FILE
+    runtime_file = frontend_dir / RUNTIME_FRONTEND_FILE
+    responsive_file = frontend_dir / FRONTEND_FILE
 
-    if not base_file.is_file() or not layout_file.is_file() or not runtime_file.is_file():
+    if (
+        not base_file.is_file()
+        or not layout_file.is_file()
+        or not runtime_file.is_file()
+        or not responsive_file.is_file()
+    ):
         _LOGGER.error(
-            "Smart Automations frontend is incomplete: base=%s layout=%s runtime=%s",
+            "Smart Automations frontend is incomplete: base=%s layout=%s runtime=%s responsive=%s",
             base_file.is_file(),
             layout_file.is_file(),
             runtime_file.is_file(),
+            responsive_file.is_file(),
         )
         return False
 
@@ -116,6 +125,30 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             )
             return False
 
+    responsive_text = await hass.async_add_executor_job(
+        responsive_file.read_text, "utf-8"
+    )
+    for required_token in (
+        'SMART_AUTOMATIONS_RESPONSIVE_RUNTIME_VERSION = "1.0.0"',
+        'SMART_AUTOMATIONS_EFFECTIVE_VERSION = "1.2.0"',
+        'SMART_AUTOMATIONS_ADAPTIVE_MAX_WIDTH = 1000',
+        'LEGACY_AUTO_WIDTHS = new Set([520])',
+        'import "./smart-automations-runtime.js?v=100-layout100-color100-module111-suite191";',
+        "container-type:inline-size",
+        "@container smart-automations-page",
+        "columns_mobile",
+        "columns_tablet",
+        "columns_desktop",
+        ".summary",
+        ".cards",
+    ):
+        if required_token not in responsive_text:
+            _LOGGER.error(
+                "Smart Automations responsive runtime is missing token %s",
+                required_token,
+            )
+            return False
+
     if not data.get("websocket_registered"):
         websocket_api.async_register_command(hass, websocket_get_config)
         websocket_api.async_register_command(hass, websocket_save_config)
@@ -152,7 +185,7 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         sidebar_icon="mdi:robot",
         module_url=(
             f"{STATIC_URL}/{FRONTEND_FILE}"
-            "?v=100-layout100-color100-module111-suite171"
+            "?v=100-responsive-module120-suite1100"
         ),
         require_admin=False,
         handle_safe_area=True,
@@ -163,12 +196,14 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             "base_panel_version": BASE_PANEL_VERSION,
             "layout_runtime_version": LAYOUT_RUNTIME_VERSION,
             "color_picker_guard_version": COLOR_PICKER_GUARD_VERSION,
+            "responsive_runtime_version": RESPONSIVE_RUNTIME_VERSION,
         },
     )
     data["panel_registered"] = True
     data["base_panel_version"] = BASE_PANEL_VERSION
     data["layout_runtime_version"] = LAYOUT_RUNTIME_VERSION
     data["color_picker_guard_version"] = COLOR_PICKER_GUARD_VERSION
+    data["responsive_runtime_version"] = RESPONSIVE_RUNTIME_VERSION
     return True
 
 

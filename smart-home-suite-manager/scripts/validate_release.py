@@ -227,6 +227,7 @@ def validate() -> None:
         "smart-automations-panel.js",
         "smart-automations-layout.js",
         "smart-automations-runtime.js",
+        "smart-automations-responsive.js",
         "smart-support-panel.js",
     ):
         path = PAYLOAD / "frontend" / filename
@@ -397,18 +398,44 @@ def validate() -> None:
                 f"{required_token!r}"
             )
 
+    smart_automations_responsive = (
+        PAYLOAD / "frontend" / "smart-automations-responsive.js"
+    ).read_text(encoding="utf-8")
+    for required_token in (
+        'SMART_AUTOMATIONS_RESPONSIVE_RUNTIME_VERSION = "1.0.0"',
+        'SMART_AUTOMATIONS_EFFECTIVE_VERSION = "1.2.0"',
+        'SMART_AUTOMATIONS_ADAPTIVE_MAX_WIDTH = 1000',
+        'LEGACY_AUTO_WIDTHS = new Set([520])',
+        'import "./smart-automations-runtime.js?v=100-layout100-color100-module111-suite191";',
+        "container-type:inline-size",
+        "@container smart-automations-page",
+        "columns_mobile",
+        "columns_tablet",
+        "columns_desktop",
+        ".summary",
+        ".cards",
+        "usesLegacyAutoWidth",
+    ):
+        if required_token not in smart_automations_responsive:
+            fail(
+                "smart-automations-responsive.js is missing required feature token "
+                f"{required_token!r}"
+            )
+
     smart_automations_wrapper = (
         PAYLOAD / "modules" / "smart_automations" / "__init__.py"
     ).read_text(encoding="utf-8")
     for required_token in (
         'BASE_FRONTEND_FILE = "smart-automations-panel.js"',
         'LAYOUT_FRONTEND_FILE = "smart-automations-layout.js"',
-        'FRONTEND_FILE = "smart-automations-runtime.js"',
-        'MODULE_VERSION = "1.1.1"',
+        'RUNTIME_FRONTEND_FILE = "smart-automations-runtime.js"',
+        'FRONTEND_FILE = "smart-automations-responsive.js"',
+        'MODULE_VERSION = "1.2.0"',
         'BASE_PANEL_VERSION = "1.0.0"',
         'LAYOUT_RUNTIME_VERSION = "1.0.0"',
         'COLOR_PICKER_GUARD_VERSION = "1.0.0"',
-        "?v=100-layout100-color100-module111-suite171",
+        'RESPONSIVE_RUNTIME_VERSION = "1.0.0"',
+        "?v=100-responsive-module120-suite1100",
     ):
         if required_token not in smart_automations_wrapper:
             fail(

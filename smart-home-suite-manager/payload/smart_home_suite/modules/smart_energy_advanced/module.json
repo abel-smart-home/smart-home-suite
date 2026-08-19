@@ -10,7 +10,7 @@
   "sidebar_icon": "mdi:lightning-bolt-circle",
   "storage_key": "smart_energy_advanced_panel.config",
   "storage_version": 1,
-  "suite_version": "1.9.1",
+  "suite_version": "1.10.0",
   "frontend_source": "Smart Energy Advanced Panel V1.3.1 + smart-energy-advanced-layout.js",
   "layout_runtime_version": "1.0.0",
   "layout_runtime_source": "Reorders existing/future sections and widgets by mutating only the existing sections/widgets arrays in the editor working copy",
