@@ -2,40 +2,40 @@
 
 Repositorio de distribución de **Smart Home Suite** para Home Assistant OS sin HACS.
 
-## Smart Home Suite 1.12.2 — PRE-RELEASE
+## Smart Home Suite 1.12.3 — PRE-RELEASE
 
 **Último release estable:** Smart Home Suite **1.11.0**.
 
-Smart Home Suite 1.12.2 introduce la tercera prueba responsive de **Smart Energy Advanced 1.5.2**, siguiendo el patrón aislado ya validado en Smart Lighting y Smart Automations.
+Smart Home Suite 1.12.3 introduce una nueva prueba responsive de **Smart Energy Advanced 1.5.3**, siguiendo el patrón aislado ya validado en Smart Lighting y Smart Automations.
 
 ### Versiones
 
-- Smart Home Suite / Manager: **1.12.2 PRE-RELEASE**
+- Smart Home Suite / Manager: **1.12.3 PRE-RELEASE**
 - Smart Home: **1.4.0**
 - Smart Lighting: **1.4.1**
-- Smart Energy Advanced: **1.5.2**
+- Smart Energy Advanced: **1.5.3**
 - Smart Automations: **1.3.0**
 - Smart Support: **1.2.0**
 
-## Smart Energy Advanced 1.5.2
+## Smart Energy Advanced 1.5.3
 
 Arquitectura preservada:
 
 - Smart Energy Advanced Panel V1.3.1;
 - `smart-energy-advanced-layout.js` V1.0.0;
-- `smart-energy-advanced-responsive.js` V1.2.0;
+- `smart-energy-advanced-responsive.js` V1.3.0;
 - `.storage/smart_energy_advanced_panel.config` versión 1;
 - WebSocket y acciones existentes;
 - tarjeta oficial `power-sources-graph`.
 
-### Tercera prueba responsive
+### Nueva prueba responsive
 
 El cambio se limita a presentación:
 
 - ancho heredado 520 px conserva móvil;
-- ancho real <700 px: **2 columnas**;
-- ancho real 700–899 px: **3 columnas**;
-- ancho real >=900 px: **4 columnas** y hasta **1000 px**;
+- ancho real <700 px: **2 columnas**, sin expansión del ancho móvil heredado;
+- ancho real >=700 px: **4 columnas** para tablet y PC;
+- tablet puede crecer hasta **900 px** y PC hasta **1000 px**;
 - `span:1` se conserva;
 - `span:2` sigue ocupando toda la fila en móvil/tablet y ocupa 2 de 4 columnas en PC;
 - widgets `hero` permanecen a ancho completo;
@@ -58,7 +58,7 @@ Permanece estable con responsive móvil/tablet/PC y Global Actions alineadas al 
 
 Imagen esperada:
 
-`ghcr.io/abel-smart-home/smart-home-suite-manager:1.12.2`
+`ghcr.io/abel-smart-home/smart-home-suite-manager:1.12.3`
 
 Arquitecturas:
 
@@ -67,7 +67,7 @@ Arquitecturas:
 
 ## Validación recomendada
 
-1. Publica `v1.12.2` como pre-release.
+1. Publica `v1.12.3` como pre-release.
 2. Confirma Actions → Builder completamente verde.
 3. Actualiza primero una instancia laboratorio.
 4. Ejecuta `validate_only`.
