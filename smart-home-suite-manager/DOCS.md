@@ -1,6 +1,4 @@
-# Smart Home Suite Manager 1.12.3 · PRE-RELEASE
-
-Último release estable: **1.11.0**.
+# Smart Home Suite Manager 1.12.3 · STABLE
 
 ## Versiones
 
@@ -27,47 +25,111 @@ No existe migración.
 
 Con `panel_max_width = 520`:
 
-- debajo de 700 px no hay expansión: móvil conserva 520;
+- debajo de 700 px reales no existe expansión automática: móvil conserva el ancho original;
 - desde 700 px tablet puede crecer hasta 900 px;
 - desde 900 px PC puede crecer hasta 1000 px.
 
-Un ancho personalizado distinto de 520 se respeta.
+Un `panel_max_width` personalizado distinto de 520 se respeta.
 
-### Móvil / Tablet / PC
+### Móvil
 
-- **Móvil:** 2 columnas; `span:2`, `hero` y gráfico nativo a ancho completo.
-- **Tablet:** 2 columnas; aprovecha más ancho manteniendo el contrato actual.
-- **PC:** desde 900 px reales disponibles, 4 columnas; `span:1` ocupa una, `span:2` ocupa dos, `hero` ocupa cuatro.
+Por debajo de 700 px reales:
 
-Las secciones continúan una debajo de otra y las tarjetas se distribuyen desde la izquierda.
+- 2 columnas;
+- `span:1` ocupa 1 de 2;
+- `span:2` ocupa toda la fila;
+- `hero` ocupa toda la fila;
+- gráfico nativo ocupa todo el ancho.
+
+### Tablet
+
+Desde 700 px reales:
+
+- 4 columnas;
+- `span:1` ocupa 1 de 4;
+- `span:2` ocupa 2 de 4;
+- `hero` ocupa las 4 columnas;
+- gráfico nativo ocupa todo el ancho;
+- máximo adaptativo 900 px para el ancho heredado.
+
+### PC
+
+Continúa con 4 columnas:
+
+- `span:1` ocupa 1 de 4;
+- `span:2` ocupa 2 de 4;
+- `hero` ocupa las 4 columnas;
+- gráfico nativo ocupa todo el ancho;
+- máximo adaptativo 1000 px para el ancho heredado.
 
 ### Container queries
 
-La cuadrícula se decide por el ancho real de `.page`, permitiendo responder a sidebar abierto/cerrado, redimensionado de ventana y rotación de tablet.
+La cuadrícula responde al ancho real de `.page`.
+
+Esto permite adaptación automática ante:
+
+- sidebar abierto/cerrado;
+- redimensionado del navegador;
+- tablet vertical/horizontal;
+- diferentes resoluciones de pantalla.
 
 ### Gráfico nativo
 
-`power-sources-graph` permanece fuera de `.metric-grid`, en light DOM mediante `<slot>`, a ancho completo y sin modificar sus internals.
+`power-sources-graph` permanece:
+
+- fuera de `.metric-grid`;
+- en light DOM mediante `<slot>`;
+- a ancho completo;
+- sin modificar sus internals.
 
 ### Sin cambios funcionales
 
-Se conserva WebSocket, `.storage`, entidades, cálculos, unidades, barras, demo values, tap, hold, more-info, selectores, navegación, Personalización, Guardar/Cancelar, Importar/Exportar/Restablecer y ordenamiento.
+Se conserva:
 
-## Instalar / probar
+- WebSocket;
+- `.storage`;
+- entidades;
+- cálculos;
+- unidades;
+- decimales;
+- barras;
+- demo values;
+- tap;
+- hold;
+- more-info;
+- selector de entidades;
+- selector MDI;
+- navegación;
+- Personalización;
+- Guardar/Cancelar;
+- Importar/Exportar/Restablecer;
+- orden de secciones;
+- orden de widgets.
 
-1. Actualiza Manager a 1.12.3.
+## Instalar / actualizar / reparar
+
+1. Actualiza Smart Home Suite Manager a 1.12.3.
 2. Ejecuta `validate_only`.
 3. Confirma `VALIDATION_OK`.
-4. Ejecuta `install_repair` con `create_backup: true`.
-5. Confirma validaciones e `INSTALLATION_OK`.
-6. Reinicia Home Assistant.
-7. Haz recarga completa del frontend.
-8. Sigue `TEST-CHECKLIST-1.12.3.md`.
+4. Selecciona `install_repair`.
+5. Mantén `create_backup: true`.
+6. Ejecuta.
+7. Confirma:
+   - `PAYLOAD_VALIDATION_OK`
+   - `STAGED_VALIDATION_OK`
+   - `POST_INSTALL_VALIDATION_OK`
+   - `INSTALLATION_OK`
+8. Reinicia Home Assistant.
+9. Haz una recarga completa del frontend.
 
-## Restore
+## Restaurar
 
-`restore_latest` → `RESTORE_OK` → reiniciar Home Assistant.
+1. Selecciona `restore_latest`.
+2. Ejecuta.
+3. Confirma `RESTORE_OK`.
+4. Reinicia Home Assistant.
+5. Haz una recarga completa del frontend.
 
 ## Estado
 
-Mantener como pre-release hasta completar pruebas reales en móvil, tablet y PC.
+**Smart Home Suite 1.12.3 es la versión estable actual.**
