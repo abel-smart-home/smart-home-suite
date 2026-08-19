@@ -213,6 +213,8 @@ def validate() -> None:
         "smart-lighting-layout.js",
         "smart-lighting-responsive.js",
         "smart-energy-advanced-panel.js",
+        "smart-energy-advanced-layout.js",
+        "smart-energy-advanced-responsive.js",
         "smart-automations-panel.js",
         "smart-automations-layout.js",
         "smart-automations-runtime.js",
@@ -320,6 +322,61 @@ def validate() -> None:
             "?v=110-responsive-module141-suite191",
         ),
         "smart_lighting wrapper",
+    )
+
+    smart_energy_base = (
+        PAYLOAD / "frontend" / "smart-energy-advanced-panel.js"
+    ).read_text(encoding="utf-8")
+    if 'const PANEL_VERSION = "1.3.1";' not in smart_energy_base:
+        fail("smart-energy-advanced-panel.js must remain on validated base V1.3.1")
+
+    require_tokens(
+        PAYLOAD / "frontend" / "smart-energy-advanced-layout.js",
+        (
+            'SMART_ENERGY_ORDERING_RUNTIME_VERSION = "1.0.0"',
+            'SMART_ENERGY_EFFECTIVE_VERSION = "1.4.0"',
+            'import "./smart-energy-advanced-panel.js?v=131-suite120-base";',
+            "move-energy-section",
+            "move-energy-widget",
+            "smart_energy_advanced_panel.config",
+        ),
+        "smart-energy-advanced-layout.js",
+    )
+
+    require_tokens(
+        PAYLOAD / "frontend" / "smart-energy-advanced-responsive.js",
+        (
+            'SMART_ENERGY_RESPONSIVE_RUNTIME_VERSION = "1.0.0"',
+            'SMART_ENERGY_EFFECTIVE_VERSION = "1.5.0"',
+            'SMART_ENERGY_ADAPTIVE_MAX_WIDTH = 1000',
+            'LEGACY_AUTO_WIDTHS = new Set([520])',
+            'import "./smart-energy-advanced-layout.js?v=100-module140-suite130";',
+            "container-type:inline-size",
+            "@container smart-energy-advanced-page",
+            "repeat(4,minmax(0,1fr))",
+            ".metric-card.span-2",
+            "grid-column:span 2",
+            ".metric-card.kind-hero",
+            "grid-column:1/-1",
+            ".native-power-graph-section",
+            "usesLegacyAutoWidth",
+        ),
+        "smart-energy-advanced-responsive.js",
+    )
+
+    require_tokens(
+        PAYLOAD / "modules" / "smart_energy_advanced" / "__init__.py",
+        (
+            'BASE_FRONTEND_FILE = "smart-energy-advanced-panel.js"',
+            'LAYOUT_FRONTEND_FILE = "smart-energy-advanced-layout.js"',
+            'FRONTEND_FILE = "smart-energy-advanced-responsive.js"',
+            'MODULE_VERSION = "1.5.0"',
+            'BASE_PANEL_VERSION = "1.3.1"',
+            'LAYOUT_RUNTIME_VERSION = "1.0.0"',
+            'RESPONSIVE_RUNTIME_VERSION = "1.0.0"',
+            "?v=100-responsive-module150-suite1120",
+        ),
+        "smart_energy_advanced wrapper",
     )
 
     smart_automations_base = (

@@ -1,9 +1,11 @@
-"""Smart Energy Advanced 1.4.0 module for Smart Home Suite.
+"""Smart Energy Advanced 1.5.0 module for Smart Home Suite.
 
-The validated Smart Energy Advanced Panel V1.3.1 frontend and its storage/API
-contract remain intact. Suite 1.3.0 loads a small layout runtime that adds
-section/widget ordering without changing the legacy WebSocket namespace or
-.storage key.
+The validated Smart Energy Advanced Panel V1.3.1 frontend, storage/API contract
+and ordering runtime V1.0.0 remain intact.
+
+Suite 1.12.0 adds an isolated responsive runtime V1.0.0 that changes only
+rendered panel width and metric-grid span behavior. WebSocket, .storage,
+entity actions, ordering, editor and native power-sources-graph remain unchanged.
 """
 
 from __future__ import annotations
@@ -28,10 +30,13 @@ PANEL_PATH = "energy-advanced"
 WEB_COMPONENT = "smart-energy-advanced-panel"
 STATIC_URL = "/smart_home_suite_static"
 BASE_FRONTEND_FILE = "smart-energy-advanced-panel.js"
-FRONTEND_FILE = "smart-energy-advanced-layout.js"
-MODULE_VERSION = "1.4.0"
+LAYOUT_FRONTEND_FILE = "smart-energy-advanced-layout.js"
+FRONTEND_FILE = "smart-energy-advanced-responsive.js"
+
+MODULE_VERSION = "1.5.0"
 BASE_PANEL_VERSION = "1.3.1"
 LAYOUT_RUNTIME_VERSION = "1.0.0"
+RESPONSIVE_RUNTIME_VERSION = "1.0.0"
 
 
 def _frontend_dir() -> Path:
@@ -52,30 +57,67 @@ def _store(hass: HomeAssistant) -> Store[dict[str, Any]]:
 
 
 async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Register Smart Energy Advanced 1.4.0 API and panel."""
+    """Register Smart Energy Advanced 1.5.0 API and panel."""
     data = _data(hass)
 
     frontend_dir = _frontend_dir()
     base_file = frontend_dir / BASE_FRONTEND_FILE
-    runtime_file = frontend_dir / FRONTEND_FILE
-    if not base_file.is_file() or not runtime_file.is_file():
+    layout_file = frontend_dir / LAYOUT_FRONTEND_FILE
+    responsive_file = frontend_dir / FRONTEND_FILE
+
+    if (
+        not base_file.is_file()
+        or not layout_file.is_file()
+        or not responsive_file.is_file()
+    ):
         _LOGGER.error(
-            "Smart Energy Advanced frontend is incomplete: base=%s runtime=%s",
+            "Smart Energy Advanced frontend is incomplete: base=%s layout=%s responsive=%s",
             base_file.is_file(),
-            runtime_file.is_file(),
+            layout_file.is_file(),
+            responsive_file.is_file(),
         )
         return False
 
-    runtime_text = await hass.async_add_executor_job(runtime_file.read_text, "utf-8")
+    base_text = await hass.async_add_executor_job(base_file.read_text, "utf-8")
+    if 'const PANEL_VERSION = "1.3.1";' not in base_text:
+        _LOGGER.error(
+            "Smart Energy Advanced base frontend is not validated V1.3.1"
+        )
+        return False
+
+    layout_text = await hass.async_add_executor_job(layout_file.read_text, "utf-8")
     for required_token in (
         'SMART_ENERGY_ORDERING_RUNTIME_VERSION = "1.0.0"',
         'SMART_ENERGY_EFFECTIVE_VERSION = "1.4.0"',
         'move-energy-section',
         'move-energy-widget',
+        'smart_energy_advanced_panel.config',
     ):
-        if required_token not in runtime_text:
+        if required_token not in layout_text:
             _LOGGER.error(
                 "Smart Energy Advanced ordering runtime is missing token %s",
+                required_token,
+            )
+            return False
+
+    responsive_text = await hass.async_add_executor_job(
+        responsive_file.read_text, "utf-8"
+    )
+    for required_token in (
+        'SMART_ENERGY_RESPONSIVE_RUNTIME_VERSION = "1.0.0"',
+        'SMART_ENERGY_EFFECTIVE_VERSION = "1.5.0"',
+        'SMART_ENERGY_ADAPTIVE_MAX_WIDTH = 1000',
+        'LEGACY_AUTO_WIDTHS = new Set([520])',
+        'import "./smart-energy-advanced-layout.js?v=100-module140-suite130";',
+        'container-type:inline-size',
+        '@container smart-energy-advanced-page',
+        '.metric-card.span-2',
+        '.metric-card.kind-hero',
+        '.native-power-graph-section',
+    ):
+        if required_token not in responsive_text:
+            _LOGGER.error(
+                "Smart Energy Advanced responsive runtime is missing token %s",
                 required_token,
             )
             return False
@@ -105,7 +147,10 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         webcomponent_name=WEB_COMPONENT,
         sidebar_title="Energía avanzada",
         sidebar_icon="mdi:lightning-bolt-circle",
-        module_url=f"{STATIC_URL}/{FRONTEND_FILE}?v=100-module140-suite130",
+        module_url=(
+            f"{STATIC_URL}/{FRONTEND_FILE}"
+            "?v=100-responsive-module150-suite1120"
+        ),
         require_admin=False,
         handle_safe_area=True,
         config={
@@ -114,11 +159,13 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             "module_version": MODULE_VERSION,
             "base_panel_version": BASE_PANEL_VERSION,
             "layout_runtime_version": LAYOUT_RUNTIME_VERSION,
+            "responsive_runtime_version": RESPONSIVE_RUNTIME_VERSION,
         },
     )
     data["suite_panel_registered"] = True
     data["base_panel_version"] = BASE_PANEL_VERSION
     data["layout_runtime_version"] = LAYOUT_RUNTIME_VERSION
+    data["responsive_runtime_version"] = RESPONSIVE_RUNTIME_VERSION
     return True
 
 

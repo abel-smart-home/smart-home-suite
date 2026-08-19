@@ -1,5 +1,26 @@
 # Changelog
 
+## 1.12.0 - 2026-08-19 · TEST
+
+- Actualiza **Smart Energy Advanced a 1.5.0**.
+- Mantiene Smart Energy Advanced Panel V1.3.1 y ordering runtime V1.0.0 intactos.
+- Añade `smart-energy-advanced-responsive.js` V1.0.0 como capa aislada.
+- Conserva móvil en 2 columnas.
+- Conserva tablet en 2 columnas.
+- Añade PC en 4 columnas a partir de 900 px reales disponibles.
+- Permite que el ancho heredado 520 px aproveche hasta 1000 px.
+- Reutiliza `span:1` y `span:2` existentes sin migrar storage.
+- En móvil/tablet `span-2` conserva fila completa.
+- En PC `span-2` ocupa 2 de 4 columnas.
+- `kind-hero` conserva siempre ancho completo.
+- `power-sources-graph` permanece fuera del grid y a ancho completo.
+- Las secciones continúan apiladas verticalmente.
+- Respeta cualquier `panel_max_width` personalizado distinto de 520.
+- Conserva `.storage/smart_energy_advanced_panel.config` versión 1.
+- Conserva WebSocket, acciones, selectores, navegación, Personalización y ordenamiento.
+- No requiere migración.
+- Debe publicarse como pre-release hasta validarlo en HAOS real.
+
 ## 1.11.0 - 2026-08-19 · STABLE
 
 - Promueve a estable el mismo payload 1.11.0 validado previamente como pre-release en Home Assistant OS.
