@@ -1,9 +1,11 @@
-"""Smart Lighting 1.4.0 module for Smart Home Suite.
+"""Smart Lighting 1.4.1 module for Smart Home Suite.
 
 The validated Smart Lighting Panel V1.0.3 frontend, storage/API contract and
-Smart Lighting layout runtime V1.2.0 remain intact. Suite 1.9.0 adds a small
-responsive runtime that only changes rendered width/column selection for known
-legacy widths (520/760 px) when more screen space is available.
+Smart Lighting layout runtime V1.2.0 remain intact.
+
+Suite 1.9.1 updates only the responsive runtime to V1.1.0. The existing
+adaptive mobile/tablet/desktop behavior remains intact, while Global Actions
+stay unchanged on mobile and use the same tablet/desktop grid as device cards.
 
 The responsive runtime never writes or migrates .storage.
 """
@@ -37,12 +39,12 @@ BASE_FRONTEND_FILE = "smart-lighting-panel.js"
 LAYOUT_FRONTEND_FILE = "smart-lighting-layout.js"
 FRONTEND_FILE = "smart-lighting-responsive.js"
 
-MODULE_VERSION = "1.4.0"
+MODULE_VERSION = "1.4.1"
 BASE_PANEL_VERSION = "1.0.3"
 LAYOUT_RUNTIME_VERSION = "1.2.0"
 ORDERING_RUNTIME_VERSION = "1.1.0"
 GLOBAL_ACTIONS_RUNTIME_VERSION = "1.1.0"
-RESPONSIVE_RUNTIME_VERSION = "1.0.0"
+RESPONSIVE_RUNTIME_VERSION = "1.1.0"
 
 
 def _frontend_dir() -> Path:
@@ -63,7 +65,7 @@ def _store(hass: HomeAssistant) -> Store[dict[str, Any]]:
 
 
 async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Register Smart Lighting 1.4.0 API and panel."""
+    """Register Smart Lighting 1.4.1 API and panel."""
     data = _data(hass)
 
     frontend_dir = _frontend_dir()
@@ -102,12 +104,13 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     runtime_text = await hass.async_add_executor_job(runtime_file.read_text, "utf-8")
     for required_token in (
-        'SMART_LIGHTING_RESPONSIVE_RUNTIME_VERSION = "1.0.0"',
-        'SMART_LIGHTING_EFFECTIVE_VERSION = "1.4.0"',
+        'SMART_LIGHTING_RESPONSIVE_RUNTIME_VERSION = "1.1.0"',
+        'SMART_LIGHTING_EFFECTIVE_VERSION = "1.4.1"',
         'SMART_LIGHTING_ADAPTIVE_MAX_WIDTH = 1200',
         'LEGACY_AUTO_WIDTHS = new Set([520, 760])',
         'container-type:inline-size',
         '@container smart-lighting-page',
+        '.smart-global-actions-grid',
         'import "./smart-lighting-layout.js?v=120-module130-suite180";',
     ):
         if required_token not in runtime_text:
@@ -117,14 +120,12 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             )
             return False
 
-    # Preserve the exact legacy WebSocket command names used by V1.0.3.
     if not data.get("websocket_registered"):
         websocket_api.async_register_command(hass, websocket_get_config)
         websocket_api.async_register_command(hass, websocket_save_config)
         websocket_api.async_register_command(hass, websocket_reset_config)
         data["websocket_registered"] = True
 
-    # Serve the exact base JS plus Suite runtime layers from one static path.
     if not data.get("static_registered"):
         try:
             await hass.http.async_register_static_paths(
@@ -134,7 +135,6 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             _LOGGER.debug("Smart Home Suite static path was already registered")
         data["static_registered"] = True
 
-    # Replace only a previous custom /lighting panel. Do not steal a native path.
     if frontend.async_panel_exists(hass, PANEL_PATH):
         existing = hass.data.get("frontend_panels", {}).get(PANEL_PATH, {})
         if existing and existing.get("component_name") != "custom":
@@ -154,7 +154,7 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         webcomponent_name=WEB_COMPONENT,
         sidebar_title="Iluminación",
         sidebar_icon="mdi:lightbulb-group",
-        module_url=f"{STATIC_URL}/{FRONTEND_FILE}?v=100-responsive-module140-suite190",
+        module_url=f"{STATIC_URL}/{FRONTEND_FILE}?v=110-responsive-module141-suite191",
         require_admin=False,
         handle_safe_area=True,
         config={

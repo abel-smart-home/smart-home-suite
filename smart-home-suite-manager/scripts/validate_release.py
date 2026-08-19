@@ -317,13 +317,16 @@ def validate() -> None:
         PAYLOAD / "frontend" / "smart-lighting-responsive.js"
     ).read_text(encoding="utf-8")
     for required_token in (
-        'SMART_LIGHTING_RESPONSIVE_RUNTIME_VERSION = "1.0.0"',
-        'SMART_LIGHTING_EFFECTIVE_VERSION = "1.4.0"',
+        'SMART_LIGHTING_RESPONSIVE_RUNTIME_VERSION = "1.1.0"',
+        'SMART_LIGHTING_EFFECTIVE_VERSION = "1.4.1"',
         'SMART_LIGHTING_ADAPTIVE_MAX_WIDTH = 1200',
         'LEGACY_AUTO_WIDTHS = new Set([520, 760])',
         'import "./smart-lighting-layout.js?v=120-module130-suite180";',
         "container-type:inline-size",
         "@container smart-lighting-page",
+        ".smart-global-actions-grid",
+        "columns_tablet",
+        "columns_desktop",
         "usesLegacyAutoWidth",
     ):
         if required_token not in smart_lighting_responsive:
@@ -339,13 +342,13 @@ def validate() -> None:
         'BASE_FRONTEND_FILE = "smart-lighting-panel.js"',
         'LAYOUT_FRONTEND_FILE = "smart-lighting-layout.js"',
         'FRONTEND_FILE = "smart-lighting-responsive.js"',
-        'MODULE_VERSION = "1.4.0"',
+        'MODULE_VERSION = "1.4.1"',
         'BASE_PANEL_VERSION = "1.0.3"',
         'LAYOUT_RUNTIME_VERSION = "1.2.0"',
         'ORDERING_RUNTIME_VERSION = "1.1.0"',
         'GLOBAL_ACTIONS_RUNTIME_VERSION = "1.1.0"',
-        'RESPONSIVE_RUNTIME_VERSION = "1.0.0"',
-        "?v=100-responsive-module140-suite190",
+        'RESPONSIVE_RUNTIME_VERSION = "1.1.0"',
+        "?v=110-responsive-module141-suite191",
     ):
         if required_token not in smart_lighting_wrapper:
             fail(f"smart_lighting wrapper is missing required token {required_token!r}")
