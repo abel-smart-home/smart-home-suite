@@ -1,4 +1,6 @@
-# Smart Automations 1.3.0 · PRE-RELEASE
+# Smart Automations 1.3.0 · STABLE
+
+Versión validada en Home Assistant OS y promovida desde el mismo payload pre-release.
 
 ## Arquitectura
 
@@ -40,7 +42,7 @@ No crea helpers.
 - Iluminación/Presencia no cambian
 - ordering/personalización/Color Picker Guard/responsive no cambian
 
-## Existentes
+## Automatizaciones existentes
 
 No se migran automáticamente.
 
@@ -49,3 +51,7 @@ Abrir y Guardar una automatización de energía aplica la nueva receta.
 ## Reinicios
 
 Las esperas son nativas. Reiniciar Home Assistant o recargar automatizaciones puede cancelar `for`/`wait_for_trigger`; no se añade estado persistente auxiliar.
+
+## Estado
+
+**STABLE**

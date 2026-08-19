@@ -1,4 +1,4 @@
-# Smart Home Suite modules · 1.11.0 PRE-RELEASE
+# Smart Home Suite modules · 1.11.0 STABLE
 
 | Módulo | Versión | Ruta |
 |---|---:|---|
@@ -12,4 +12,4 @@ Smart Automations 1.3.0 conserva base/layout/color/responsive de 1.10.0 y añade
 
 No hay migración de `.storage`.
 
-Último release estable anterior: **1.10.0**.
+Smart Home Suite 1.11.0 fue validada previamente como pre-release y promovida sin cambios funcionales a **STABLE**.

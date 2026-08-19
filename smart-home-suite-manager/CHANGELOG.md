@@ -1,7 +1,8 @@
 # Changelog
 
-## 1.11.0 - 2026-08-19 · TEST
+## 1.11.0 - 2026-08-19 · STABLE
 
+- Promueve a estable el mismo payload 1.11.0 validado previamente como pre-release en Home Assistant OS.
 - Actualiza **Smart Automations a 1.3.0**.
 - Mantiene Smart Automations Panel V1.0.0, layout V1.0.0, Color Picker Guard V1.0.0 y responsive V1.0.0 intactos.
 - Añade `smart-automations-alert-control.js` V1.0.0.
@@ -17,7 +18,7 @@
 - No crea helpers ni cambia `.storage/smart_automations.config` versión 1.
 - Las automatizaciones existentes no se reescriben automáticamente; el usuario debe abrirlas y Guardar para adoptar la nueva receta.
 - Mantiene rollback compatible.
-- Publicar inicialmente como pre-release.
+- La promoción a estable no modifica el payload funcional que pasó las pruebas del pre-release.
 
 ## 1.10.0 - 2026-08-19 · STABLE
 
