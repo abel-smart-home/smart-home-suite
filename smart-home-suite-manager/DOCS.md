@@ -1,140 +1,75 @@
-# Smart Home Suite Manager 1.10.0 · STABLE
+# Smart Home Suite Manager 1.11.0 · PRE-RELEASE
 
-## Versiones
+## Instalar
 
-- Suite / Manager: **1.10.0**
-- Smart Home: **1.4.0**
-- Smart Lighting: **1.4.1**
-- Smart Energy Advanced: **1.4.0**
-- Smart Automations: **1.2.0**
-- Smart Support: **1.2.0**
-
-## Instalar / actualizar / reparar
-
-1. Actualiza Smart Home Suite Manager a 1.10.0.
-2. Selecciona `validate_only`.
-3. Confirma `VALIDATION_OK`.
-4. Selecciona `install_repair`.
-5. Mantén `create_backup: true`.
-6. Configura `keep_backups` entre 1 y 10.
-7. Ejecuta la App.
-8. Confirma:
+1. `validate_only`
+2. Confirmar `VALIDATION_OK`
+3. `install_repair`
+4. `create_backup: true`
+5. Confirmar:
    - `PAYLOAD_VALIDATION_OK`
    - `STAGED_VALIDATION_OK`
    - `POST_INSTALL_VALIDATION_OK`
    - `INSTALLATION_OK`
-9. Reinicia Home Assistant.
-10. Realiza una recarga completa del navegador/app si conserva recursos antiguos.
+6. Reiniciar Home Assistant.
+7. Hacer recarga completa del frontend.
 
-## Smart Automations 1.2.0
+## Smart Automations 1.3.0
 
-### Arquitectura preservada
+### Recetas afectadas
 
-- frontend base: Smart Automations Panel V1.0.0;
-- layout runtime: `smart-automations-layout.js` V1.0.0;
-- runtime: `smart-automations-runtime.js` V1.0.0;
-- Color Picker Guard: V1.0.0;
-- responsive runtime: `smart-automations-responsive.js` V1.0.0;
-- storage: `smart_automations.config`;
-- storage version: 1.
+- Consumo elevado
+- Límite de kWh
 
-No existe migración.
+Iluminación por sol y Apagar luces al salir conservan su configuración nativa anterior.
 
-### Responsive móvil / tablet / PC
+### Parámetros nuevos
 
-El responsive usa el ancho real disponible del panel.
+- Número máximo de avisos: 1 / 2.
+- Segundo aviso después de: 1–1440 minutos.
+- Limitar horario: Sí / No.
+- Desde / Hasta.
+- Rearme controlado: Sí / No.
+- Rearmar cuando baje de: configurable.
 
-#### Móvil
+### Horario
 
-- conserva el comportamiento validado;
-- usa `columns_mobile`;
-- el panel nunca excede el ancho disponible;
-- el ancho heredado 520 mantiene la presentación móvil.
+Desactivado = 24/7.
 
-#### Tablet
+Activado = la condición horaria se evalúa cuando se cumple el disparo.
 
-- cuando `panel_max_width` conserva el valor heredado 520, el panel puede expandirse;
-- usa `columns_tablet`;
-- el grid responde al ancho real disponible;
-- el resumen permanece a ancho completo;
-- las tarjetas se colocan desde la izquierda.
+Fuera del horario:
+- no notifica;
+- no espera a la hora inicial;
+- no recupera la notificación después.
 
-#### PC
+Los rangos pueden cruzar medianoche.
 
-- con el ancho heredado 520, el panel puede crecer hasta 1000 px;
-- usa `columns_desktop`;
-- redimensionar la ventana reorganiza dinámicamente las tarjetas;
-- sidebar abierto/cerrado cambia el ancho útil sin requerir configuración adicional.
+### Segundo aviso
 
-#### Ancho personalizado
+Si está activado:
+- espera el tiempo configurado;
+- se cancela si antes se alcanza el umbral de rearme;
+- al finalizar la espera comprueba que el sensor siga arriba del límite;
+- comprueba nuevamente el horario;
+- sólo entonces notifica.
 
-Un `panel_max_width` distinto de 520 se respeta y no entra al modo adaptativo automático.
+### Rearme
 
-### Resumen y tarjetas
+Con rearme controlado activo, la ejecución permanece en `mode: single` hasta cruzar hacia abajo el valor configurado.
 
-- `.summary` permanece fuera del grid y ocupa el ancho completo;
-- `.cards` usa las columnas existentes;
-- una categoría con menos tarjetas que columnas deja libres las celdas restantes;
-- las tarjetas permanecen alineadas desde la izquierda.
+El valor de rearme debe ser:
+- mayor que cero;
+- igual o menor que el límite de disparo.
 
-### Automatizaciones nativas
+### Aplicar a una automatización existente
 
-No cambia:
+La actualización no toca automatizaciones nativas automáticamente.
 
-- creación;
-- actualización;
-- eliminación;
-- toggle on/off;
-- REST `config/automation/config/*`;
-- recipes;
-- validación de parámetros;
-- `automation_id`;
-- hashes;
-- detección de cambios externos.
+Abre **Editar** en la tarjeta y pulsa **Guardar** para generar la nueva receta.
 
-Home Assistant continúa ejecutando las automatizaciones.
+Si la tarjeta muestra **Modificada en HA**, revisa primero la automatización nativa: Guardar desde Smart Automations sigue reemplazando su configuración, igual que antes.
 
-### Personalización
+## Restore
 
-Se conserva:
-
-- Guardar;
-- Cancelar;
-- Importar;
-- Exportar;
-- Restablecer;
-- selector de entidades;
-- selector MDI;
-- orden de categorías;
-- orden dentro de categorías;
-- apariencia individual;
-- navegación;
-- Color Picker Guard.
-
-## Smart Lighting 1.4.1
-
-Permanece estable con su responsive móvil/tablet/PC y Global Actions alineadas al grid en tablet/escritorio.
-
-## Smart Support 1.2.0
-
-Mantiene backend/sesión, temporizador, configuración visual, orden de acciones, selectores y dependencia supervisada con Spook.
-
-## Restaurar
-
-Si una actualización falla:
-
-1. selecciona `restore_latest`;
-2. ejecuta la App;
-3. confirma `RESTORE_OK`;
-4. reinicia Home Assistant;
-5. realiza una recarga completa del frontend.
-
-## Recomendación para clientes
-
-Mantén Home Assistant y Smart Home Suite en una combinación validada primero en laboratorio.
-
-Evita actualizar automáticamente la Suite o Home Assistant en instalaciones productivas si la combinación todavía no fue probada.
-
-## Importante
-
-No instales simultáneamente versiones standalone de paneles ya incluidos en Smart Home Suite.
+`restore_latest` → `RESTORE_OK` → reiniciar Home Assistant.

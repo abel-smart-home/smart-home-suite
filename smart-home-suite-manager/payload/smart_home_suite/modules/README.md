@@ -1,15 +1,15 @@
-# Smart Home Suite modules · 1.8.0 PRE-RELEASE
+# Smart Home Suite modules · 1.11.0 PRE-RELEASE
 
 | Módulo | Versión | Ruta |
 |---|---:|---|
 | Smart Home | 1.4.0 | `/smart-home` |
-| Smart Lighting | 1.3.0 | `/lighting` |
+| Smart Lighting | 1.4.1 | `/lighting` |
 | Smart Energy Advanced | 1.4.0 | `/energy-advanced` |
-| Smart Automations | 1.1.1 · base 1.0.0 + layout 1.0.0 + color guard 1.0.0 | `/smart-automations` |
+| Smart Automations | 1.3.0 | `/smart-automations` |
 | Smart Support | 1.2.0 | `/support` |
 
-Los módulos permanecen aislados y activables desde las opciones de Smart Home Suite.
+Smart Automations 1.3.0 conserva base/layout/color/responsive de 1.10.0 y añade Alert Control V1.0.0 para las dos recetas de energía.
 
-Smart Support 1.2.0 conserva el backend/session contract 1.1.2 y añade orden compacto de acciones, personalización visual global/individual y Color Picker Guard sin migrar `.storage`.
+No hay migración de `.storage`.
 
-Último release estable de la Suite: **1.7.1**.
+Último release estable anterior: **1.10.0**.

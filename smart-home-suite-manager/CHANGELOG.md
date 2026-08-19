@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.11.0 - 2026-08-19 · TEST
+
+- Actualiza **Smart Automations a 1.3.0**.
+- Mantiene Smart Automations Panel V1.0.0, layout V1.0.0, Color Picker Guard V1.0.0 y responsive V1.0.0 intactos.
+- Añade `smart-automations-alert-control.js` V1.0.0.
+- Extiende exclusivamente `high_power` y `energy_limit`.
+- Añade 1 o 2 avisos configurables por evento.
+- Añade retraso configurable para el segundo aviso.
+- Añade horario opcional configurable; desactivado conserva operación 24/7.
+- Los eventos fuera de horario se descartan y nunca se recuperan después.
+- El segundo aviso vuelve a comprobar horario y que el sensor continúe arriba del límite.
+- Añade rearme controlado opcional e histéresis configurable.
+- El valor de rearme debe ser igual o menor que el umbral de disparo.
+- Mantiene Home Assistant como motor nativo y `mode: single`.
+- No crea helpers ni cambia `.storage/smart_automations.config` versión 1.
+- Las automatizaciones existentes no se reescriben automáticamente; el usuario debe abrirlas y Guardar para adoptar la nueva receta.
+- Mantiene rollback compatible.
+- Publicar inicialmente como pre-release.
+
 ## 1.10.0 - 2026-08-19 · STABLE
 
 - Promueve a estable el mismo payload 1.10.0 validado previamente como pre-release en Home Assistant OS.
@@ -68,27 +87,17 @@
 - Actualiza `smart-lighting-layout.js` a V1.2.0.
 - Amplía ordering runtime a V1.1.0 para incluir **Acciones globales** dentro del orden de áreas.
 - Permite mover Acciones globales arriba, abajo o entre áreas normales mediante ↑ / ↓.
-- Conserva el orden real de las áreas normales en `areas[]` y guarda únicamente la inserción especial en `global_actions.position`.
-- Amplía Global Actions runtime a V1.1.0.
-- Añade orden configurable de **Apagar todo** / **Encender todo** mediante `global_actions.button_order`.
+- Conserva el orden real de las áreas normales en `areas[]`.
+- Añade orden configurable de **Apagar todo** / **Encender todo**.
 - Añade **Color activo** y **Color inactivo** por botón.
-- Apagar todo se considera activo cuando todas las entidades objetivo están apagadas; Encender todo cuando todas están encendidas; estados mezclados usan color inactivo.
-- Mantiene compatibilidad con el campo `color` de Suite 1.5.0 usándolo como fallback del color activo.
-- Conserva alcance, visibilidad, contador, selector MDI y ejecución dinámica sobre `light.*`/`switch.*`.
-- Conserva `.storage/smart_lighting_panel.config` versión 1 y WebSocket `smart_lighting_panel/config/*`.
+- Conserva `.storage/smart_lighting_panel.config` versión 1.
 - No requiere migración destructiva y mantiene rollback compatible.
-- Mantiene sin cambios funcionales Smart Home 1.4.0, Smart Energy Advanced 1.4.0, Smart Automations 1.0.0 y Smart Support 1.1.2.
-- Refuerza `validate_release.py` para validar nuevas versiones, posición del área, orden de botones, colores por estado y cache-buster.
-- La promoción a estable no modifica el payload funcional que pasó las pruebas del pre-release.
 
 ## 1.5.0 - 2026-08-18 · TEST
 
 - Actualiza **Smart Lighting a 1.2.0** manteniendo Smart Lighting Panel V1.0.3 como frontend base intacto.
-- Actualiza `smart-lighting-layout.js` a V1.1.0.
-- Conserva el reordenamiento de áreas/dispositivos V1.0.0 ya validado en Suite 1.4.0.
-- Añade acciones globales opcionales V1.0.0 dentro de una sección visual separada.
-- Añade botones configurables **Apagar todo** y **Encender todo**.
-- Permite alcance sobre todos los dispositivos configurados o solo los visibles.
+- Añade acciones globales opcionales.
+- Añade botones configurables Apagar todo / Encender todo.
 - Conserva `.storage/smart_lighting_panel.config` versión 1.
 - No requiere migración.
 

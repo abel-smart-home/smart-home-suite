@@ -1,13 +1,4 @@
-"""Central module catalog for Smart Home Suite.
-
-Adding a future panel should primarily require:
-1. Add its package under modules/<module_id>/ with async_setup_module/
-   async_unload_module.
-2. Add one ModuleSpec entry here.
-3. Add/update its module.json descriptor and frontend assets if required.
-
-The rest of the Suite (options, lifecycle and diagnostics) consumes this catalog.
-"""
+"""Central module catalog for Smart Home Suite."""
 
 from __future__ import annotations
 
@@ -44,8 +35,6 @@ ModuleUnload = Callable[[HomeAssistant, ConfigEntry], Awaitable[None]]
 
 @dataclass(frozen=True, slots=True)
 class ModuleSpec:
-    """Runtime description of one Suite module."""
-
     module_id: str
     name: str
     option_label: str
@@ -105,15 +94,15 @@ MODULE_CATALOG: tuple[ModuleSpec, ...] = (
         module_id="smart_automations",
         name="Smart Automations",
         option_label="Automatizaciones",
-        version="1.2.0",
+        version="1.3.0",
         panel_path="smart-automations",
         enabled_by_default=True,
         setup=setup_smart_automations,
         unload=unload_smart_automations,
         notes=(
-            "Base panel 1.0.0 + layout runtime 1.0.0 + color-picker guard 1.0.0 "
-            "+ responsive runtime 1.0.0; adaptive 520px layout without changing "
-            "native automations, storage or Personalización"
+            "Base panel 1.0.0 + layout 1.0.0 + color guard 1.0.0 + responsive "
+            "1.0.0 + alert control 1.0.0; controlled energy notifications remain "
+            "native Home Assistant automations without helpers or storage migration"
         ),
     ),
     ModuleSpec(

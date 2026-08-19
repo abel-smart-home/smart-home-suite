@@ -1,42 +1,51 @@
-# Smart Automations 1.1.1 · STABLE
+# Smart Automations 1.3.0 · PRE-RELEASE
 
-Versión estable validada en Home Assistant OS.
+## Arquitectura
 
-Smart Automations 1.1.1 conserva **Smart Automations Panel V1.0.0** como base funcional.
+Cadena preservada:
 
-## Layout runtime V1.0.0
+1. Smart Automations Panel V1.0.0
+2. `smart-automations-layout.js` V1.0.0
+3. `smart-automations-runtime.js` V1.0.0
+4. `smart-automations-responsive.js` V1.0.0
+5. `smart-automations-alert-control.js` V1.0.0
 
-Añade:
+## Alert Control
 
-- orden de categorías;
-- orden de automatizaciones dentro de cada categoría;
-- personalización de categorías;
-- personalización visual individual por tarjeta.
+Sólo extiende:
 
-## Color Picker Guard V1.0.0
+- `high_power`
+- `energy_limit`
 
-Corrige el cierre prematuro del selector nativo de colores.
+Funciones:
 
-Los controles `<input type="color">` generan múltiples eventos `input` mientras el selector está abierto. El guard:
+- 1/2 avisos por evento;
+- segundo aviso configurable;
+- horario opcional;
+- rangos nocturnos que cruzan medianoche;
+- descarte absoluto fuera de horario;
+- comprobación de horario también para el segundo aviso;
+- rearme controlado/histéresis;
+- umbral de rearme configurable.
 
-- intercepta únicamente esos eventos de color;
-- actualiza la copia `_editSettings` sin reconstruir el DOM;
-- deja que el evento `change` normal realice el preview al finalizar;
-- conserva Guardar/Cancelar.
+No crea helpers.
 
-## Se conserva
+## Compatibilidad
 
-- `.storage` `smart_automations.config`;
-- Storage version 1;
-- WebSocket existentes;
-- recetas;
-- `RECIPE_VERSION`;
-- generación de automatizaciones nativas;
-- activar/pausar;
-- botón HA;
-- Importar/Exportar/Restablecer;
-- navegación;
-- responsive;
-- selectores MDI y entidades.
+- `.storage`: `smart_automations.config`
+- Storage version: 1
+- WebSocket: sin cambios
+- REST nativo: mismo endpoint de Home Assistant
+- Home Assistant sigue ejecutando la automatización
+- Iluminación/Presencia no cambian
+- ordering/personalización/Color Picker Guard/responsive no cambian
 
-No requiere migración.
+## Existentes
+
+No se migran automáticamente.
+
+Abrir y Guardar una automatización de energía aplica la nueva receta.
+
+## Reinicios
+
+Las esperas son nativas. Reiniciar Home Assistant o recargar automatizaciones puede cancelar `for`/`wait_for_trigger`; no se añade estado persistente auxiliar.

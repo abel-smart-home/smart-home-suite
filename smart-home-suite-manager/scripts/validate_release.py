@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""Static integrity validation for Smart Home Suite release payload.
-
-This intentionally uses only the Python standard library so it can run on a
-clean GitHub runner before Docker images are built.
-"""
+"""Static integrity validation for Smart Home Suite release payload."""
 
 from __future__ import annotations
 
@@ -44,7 +40,6 @@ def read_json(path: Path) -> dict:
 def catalog_specs() -> list[dict[str, object]]:
     tree = ast.parse((PAYLOAD / "module_catalog.py").read_text(encoding="utf-8"))
     specs: list[dict[str, object]] = []
-
     for node in ast.walk(tree):
         if not isinstance(node, ast.Call):
             continue
@@ -64,10 +59,16 @@ def catalog_specs() -> list[dict[str, object]]:
                 except Exception:
                     fail(f"ModuleSpec {keyword.arg} must be a literal")
         specs.append(spec)
-
     if not specs:
         fail("No ModuleSpec entries found in module_catalog.py")
     return specs
+
+
+def require_tokens(path: Path, tokens: tuple[str, ...], label: str) -> None:
+    source = path.read_text(encoding="utf-8")
+    for token in tokens:
+        if token not in source:
+            fail(f"{label} is missing required token {token!r}")
 
 
 def validate() -> None:
@@ -132,9 +133,7 @@ def validate() -> None:
         module_version = str(descriptor.get("version", ""))
 
         if module_id != folder.name:
-            fail(
-                f"Module folder/id mismatch: folder={folder.name} id={module_id}"
-            )
+            fail(f"Module folder/id mismatch: folder={folder.name} id={module_id}")
         if descriptor.get("suite_version") != version:
             fail(
                 f"{module_id}: suite_version {descriptor.get('suite_version')} != {version}"
@@ -150,9 +149,7 @@ def validate() -> None:
         if "async_setup_module" not in source or "async_unload_module" not in source:
             fail(f"{module_id}: module lifecycle functions are missing")
         if "from ...const import VERSION as SUITE_VERSION" not in source:
-            fail(
-                f"{module_id}: runtime wrapper must consume the central Suite VERSION"
-            )
+            fail(f"{module_id}: runtime wrapper must consume central Suite VERSION")
         if re.search(r'^SUITE_VERSION\s*=\s*["\']', source, re.MULTILINE):
             fail(f"{module_id}: hard-coded SUITE_VERSION is not allowed")
 
@@ -164,7 +161,6 @@ def validate() -> None:
             "Module descriptors and module catalog differ: "
             f"descriptors={sorted(descriptor_ids)} catalog={sorted(catalog_ids)}"
         )
-
     if len(descriptor_paths) != len(set(descriptor_paths)):
         fail("Duplicate panel_path in module descriptors")
 
@@ -176,10 +172,7 @@ def validate() -> None:
         descriptor = read_json(descriptor_path)
         spec = spec_by_id[descriptor["id"]]
         if descriptor["panel_path"] != spec["panel_path"]:
-            fail(
-                f"{descriptor['id']}: catalog/descriptor panel_path mismatch"
-            )
-
+            fail(f"{descriptor['id']}: catalog/descriptor panel_path mismatch")
         expected_version = (
             descriptor.get("base_panel_version")
             if descriptor["id"] == "smart_home"
@@ -191,10 +184,7 @@ def validate() -> None:
                 f"!= descriptor effective version {expected_version}"
             )
 
-    required_issues = (
-        "module_setup_failed",
-        "smart_support_provider_unavailable",
-    )
+    required_issues = ("module_setup_failed", "smart_support_provider_unavailable")
     for language in ("en", "es"):
         translation = read_json(PAYLOAD / "translations" / f"{language}.json")
         for issue_key in required_issues:
@@ -202,18 +192,17 @@ def validate() -> None:
             if not issue.get("title") or not issue.get("description"):
                 fail(f"{language}: {issue_key} repair translation is incomplete")
 
-    support_health_source = (PAYLOAD / "support_health.py").read_text(
-        encoding="utf-8"
+    require_tokens(
+        PAYLOAD / "support_health.py",
+        (
+            "enable_user",
+            "disable_user",
+            "EVENT_SERVICE_REGISTERED",
+            "EVENT_SERVICE_REMOVED",
+            "smart_support_provider_unavailable",
+        ),
+        "support_health.py",
     )
-    for required_token in (
-        "enable_user",
-        "disable_user",
-        "EVENT_SERVICE_REGISTERED",
-        "EVENT_SERVICE_REMOVED",
-        "smart_support_provider_unavailable",
-    ):
-        if required_token not in support_health_source:
-            fail(f"support_health.py is missing required token {required_token!r}")
 
     for filename in (
         "smart-home-panel.js",
@@ -228,131 +217,110 @@ def validate() -> None:
         "smart-automations-layout.js",
         "smart-automations-runtime.js",
         "smart-automations-responsive.js",
+        "smart-automations-alert-control.js",
         "smart-support-panel.js",
     ):
         path = PAYLOAD / "frontend" / filename
         if not path.is_file() or path.stat().st_size < 1000:
             fail(f"Frontend missing or unexpectedly small: {filename}")
 
-    smart_home_runtime = (PAYLOAD / "frontend" / "smart-home-panel-runtime.js").read_text(
-        encoding="utf-8"
+    require_tokens(
+        PAYLOAD / "frontend" / "smart-home-panel-runtime.js",
+        (
+            'SMART_HOME_RUNTIME_GUARD_VERSION = "1.0.0"',
+            'SMART_HOME_RUNTIME_VERSION = "1.1.0"',
+            'import "./smart-home-card-layout.js?v=100-module140";',
+            'Object.getOwnPropertyDescriptor(proto, "narrow")',
+            "if (current === next) return;",
+        ),
+        "smart-home-panel-runtime.js",
     )
-    for required_token in (
-        'SMART_HOME_RUNTIME_GUARD_VERSION = "1.0.0"',
-        'SMART_HOME_RUNTIME_VERSION = "1.1.0"',
-        'import "./smart-home-card-layout.js?v=100-module140";',
-        'Object.getOwnPropertyDescriptor(proto, "narrow")',
-        'if (current === next) return;',
-    ):
-        if required_token not in smart_home_runtime:
-            fail(
-                "smart-home-panel-runtime.js is missing required runtime token "
-                f"{required_token!r}"
-            )
 
-    smart_home_cards = (PAYLOAD / "frontend" / "smart-home-card-layout.js").read_text(
-        encoding="utf-8"
+    require_tokens(
+        PAYLOAD / "frontend" / "smart-home-card-layout.js",
+        (
+            'SMART_HOME_CARD_LAYOUT_RUNTIME_VERSION = "1.0.0"',
+            "card_layout.order",
+            "extra_cards",
+            "history/history_during_period",
+            "move-smart-card",
+        ),
+        "smart-home-card-layout.js",
     )
-    for required_token in (
-        'SMART_HOME_CARD_LAYOUT_RUNTIME_VERSION = "1.0.0"',
-        "card_layout.order",
-        "extra_cards",
-        "history/history_during_period",
-        "move-smart-card",
-    ):
-        if required_token not in smart_home_cards:
-            fail(
-                "smart-home-card-layout.js is missing required feature token "
-                f"{required_token!r}"
-            )
 
-    smart_home_wrapper = (
-        PAYLOAD / "modules" / "smart_home" / "__init__.py"
+    require_tokens(
+        PAYLOAD / "modules" / "smart_home" / "__init__.py",
+        (
+            'PANEL_RUNTIME_FILE = "smart-home-panel-runtime.js"',
+            'CARD_LAYOUT_FILE = "smart-home-card-layout.js"',
+            'MODULE_VERSION = "1.4.0"',
+            'RUNTIME_VERSION = "1.1.0"',
+            'RUNTIME_GUARD_VERSION = "1.0.0"',
+            'CARD_LAYOUT_RUNTIME_VERSION = "1.0.0"',
+            "?v=205-guard100-cards100-module140",
+        ),
+        "smart_home wrapper",
+    )
+
+    smart_lighting_base = (
+        PAYLOAD / "frontend" / "smart-lighting-panel.js"
     ).read_text(encoding="utf-8")
-    for required_token in (
-        'PANEL_RUNTIME_FILE = "smart-home-panel-runtime.js"',
-        'CARD_LAYOUT_FILE = "smart-home-card-layout.js"',
-        'MODULE_VERSION = "1.4.0"',
-        'RUNTIME_VERSION = "1.1.0"',
-        'RUNTIME_GUARD_VERSION = "1.0.0"',
-        'CARD_LAYOUT_RUNTIME_VERSION = "1.0.0"',
-        "?v=205-guard100-cards100-module140",
-    ):
-        if required_token not in smart_home_wrapper:
-            fail(f"smart_home wrapper is missing required token {required_token!r}")
-
-    smart_lighting_base = (PAYLOAD / "frontend" / "smart-lighting-panel.js").read_text(
-        encoding="utf-8"
-    )
     if 'const PANEL_VERSION = "1.0.3";' not in smart_lighting_base:
         fail("smart-lighting-panel.js must remain on validated base V1.0.3")
 
-    smart_lighting_layout = (PAYLOAD / "frontend" / "smart-lighting-layout.js").read_text(
-        encoding="utf-8"
+    require_tokens(
+        PAYLOAD / "frontend" / "smart-lighting-layout.js",
+        (
+            'SMART_LIGHTING_LAYOUT_RUNTIME_VERSION = "1.2.0"',
+            'SMART_LIGHTING_ORDERING_RUNTIME_VERSION = "1.1.0"',
+            'SMART_LIGHTING_GLOBAL_ACTIONS_RUNTIME_VERSION = "1.1.0"',
+            'SMART_LIGHTING_EFFECTIVE_VERSION = "1.3.0"',
+            "move-lighting-area",
+            "move-lighting-device",
+            "lighting-global-turn-off",
+            "lighting-global-turn-on",
+            "move-lighting-global-button",
+            "global_actions",
+            "button_order",
+            "active_color",
+            "inactive_color",
+            "collectGlobalEntities",
+        ),
+        "smart-lighting-layout.js",
     )
-    for required_token in (
-        'SMART_LIGHTING_LAYOUT_RUNTIME_VERSION = "1.2.0"',
-        'SMART_LIGHTING_ORDERING_RUNTIME_VERSION = "1.1.0"',
-        'SMART_LIGHTING_GLOBAL_ACTIONS_RUNTIME_VERSION = "1.1.0"',
-        'SMART_LIGHTING_EFFECTIVE_VERSION = "1.3.0"',
-        "move-lighting-area",
-        "move-lighting-device",
-        "lighting-global-turn-off",
-        "lighting-global-turn-on",
-        "move-lighting-global-button",
-        "global_actions",
-        "global_actions.position",
-        "button_order",
-        "active_color",
-        "inactive_color",
-        "collectGlobalEntities",
-        "smart_lighting_panel.config",
-    ):
-        if required_token not in smart_lighting_layout:
-            fail(
-                "smart-lighting-layout.js is missing required feature token "
-                f"{required_token!r}"
-            )
 
-    smart_lighting_responsive = (
-        PAYLOAD / "frontend" / "smart-lighting-responsive.js"
-    ).read_text(encoding="utf-8")
-    for required_token in (
-        'SMART_LIGHTING_RESPONSIVE_RUNTIME_VERSION = "1.1.0"',
-        'SMART_LIGHTING_EFFECTIVE_VERSION = "1.4.1"',
-        'SMART_LIGHTING_ADAPTIVE_MAX_WIDTH = 1200',
-        'LEGACY_AUTO_WIDTHS = new Set([520, 760])',
-        'import "./smart-lighting-layout.js?v=120-module130-suite180";',
-        "container-type:inline-size",
-        "@container smart-lighting-page",
-        ".smart-global-actions-grid",
-        "columns_tablet",
-        "columns_desktop",
-        "usesLegacyAutoWidth",
-    ):
-        if required_token not in smart_lighting_responsive:
-            fail(
-                "smart-lighting-responsive.js is missing required feature token "
-                f"{required_token!r}"
-            )
+    require_tokens(
+        PAYLOAD / "frontend" / "smart-lighting-responsive.js",
+        (
+            'SMART_LIGHTING_RESPONSIVE_RUNTIME_VERSION = "1.1.0"',
+            'SMART_LIGHTING_EFFECTIVE_VERSION = "1.4.1"',
+            'SMART_LIGHTING_ADAPTIVE_MAX_WIDTH = 1200',
+            'LEGACY_AUTO_WIDTHS = new Set([520, 760])',
+            'import "./smart-lighting-layout.js?v=120-module130-suite180";',
+            "container-type:inline-size",
+            "@container smart-lighting-page",
+            ".smart-global-actions-grid",
+            "columns_tablet",
+            "columns_desktop",
+            "usesLegacyAutoWidth",
+        ),
+        "smart-lighting-responsive.js",
+    )
 
-    smart_lighting_wrapper = (
-        PAYLOAD / "modules" / "smart_lighting" / "__init__.py"
-    ).read_text(encoding="utf-8")
-    for required_token in (
-        'BASE_FRONTEND_FILE = "smart-lighting-panel.js"',
-        'LAYOUT_FRONTEND_FILE = "smart-lighting-layout.js"',
-        'FRONTEND_FILE = "smart-lighting-responsive.js"',
-        'MODULE_VERSION = "1.4.1"',
-        'BASE_PANEL_VERSION = "1.0.3"',
-        'LAYOUT_RUNTIME_VERSION = "1.2.0"',
-        'ORDERING_RUNTIME_VERSION = "1.1.0"',
-        'GLOBAL_ACTIONS_RUNTIME_VERSION = "1.1.0"',
-        'RESPONSIVE_RUNTIME_VERSION = "1.1.0"',
-        "?v=110-responsive-module141-suite191",
-    ):
-        if required_token not in smart_lighting_wrapper:
-            fail(f"smart_lighting wrapper is missing required token {required_token!r}")
+    require_tokens(
+        PAYLOAD / "modules" / "smart_lighting" / "__init__.py",
+        (
+            'BASE_FRONTEND_FILE = "smart-lighting-panel.js"',
+            'LAYOUT_FRONTEND_FILE = "smart-lighting-layout.js"',
+            'FRONTEND_FILE = "smart-lighting-responsive.js"',
+            'MODULE_VERSION = "1.4.1"',
+            'BASE_PANEL_VERSION = "1.0.3"',
+            'LAYOUT_RUNTIME_VERSION = "1.2.0"',
+            'RESPONSIVE_RUNTIME_VERSION = "1.1.0"',
+            "?v=110-responsive-module141-suite191",
+        ),
+        "smart_lighting wrapper",
+    )
 
     smart_automations_base = (
         PAYLOAD / "frontend" / "smart-automations-panel.js"
@@ -360,87 +328,96 @@ def validate() -> None:
     if 'const PANEL_VERSION = "1.0.0";' not in smart_automations_base:
         fail("smart-automations-panel.js must remain on validated base V1.0.0")
 
-    smart_automations_layout = (
-        PAYLOAD / "frontend" / "smart-automations-layout.js"
-    ).read_text(encoding="utf-8")
-    for required_token in (
-        'SMART_AUTOMATIONS_LAYOUT_RUNTIME_VERSION = "1.0.0"',
-        'SMART_AUTOMATIONS_EFFECTIVE_VERSION = "1.1.0"',
-        "automation_layout",
-        "category_order",
-        "move-automation-category",
-        "move-automation-instance",
-        "params.appearance",
-        "reset-automation-appearance",
-        "smart_automations.config",
-    ):
-        if required_token not in smart_automations_layout:
-            fail(
-                "smart-automations-layout.js is missing required feature token "
-                f"{required_token!r}"
-            )
+    require_tokens(
+        PAYLOAD / "frontend" / "smart-automations-layout.js",
+        (
+            'SMART_AUTOMATIONS_LAYOUT_RUNTIME_VERSION = "1.0.0"',
+            'SMART_AUTOMATIONS_EFFECTIVE_VERSION = "1.1.0"',
+            "automation_layout",
+            "category_order",
+            "move-automation-category",
+            "move-automation-instance",
+            "params.appearance",
+            "reset-automation-appearance",
+        ),
+        "smart-automations-layout.js",
+    )
 
-    smart_automations_runtime = (
-        PAYLOAD / "frontend" / "smart-automations-runtime.js"
-    ).read_text(encoding="utf-8")
-    for required_token in (
-        'SMART_AUTOMATIONS_RUNTIME_VERSION = "1.0.0"',
-        'SMART_AUTOMATIONS_COLOR_PICKER_GUARD_VERSION = "1.0.0"',
-        'SMART_AUTOMATIONS_EFFECTIVE_VERSION = "1.1.1"',
-        'target?.type === "color"',
-        'bind?.startsWith("settings.")',
-        "this._setSettingsPath",
-        "originalOnInput.call(this, ev)",
-    ):
-        if required_token not in smart_automations_runtime:
-            fail(
-                "smart-automations-runtime.js is missing required feature token "
-                f"{required_token!r}"
-            )
+    require_tokens(
+        PAYLOAD / "frontend" / "smart-automations-runtime.js",
+        (
+            'SMART_AUTOMATIONS_RUNTIME_VERSION = "1.0.0"',
+            'SMART_AUTOMATIONS_COLOR_PICKER_GUARD_VERSION = "1.0.0"',
+            'SMART_AUTOMATIONS_EFFECTIVE_VERSION = "1.1.1"',
+            'target?.type === "color"',
+            'bind?.startsWith("settings.")',
+            "this._setSettingsPath",
+            "originalOnInput.call(this, ev)",
+        ),
+        "smart-automations-runtime.js",
+    )
 
-    smart_automations_responsive = (
-        PAYLOAD / "frontend" / "smart-automations-responsive.js"
-    ).read_text(encoding="utf-8")
-    for required_token in (
-        'SMART_AUTOMATIONS_RESPONSIVE_RUNTIME_VERSION = "1.0.0"',
-        'SMART_AUTOMATIONS_EFFECTIVE_VERSION = "1.2.0"',
-        'SMART_AUTOMATIONS_ADAPTIVE_MAX_WIDTH = 1000',
-        'LEGACY_AUTO_WIDTHS = new Set([520])',
-        'import "./smart-automations-runtime.js?v=100-layout100-color100-module111-suite191";',
-        "container-type:inline-size",
-        "@container smart-automations-page",
-        "columns_mobile",
-        "columns_tablet",
-        "columns_desktop",
-        ".summary",
-        ".cards",
-        "usesLegacyAutoWidth",
-    ):
-        if required_token not in smart_automations_responsive:
-            fail(
-                "smart-automations-responsive.js is missing required feature token "
-                f"{required_token!r}"
-            )
+    require_tokens(
+        PAYLOAD / "frontend" / "smart-automations-responsive.js",
+        (
+            'SMART_AUTOMATIONS_RESPONSIVE_RUNTIME_VERSION = "1.0.0"',
+            'SMART_AUTOMATIONS_EFFECTIVE_VERSION = "1.2.0"',
+            'SMART_AUTOMATIONS_ADAPTIVE_MAX_WIDTH = 1000',
+            'LEGACY_AUTO_WIDTHS = new Set([520])',
+            'import "./smart-automations-runtime.js?v=100-layout100-color100-module111-suite191";',
+            "container-type:inline-size",
+            "@container smart-automations-page",
+            "columns_mobile",
+            "columns_tablet",
+            "columns_desktop",
+            ".summary",
+            ".cards",
+            "usesLegacyAutoWidth",
+        ),
+        "smart-automations-responsive.js",
+    )
 
-    smart_automations_wrapper = (
-        PAYLOAD / "modules" / "smart_automations" / "__init__.py"
-    ).read_text(encoding="utf-8")
-    for required_token in (
-        'BASE_FRONTEND_FILE = "smart-automations-panel.js"',
-        'LAYOUT_FRONTEND_FILE = "smart-automations-layout.js"',
-        'RUNTIME_FRONTEND_FILE = "smart-automations-runtime.js"',
-        'FRONTEND_FILE = "smart-automations-responsive.js"',
-        'MODULE_VERSION = "1.2.0"',
-        'BASE_PANEL_VERSION = "1.0.0"',
-        'LAYOUT_RUNTIME_VERSION = "1.0.0"',
-        'COLOR_PICKER_GUARD_VERSION = "1.0.0"',
-        'RESPONSIVE_RUNTIME_VERSION = "1.0.0"',
-        "?v=100-responsive-module120-suite1100",
-    ):
-        if required_token not in smart_automations_wrapper:
-            fail(
-                f"smart_automations wrapper is missing required token {required_token!r}"
-            )
+    require_tokens(
+        PAYLOAD / "frontend" / "smart-automations-alert-control.js",
+        (
+            'SMART_AUTOMATIONS_ALERT_CONTROL_RUNTIME_VERSION = "1.0.0"',
+            'SMART_AUTOMATIONS_EFFECTIVE_VERSION = "1.3.0"',
+            'import "./smart-automations-responsive.js?v=100-responsive-module120-suite1100";',
+            '"high_power"',
+            '"energy_limit"',
+            "notification_count",
+            "second_notification_delay_minutes",
+            "schedule_enabled",
+            "schedule_start",
+            "schedule_end",
+            "rearm_enabled",
+            "rearm_below",
+            "wait_for_trigger",
+            'condition: "time"',
+            'mode: "single"',
+            "fuera del horario",
+        ),
+        "smart-automations-alert-control.js",
+    )
+
+    require_tokens(
+        PAYLOAD / "modules" / "smart_automations" / "__init__.py",
+        (
+            'BASE_FRONTEND_FILE = "smart-automations-panel.js"',
+            'LAYOUT_FRONTEND_FILE = "smart-automations-layout.js"',
+            'RUNTIME_FRONTEND_FILE = "smart-automations-runtime.js"',
+            'RESPONSIVE_FRONTEND_FILE = "smart-automations-responsive.js"',
+            'FRONTEND_FILE = "smart-automations-alert-control.js"',
+            'MODULE_VERSION = "1.3.0"',
+            'BASE_PANEL_VERSION = "1.0.0"',
+            'LAYOUT_RUNTIME_VERSION = "1.0.0"',
+            'COLOR_PICKER_GUARD_VERSION = "1.0.0"',
+            'RESPONSIVE_RUNTIME_VERSION = "1.0.0"',
+            'ALERT_CONTROL_RUNTIME_VERSION = "1.0.0"',
+            "?v=100-alert-module130-suite1110",
+        ),
+        "smart_automations wrapper",
+    )
 
     print(f"RELEASE_VALIDATION_OK version={version} modules={len(catalog_ids)}")
 
