@@ -1,12 +1,12 @@
 # Smart Home Suite Manager 1.14.0
 
-**PRE-RELEASE** — Smart Home Panel V3 nativo.
+**STABLE** — Smart Home Panel V3 nativo.
 
 ## Estado
 
-- Stable recomendado: **1.12.3**
-- Pre-release anterior: **1.13.0**
-- Nuevo pre-release: **1.14.0**
+- Último Stable: **1.14.0**
+- Smart Home module: **1.6.0**
+- Smart Home Panel V3: **3.1.0**
 
 ## Módulos
 
@@ -31,8 +31,9 @@ Fallbacks preservados:
 - Smart Home Panel V2.0.5
 - Native Dashboard Bridge V1.3.0
 - Runtime V1.1.0
+- Narrow Guard V1.0.0
 - Card Layout V1.0.0
-- Layout V3 runtime 1.0.0 de 1.13.0 como artefacto legado no cargado
+- Layout V3 runtime V1.0.0 de 1.13.0 como artefacto legado no cargado
 
 ## Compatibilidad
 
@@ -41,15 +42,15 @@ Fallbacks preservados:
 - mismo WebSocket;
 - mismo `layout_v3` schema 1;
 - sin migración;
-- actualización desde 1.13.0 directa;
-- instalación limpia soportada.
+- compatible con configuración V3 creada en 1.13.0;
+- instalación limpia validada.
 
-## Acciones
+## Acciones del Manager
 
 - `validate_only`
 - `install_repair`
 - `restore_latest`
 
-Imagen:
+Imagen estable:
 
 `ghcr.io/abel-smart-home/smart-home-suite-manager:1.14.0`

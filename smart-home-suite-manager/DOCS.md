@@ -1,96 +1,132 @@
-# Smart Home Suite Manager 1.14.0 · PRE-RELEASE
+# Smart Home Suite Manager 1.14.0 · STABLE
 
 ## Smart Home V3 nativo
 
-### Arquitectura
+### Arquitectura estable
 
 ```text
-Smart Home Panel V2.0.5 (fallback)
-        ↓ herencia funcional
+Smart Home Panel V2.0.5
+        │ fallback / base funcional
+        ▼
 Runtime V1.1.0 + Card Layout V1.0.0
-        ↓
+        │
+        ▼
 SmartHomePanelV3 V3.1.0
 ```
 
-`SmartHomePanelV3` es un custom element propio:
+Elemento activo:
 
 `<smart-home-panel-v3>`
 
-El dashboard lo monta mediante:
+Dashboard card:
 
 `<smart-home-dashboard-card-v3>`
 
-El bridge V3 hereda el dashboard card validado del Native Bridge V1.3.0, por lo
-que conserva ocultamiento/restauración del header, botón ☰ móvil, control por
-rol y comportamiento narrow.
+El bridge V3 reutiliza el comportamiento validado del Native Dashboard Bridge
+V1.3.0 para conservar:
 
-### Compatibilidad con 1.13.0
+- ocultamiento/restauración del header;
+- botón ☰ móvil;
+- control de acceso por rol;
+- comportamiento narrow;
+- lifecycle Lovelace fail-open.
 
-`layout_v3.schema_version = 1` permanece igual.
+## Compatibilidad
 
-No hay conversión ni reescritura automática.
-Los datos existentes de 1.13.0 se leen directamente por V3.1.0.
+`layout_v3.schema_version = 1`.
 
-### Secciones
+No existe migración.
 
-Cada sección soporta:
+Configuraciones creadas por Suite 1.13.0 se leen directamente por V3.1.0.
 
-- `show`
-- `show_header`
-- `show_empty`
-- `section_surface`
-- `header_surface`
-- `title`
-- `subtitle`
-- `icon`
-- colores/tamaños/alineación
-- background/border/radius/padding
-- widgets
+Abrir el panel no escribe configuración automáticamente.
 
-### Widgets
+## Secciones
 
-Refs:
+Cada sección puede configurar:
 
-- `monthly_cost`
-- `season`
-- `tariff`
-- `power`
-- `extra:<id>`
+- `show`;
+- `show_header`;
+- `show_empty`;
+- `section_surface`;
+- `header_surface`;
+- `title`;
+- `subtitle`;
+- `icon`;
+- colores;
+- tamaños;
+- alineación;
+- background;
+- border;
+- radius;
+- padding;
+- widgets.
+
+## Widgets
+
+Refs compatibles:
+
+- `monthly_cost`;
+- `season`;
+- `tariff`;
+- `power`;
+- `extra:<id>`.
 
 Tamaños:
 
-- `auto`
-- `small`
-- `medium`
-- `large`
-- `full`
+- `auto`;
+- `small`;
+- `medium`;
+- `large`;
+- `full`.
 
-### Responsive
+## Responsive
 
 Default:
 
-- `<700 px`: 1 columna
-- `>=700 px`: 4 columnas
-- max width adaptativo heredado: 1100 px
+- `<700 px`: 1 columna;
+- `>=700 px`: 4 columnas;
+- max width adaptativo: 1100 px.
 
-Container query: `smart-home-v3-page`.
+Container query:
 
-### Editor
+`smart-home-v3-page`
 
-Conserva General / Tarjetas / Tacómetro / Navegación / Avanzado y añade
-**Layout V3**.
+## Editor
 
-El selector de iconos usa `ha-selector`, `ha-icon-picker` y siempre conserva el
-campo manual `mdi:...`.
+Conserva:
 
-### Recuperación
+- General;
+- Tarjetas;
+- Tacómetro;
+- Navegación;
+- Avanzado.
 
-Si `layout_v3.enabled` se desactiva, el panel V3 vuelve a mostrar el layout plano
-heredado dentro del mismo frontend.
+Añade:
 
-Para rollback de Suite usa `restore_latest`.
+- Layout V3.
+
+Selector MDI:
+
+1. `ha-selector`;
+2. `ha-icon-picker`;
+3. campo manual `mdi:...`.
+
+## Recuperación
+
+Dentro de Smart Home:
+
+Personalización → Layout V3 → desactivar `Activar Layout V3` → Guardar.
+
+Para rollback de Suite:
+
+Smart Home Suite Manager → `restore_latest`.
 
 ## Otros módulos
 
-Lighting 1.4.1, Energy Advanced 1.5.3, Automations 1.3.0 y Support 1.2.0
-no cambian funcionalmente en 1.14.0.
+- Lighting 1.4.1
+- Energy Advanced 1.5.3
+- Automations 1.3.0
+- Support 1.2.0
+
+Todos permanecen funcionalmente sin cambios en la promoción Stable 1.14.0.
