@@ -222,6 +222,7 @@ def validate() -> None:
         "smart-home-card-layout.js",
         "smart-lighting-panel.js",
         "smart-lighting-layout.js",
+        "smart-lighting-responsive.js",
         "smart-energy-advanced-panel.js",
         "smart-automations-panel.js",
         "smart-automations-layout.js",
@@ -312,18 +313,39 @@ def validate() -> None:
                 f"{required_token!r}"
             )
 
+    smart_lighting_responsive = (
+        PAYLOAD / "frontend" / "smart-lighting-responsive.js"
+    ).read_text(encoding="utf-8")
+    for required_token in (
+        'SMART_LIGHTING_RESPONSIVE_RUNTIME_VERSION = "1.0.0"',
+        'SMART_LIGHTING_EFFECTIVE_VERSION = "1.4.0"',
+        'SMART_LIGHTING_ADAPTIVE_MAX_WIDTH = 1200',
+        'LEGACY_AUTO_WIDTHS = new Set([520, 760])',
+        'import "./smart-lighting-layout.js?v=120-module130-suite180";',
+        "container-type:inline-size",
+        "@container smart-lighting-page",
+        "usesLegacyAutoWidth",
+    ):
+        if required_token not in smart_lighting_responsive:
+            fail(
+                "smart-lighting-responsive.js is missing required feature token "
+                f"{required_token!r}"
+            )
+
     smart_lighting_wrapper = (
         PAYLOAD / "modules" / "smart_lighting" / "__init__.py"
     ).read_text(encoding="utf-8")
     for required_token in (
         'BASE_FRONTEND_FILE = "smart-lighting-panel.js"',
-        'FRONTEND_FILE = "smart-lighting-layout.js"',
-        'MODULE_VERSION = "1.3.0"',
+        'LAYOUT_FRONTEND_FILE = "smart-lighting-layout.js"',
+        'FRONTEND_FILE = "smart-lighting-responsive.js"',
+        'MODULE_VERSION = "1.4.0"',
         'BASE_PANEL_VERSION = "1.0.3"',
         'LAYOUT_RUNTIME_VERSION = "1.2.0"',
         'ORDERING_RUNTIME_VERSION = "1.1.0"',
         'GLOBAL_ACTIONS_RUNTIME_VERSION = "1.1.0"',
-        "?v=120-module130-suite160",
+        'RESPONSIVE_RUNTIME_VERSION = "1.0.0"',
+        "?v=100-responsive-module140-suite190",
     ):
         if required_token not in smart_lighting_wrapper:
             fail(f"smart_lighting wrapper is missing required token {required_token!r}")

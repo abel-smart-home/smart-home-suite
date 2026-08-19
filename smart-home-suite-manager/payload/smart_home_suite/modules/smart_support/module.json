@@ -9,7 +9,7 @@
   "sidebar_icon": "mdi:headset",
   "storage_key": "smart_support_panel.config",
   "session_storage_key": "smart_support_panel.session",
-  "suite_version": "1.8.0",
+  "suite_version": "1.9.0",
   "frontend_source": "Smart Support Panel V1.2.0; V1.1.2 backend/session contract preserved",
   "storage_migration": "none; optional action presentation fields live inside existing smart_support_panel.config",
   "ordering": "compact action order editor mutates only actions.buttons order in the editor working copy",

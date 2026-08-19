@@ -76,14 +76,15 @@ MODULE_CATALOG: tuple[ModuleSpec, ...] = (
         module_id="smart_lighting",
         name="Smart Lighting",
         option_label="Smart Lighting",
-        version="1.3.0",
+        version="1.4.0",
         panel_path="lighting",
         enabled_by_default=True,
         setup=setup_smart_lighting,
         unload=unload_smart_lighting,
         notes=(
-            "Base panel 1.0.3 + Suite layout runtime 1.2.0; ordering 1.1.0 + "
-            "global actions 1.1.0 with area/button ordering and state colors"
+            "Base panel 1.0.3 + Suite layout runtime 1.2.0 + responsive runtime "
+            "1.0.0; adaptive 520/760 legacy width on tablet/desktop without "
+            "changing storage or personalization"
         ),
     ),
     ModuleSpec(

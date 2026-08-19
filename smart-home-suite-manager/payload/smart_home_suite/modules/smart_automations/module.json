@@ -10,7 +10,7 @@
   "sidebar_icon": "mdi:robot",
   "storage_key": "smart_automations.config",
   "storage_version": 1,
-  "suite_version": "1.8.0",
+  "suite_version": "1.9.0",
   "frontend_source": "Smart Automations Panel V1.0.0 + smart-automations-layout.js + smart-automations-runtime.js",
   "layout_runtime_version": "1.0.0",
   "layout_runtime_source": "Adds category ordering, instance ordering and per-instance visual metadata through the existing Personalización working copy",
