@@ -80,15 +80,15 @@ MODULE_CATALOG: tuple[ModuleSpec, ...] = (
         module_id="smart_energy_advanced",
         name="Smart Energy Advanced",
         option_label="Energía avanzada",
-        version="1.5.1",
+        version="1.5.2",
         panel_path="energy-advanced",
         enabled_by_default=True,
         setup=setup_smart_energy_advanced,
         unload=unload_smart_energy_advanced,
         notes=(
-            "Base panel 1.3.1 + ordering runtime 1.0.0 + responsive runtime 1.1.0; "
-            "mobile remains unchanged, tablet stays 2 columns but is capped at 780px, "
-            "desktop keeps the validated 4-column layout up to 1000px"
+            "Base panel 1.3.1 + ordering runtime 1.0.0 + responsive runtime 1.2.0; "
+            "2 columns below 700px, 3 columns from 700-899px and validated "
+            "4-column desktop layout from 900px; no storage/API changes"
         ),
     ),
     ModuleSpec(

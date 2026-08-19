@@ -294,7 +294,7 @@ def validate() -> None:
     require_tokens(
         PAYLOAD / "frontend" / "smart-lighting-responsive.js",
         (
-            'SMART_LIGHTING_RESPONSIVE_RUNTIME_VERSION = "1.1.0"',
+            'SMART_LIGHTING_RESPONSIVE_RUNTIME_VERSION = "1.2.0"',
             'SMART_LIGHTING_EFFECTIVE_VERSION = "1.4.1"',
             'SMART_LIGHTING_ADAPTIVE_MAX_WIDTH = 1200',
             'LEGACY_AUTO_WIDTHS = new Set([520, 760])',
@@ -346,11 +346,15 @@ def validate() -> None:
     require_tokens(
         PAYLOAD / "frontend" / "smart-energy-advanced-responsive.js",
         (
-            'SMART_ENERGY_RESPONSIVE_RUNTIME_VERSION = "1.1.0"',
-            'SMART_ENERGY_EFFECTIVE_VERSION = "1.5.1"',
-            'SMART_ENERGY_TABLET_MAX_WIDTH = 780',
+            'SMART_ENERGY_RESPONSIVE_RUNTIME_VERSION = "1.2.0"',
+            'SMART_ENERGY_EFFECTIVE_VERSION = "1.5.2"',
+            'SMART_ENERGY_NARROW_MAX_WIDTH = 680',
+            'SMART_ENERGY_TABLET_MAX_WIDTH = 900',
             'SMART_ENERGY_ADAPTIVE_MAX_WIDTH = 1000',
-            '@media (min-width:560px) and (max-width:899px)',
+            'SMART_ENERGY_TABLET_COLUMNS_MIN_WIDTH = 700',
+            '@media (min-width:700px) and (max-width:899px)',
+            '@container smart-energy-advanced-page (min-width:700px) and (max-width:899px)',
+            'repeat(3,minmax(0,1fr))',
             'LEGACY_AUTO_WIDTHS = new Set([520])',
             'import "./smart-energy-advanced-layout.js?v=100-module140-suite130";',
             "container-type:inline-size",
@@ -372,11 +376,11 @@ def validate() -> None:
             'BASE_FRONTEND_FILE = "smart-energy-advanced-panel.js"',
             'LAYOUT_FRONTEND_FILE = "smart-energy-advanced-layout.js"',
             'FRONTEND_FILE = "smart-energy-advanced-responsive.js"',
-            'MODULE_VERSION = "1.5.1"',
+            'MODULE_VERSION = "1.5.2"',
             'BASE_PANEL_VERSION = "1.3.1"',
             'LAYOUT_RUNTIME_VERSION = "1.0.0"',
             'RESPONSIVE_RUNTIME_VERSION = "1.1.0"',
-            "?v=110-responsive-module151-suite1121",
+            "?v=120-responsive-module152-suite1122",
         ),
         "smart_energy_advanced wrapper",
     )

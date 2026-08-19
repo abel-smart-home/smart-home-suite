@@ -1,23 +1,23 @@
-# Smart Home Suite Manager 1.12.1 · PRE-RELEASE
+# Smart Home Suite Manager 1.12.2 · PRE-RELEASE
 
 Último release estable: **1.11.0**.
 
 ## Versiones
 
-- Suite / Manager: **1.12.1**
+- Suite / Manager: **1.12.2**
 - Smart Home: **1.4.0**
 - Smart Lighting: **1.4.1**
-- Smart Energy Advanced: **1.5.1**
+- Smart Energy Advanced: **1.5.2**
 - Smart Automations: **1.3.0**
 - Smart Support: **1.2.0**
 
-## Smart Energy Advanced 1.5.1
+## Smart Energy Advanced 1.5.2
 
 ### Arquitectura preservada
 
 - base: Smart Energy Advanced Panel V1.3.1;
 - ordering runtime: `smart-energy-advanced-layout.js` V1.0.0;
-- responsive runtime: `smart-energy-advanced-responsive.js` V1.1.0;
+- responsive runtime: `smart-energy-advanced-responsive.js` V1.2.0;
 - storage: `smart_energy_advanced_panel.config`;
 - storage version: 1.
 
@@ -25,7 +25,7 @@ No existe migración.
 
 ### Ancho adaptativo
 
-Si `panel_max_width` conserva el valor heredado **520**, en tablet el panel se centra y se limita a **780 px**; en PC vuelve a poder crecer hasta **1000 px**. Un ancho personalizado distinto de 520 se respeta.
+Si `panel_max_width` conserva el valor heredado **520**, el panel puede crecer progresivamente: hasta 680 px en el rango estrecho, hasta 900 px en tablet y hasta 1000 px en PC. Un ancho personalizado distinto de 520 se respeta.
 
 ### Móvil / Tablet / PC
 
@@ -49,14 +49,14 @@ Se conserva WebSocket, `.storage`, entidades, cálculos, unidades, barras, demo 
 
 ## Instalar / probar
 
-1. Actualiza Manager a 1.12.1.
+1. Actualiza Manager a 1.12.2.
 2. Ejecuta `validate_only`.
 3. Confirma `VALIDATION_OK`.
 4. Ejecuta `install_repair` con `create_backup: true`.
 5. Confirma validaciones e `INSTALLATION_OK`.
 6. Reinicia Home Assistant.
 7. Haz recarga completa del frontend.
-8. Sigue `TEST-CHECKLIST-1.12.1.md`.
+8. Sigue `TEST-CHECKLIST-1.12.2.md`.
 
 ## Restore
 

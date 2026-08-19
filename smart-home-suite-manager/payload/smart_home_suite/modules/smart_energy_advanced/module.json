@@ -1,32 +1,37 @@
 {
   "id": "smart_energy_advanced",
   "name": "Smart Energy Advanced",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "base_panel_version": "1.3.1",
-  "source": "Smart Energy Advanced Panel V1.3.1 exact + Suite ordering runtime V1.0.0 + responsive runtime V1.1.0",
+  "source": "Smart Energy Advanced Panel V1.3.1 exact + Suite ordering runtime V1.0.0 + responsive runtime V1.2.0",
   "enabled_by_default": true,
   "panel_path": "energy-advanced",
   "sidebar_title": "Energía avanzada",
   "sidebar_icon": "mdi:lightning-bolt-circle",
   "storage_key": "smart_energy_advanced_panel.config",
   "storage_version": 1,
-  "suite_version": "1.12.1",
+  "suite_version": "1.12.2",
   "frontend_source": "Smart Energy Advanced Panel V1.3.1 + smart-energy-advanced-layout.js + smart-energy-advanced-responsive.js",
   "layout_runtime_version": "1.0.0",
   "layout_runtime_source": "Reorders existing/future sections and widgets by mutating only the existing sections/widgets arrays in the editor working copy",
-  "responsive_runtime_version": "1.1.0",
-  "responsive_runtime_source": "Second responsive test: legacy 520px stays mobile, tablet remains 2 columns but is centered and capped at 780px, desktop keeps the validated 4-column layout up to 1000px; span 1/2, hero and native graph contracts remain unchanged",
+  "responsive_runtime_version": "1.2.0",
+  "responsive_runtime_source": "Third responsive test: 2 columns below 700px real panel width, 3 columns from 700-899px, and the validated 4 columns from 900px; legacy 520px may expand to 900px in tablet and 1000px on desktop",
   "responsive_max_width": 1000,
   "responsive_legacy_widths": [
     520
   ],
   "responsive_grid": {
-    "mobile": 2,
-    "tablet": 2,
+    "narrow_mobile_tablet": 2,
+    "tablet": 3,
     "desktop": 4
   },
-  "span_contract": "mobile/tablet span-2 remains full row; desktop span-2 occupies 2 of 4 columns; kind-hero always full row",
+  "span_contract": "below 700px span-2 remains full row; from 700px span-2 occupies 2 columns; kind-hero always occupies the full row",
   "native_power_graph_contract": "power-sources-graph remains outside metric-grid and full width; no internals are modified",
   "migration": "none; existing .storage configuration remains valid and is never rewritten by the responsive runtime",
-  "responsive_tablet_max_width": 780
+  "responsive_tablet_max_width": 900,
+  "responsive_narrow_max_width": 680,
+  "responsive_breakpoints": {
+    "tablet_3_columns_min": 700,
+    "desktop_4_columns_min": 900
+  }
 }
