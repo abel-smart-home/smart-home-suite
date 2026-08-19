@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.12.3 - 2026-08-19 · TEST
+
+- Actualiza **Smart Energy Advanced a 1.5.3**.
+- Mantiene base V1.3.1 y ordering runtime V1.0.0 intactos.
+- Actualiza `smart-energy-advanced-responsive.js` a V1.3.0.
+- Descarta la distribución tablet de 3 columnas.
+- Móvil conserva 2 columnas y el ancho heredado 520 sin expansión debajo de 700 px.
+- Desde 700 px reales tablet y PC comparten 4 columnas.
+- Tablet puede crecer hasta 900 px y PC hasta 1000 px.
+- Desde 700 px `span:2` ocupa 2 de 4 columnas.
+- `kind-hero` y `power-sources-graph` conservan ancho completo.
+- Conserva `.storage` V1, WebSocket, entidades, acciones, selectores, navegación, Personalización y ordenamiento.
+- No requiere migración.
+- El validador conserva los contratos reales: Lighting responsive 1.1.0, Energy responsive 1.3.0 y Automations responsive 1.0.0.
+
 ## 1.12.2 - 2026-08-19 · TEST
 
 - Actualiza **Smart Energy Advanced a 1.5.2**.

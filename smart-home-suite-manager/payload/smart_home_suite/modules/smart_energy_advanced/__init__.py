@@ -1,9 +1,9 @@
-"""Smart Energy Advanced 1.5.2 module for Smart Home Suite.
+"""Smart Energy Advanced 1.5.3 module for Smart Home Suite.
 
 The validated Smart Energy Advanced Panel V1.3.1 frontend, storage/API contract
 and ordering runtime V1.0.0 remain intact.
 
-Suite 1.12.2 refines the isolated responsive runtime to V1.2.0 that changes only
+Suite 1.12.3 refines the isolated responsive runtime to V1.3.0 that changes only
 rendered panel width and metric-grid span behavior. WebSocket, .storage,
 entity actions, ordering, editor and native power-sources-graph remain unchanged.
 """
@@ -33,10 +33,10 @@ BASE_FRONTEND_FILE = "smart-energy-advanced-panel.js"
 LAYOUT_FRONTEND_FILE = "smart-energy-advanced-layout.js"
 FRONTEND_FILE = "smart-energy-advanced-responsive.js"
 
-MODULE_VERSION = "1.5.2"
+MODULE_VERSION = "1.5.3"
 BASE_PANEL_VERSION = "1.3.1"
 LAYOUT_RUNTIME_VERSION = "1.0.0"
-RESPONSIVE_RUNTIME_VERSION = "1.2.0"
+RESPONSIVE_RUNTIME_VERSION = "1.3.0"
 
 
 def _frontend_dir() -> Path:
@@ -57,7 +57,7 @@ def _store(hass: HomeAssistant) -> Store[dict[str, Any]]:
 
 
 async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Register Smart Energy Advanced 1.5.2 API and panel."""
+    """Register Smart Energy Advanced 1.5.3 API and panel."""
     data = _data(hass)
 
     frontend_dir = _frontend_dir()
@@ -104,13 +104,12 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         responsive_file.read_text, "utf-8"
     )
     for required_token in (
-        'SMART_ENERGY_RESPONSIVE_RUNTIME_VERSION = "1.2.0"',
-        'SMART_ENERGY_EFFECTIVE_VERSION = "1.5.2"',
-        'SMART_ENERGY_NARROW_MAX_WIDTH = 680',
+        'SMART_ENERGY_RESPONSIVE_RUNTIME_VERSION = "1.3.0"',
+        'SMART_ENERGY_EFFECTIVE_VERSION = "1.5.3"',
         'SMART_ENERGY_TABLET_MAX_WIDTH = 900',
         'SMART_ENERGY_ADAPTIVE_MAX_WIDTH = 1000',
-        'SMART_ENERGY_TABLET_COLUMNS_MIN_WIDTH = 700',
-        'repeat(3,minmax(0,1fr))',
+        'SMART_ENERGY_WIDE_GRID_MIN_WIDTH = 700',
+        'repeat(4,minmax(0,1fr))',
         'LEGACY_AUTO_WIDTHS = new Set([520])',
         'import "./smart-energy-advanced-layout.js?v=100-module140-suite130";',
         'container-type:inline-size',
@@ -118,7 +117,7 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         '.metric-card.span-2',
         '.metric-card.kind-hero',
         '.native-power-graph-section',
-    ):
+        ):
         if required_token not in responsive_text:
             _LOGGER.error(
                 "Smart Energy Advanced responsive runtime is missing token %s",
@@ -153,7 +152,7 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         sidebar_icon="mdi:lightning-bolt-circle",
         module_url=(
             f"{STATIC_URL}/{FRONTEND_FILE}"
-            "?v=120-responsive-module152-suite1122"
+            "?v=130-responsive-module153-suite1123"
         ),
         require_admin=False,
         handle_safe_area=True,
