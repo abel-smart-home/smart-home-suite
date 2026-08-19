@@ -294,7 +294,7 @@ def validate() -> None:
     require_tokens(
         PAYLOAD / "frontend" / "smart-lighting-responsive.js",
         (
-            'SMART_LIGHTING_RESPONSIVE_RUNTIME_VERSION = "1.2.0"',
+            'SMART_LIGHTING_RESPONSIVE_RUNTIME_VERSION = "1.1.0"',
             'SMART_LIGHTING_EFFECTIVE_VERSION = "1.4.1"',
             'SMART_LIGHTING_ADAPTIVE_MAX_WIDTH = 1200',
             'LEGACY_AUTO_WIDTHS = new Set([520, 760])',
@@ -379,7 +379,7 @@ def validate() -> None:
             'MODULE_VERSION = "1.5.2"',
             'BASE_PANEL_VERSION = "1.3.1"',
             'LAYOUT_RUNTIME_VERSION = "1.0.0"',
-            'RESPONSIVE_RUNTIME_VERSION = "1.1.0"',
+            'RESPONSIVE_RUNTIME_VERSION = "1.2.0"',
             "?v=120-responsive-module152-suite1122",
         ),
         "smart_energy_advanced wrapper",
