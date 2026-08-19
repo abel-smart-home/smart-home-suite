@@ -48,11 +48,7 @@ def catalog_specs() -> list[dict[str, object]]:
         spec: dict[str, object] = {}
         for keyword in node.keywords:
             if keyword.arg in {
-                "module_id",
-                "name",
-                "version",
-                "panel_path",
-                "enabled_by_default",
+                "module_id", "name", "version", "panel_path", "enabled_by_default",
             }:
                 try:
                     spec[keyword.arg] = ast.literal_eval(keyword.value)
@@ -76,9 +72,7 @@ def validate() -> None:
 
     manifest = read_json(PAYLOAD / "manifest.json")
     if manifest.get("version") != version:
-        fail(
-            f"Version mismatch: app={version} integration={manifest.get('version')}"
-        )
+        fail(f"Version mismatch: app={version} integration={manifest.get('version')}")
 
     const_source = (PAYLOAD / "const.py").read_text(encoding="utf-8")
     if not re.search(
@@ -112,7 +106,6 @@ def validate() -> None:
     specs = catalog_specs()
     catalog_ids = [str(spec.get("module_id", "")) for spec in specs]
     catalog_paths = [str(spec.get("panel_path", "")) for spec in specs]
-
     if len(catalog_ids) != len(set(catalog_ids)):
         fail("Duplicate module_id in module_catalog.py")
     if len(catalog_paths) != len(set(catalog_paths)):
@@ -135,9 +128,7 @@ def validate() -> None:
         if module_id != folder.name:
             fail(f"Module folder/id mismatch: folder={folder.name} id={module_id}")
         if descriptor.get("suite_version") != version:
-            fail(
-                f"{module_id}: suite_version {descriptor.get('suite_version')} != {version}"
-            )
+            fail(f"{module_id}: suite_version {descriptor.get('suite_version')} != {version}")
         if not re.fullmatch(r"\d+\.\d+\.\d+", module_version):
             fail(f"{module_id}: invalid module version {module_version!r}")
         if not panel_path:
@@ -194,13 +185,8 @@ def validate() -> None:
 
     require_tokens(
         PAYLOAD / "support_health.py",
-        (
-            "enable_user",
-            "disable_user",
-            "EVENT_SERVICE_REGISTERED",
-            "EVENT_SERVICE_REMOVED",
-            "smart_support_provider_unavailable",
-        ),
+        ("enable_user", "disable_user", "EVENT_SERVICE_REGISTERED",
+         "EVENT_SERVICE_REMOVED", "smart_support_provider_unavailable"),
         "support_health.py",
     )
 
@@ -210,6 +196,8 @@ def validate() -> None:
         "smart-home-panel-runtime.js",
         "smart-home-card-layout.js",
         "smart-home-layout-v3.js",
+        "smart-home-panel-v3.js",
+        "smart-home-native-v3.js",
         "smart-lighting-panel.js",
         "smart-lighting-layout.js",
         "smart-lighting-responsive.js",
@@ -226,6 +214,12 @@ def validate() -> None:
         path = PAYLOAD / "frontend" / filename
         if not path.is_file() or path.stat().st_size < 1000:
             fail(f"Frontend missing or unexpectedly small: {filename}")
+
+    smart_home_base = (PAYLOAD / "frontend" / "smart-home-panel.js").read_text(
+        encoding="utf-8"
+    )
+    if 'PANEL_VERSION = "2.0.5"' not in smart_home_base:
+        fail("smart-home-panel.js must remain on validated fallback V2.0.5")
 
     require_tokens(
         PAYLOAD / "frontend" / "smart-home-panel-runtime.js",
@@ -257,12 +251,23 @@ def validate() -> None:
             'SMART_HOME_LAYOUT_V3_RUNTIME_VERSION = "1.0.0"',
             'SMART_HOME_LAYOUT_V3_EFFECTIVE_VERSION = "3.0.0"',
             'SMART_HOME_LAYOUT_V3_SCHEMA_VERSION = 1',
-            'SMART_HOME_MODULE_VERSION = "1.5.0"',
+        ),
+        "legacy smart-home-layout-v3.js",
+    )
+
+    require_tokens(
+        PAYLOAD / "frontend" / "smart-home-panel-v3.js",
+        (
+            'SMART_HOME_PANEL_V3_VERSION = "3.1.0"',
+            'SMART_HOME_MODULE_VERSION = "1.6.0"',
+            'SMART_HOME_LAYOUT_V3_SCHEMA_VERSION = 1',
             'SMART_HOME_V3_DEFAULT_BREAKPOINT = 700',
             'SMART_HOME_V3_DEFAULT_MAX_WIDTH = 1100',
             'SMART_HOME_V3_WIDE_COLUMNS = 4',
             'SMART_HOME_V3_LEGACY_AUTO_WIDTHS = new Set([520])',
             'import "./smart-home-panel-runtime.js?v=110-guard100-cards100-module140-suite1123";',
+            "class SmartHomePanelV3 extends LegacyPanel",
+            'customElements.define("smart-home-panel-v3", SmartHomePanelV3)',
             "layout_v3",
             "widget_layout",
             "v3-move-section",
@@ -272,27 +277,50 @@ def validate() -> None:
             "data-v3-widget-section",
             "container-type:inline-size",
             "@container smart-home-v3-page",
-            "SMART_HOME_V3_LEGACY_AUTO_WIDTHS",
+            "ha-selector",
+            "ha-icon-picker",
+            "card_layout",
+            "section_surface",
+            "smart-home-native-preferences",
         ),
-        "smart-home-layout-v3.js",
+        "smart-home-panel-v3.js",
+    )
+
+    require_tokens(
+        PAYLOAD / "frontend" / "smart-home-native-v3.js",
+        (
+            'SMART_HOME_NATIVE_V3_BRIDGE_VERSION = "1.0.0"',
+            'SMART_HOME_PANEL_V3_ELEMENT = "smart-home-panel-v3"',
+            'import "./smart-home-native.js?v=130-suite050";',
+            "class SmartHomeDashboardCardV3 extends BaseDashboardCard",
+            'customElements.define("smart-home-dashboard-card-v3", SmartHomeDashboardCardV3)',
+            "smart-home-native-preferences",
+        ),
+        "smart-home-native-v3.js",
     )
 
     require_tokens(
         PAYLOAD / "modules" / "smart_home" / "__init__.py",
         (
+            'PANEL_FILE = "smart-home-panel.js"',
+            'V3_BRIDGE_FILE = "smart-home-native-v3.js"',
             'PANEL_RUNTIME_FILE = "smart-home-panel-runtime.js"',
             'CARD_LAYOUT_FILE = "smart-home-card-layout.js"',
-            'LAYOUT_V3_FILE = "smart-home-layout-v3.js"',
-            'MODULE_VERSION = "1.5.0"',
+            'LEGACY_LAYOUT_V3_FILE = "smart-home-layout-v3.js"',
+            'PANEL_V3_FILE = "smart-home-panel-v3.js"',
+            'MODULE_VERSION = "1.6.0"',
+            'BASE_PANEL_VERSION = "2.0.5"',
+            'PANEL_V3_VERSION = "3.1.0"',
             'RUNTIME_VERSION = "1.1.0"',
-            'RUNTIME_GUARD_VERSION = "1.0.0"',
             'CARD_LAYOUT_RUNTIME_VERSION = "1.0.0"',
-            'LAYOUT_V3_RUNTIME_VERSION = "1.0.0"',
-            'LAYOUT_V3_EFFECTIVE_VERSION = "3.0.0"',
-            "?v=100-v3-module150-suite1130",
+            'V3_BRIDGE_VERSION = "1.0.0"',
+            '"type": "custom:smart-home-dashboard-card-v3"',
+            "?v=310-panel-module160-suite1140",
+            "?v=100-v3bridge-suite1140",
         ),
         "smart_home wrapper",
     )
+
 
     smart_lighting_base = (
         PAYLOAD / "frontend" / "smart-lighting-panel.js"

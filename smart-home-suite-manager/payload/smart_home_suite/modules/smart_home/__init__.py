@@ -1,9 +1,10 @@
-"""Smart Home 1.5.0 module for Smart Home Suite.
+"""Smart Home 1.6.0 module for Smart Home Suite.
 
-Smart Home Panel V2.0.5 and the V1.3.0 native dashboard bridge remain bundled
-from the validated stable package. Suite 1.13.0 keeps the existing narrow-render
-guard and configurable card layout, then layers Smart Home Layout V3 V1.0.0 on
-top without changing the legacy backend/storage contract.
+Suite 1.14.0 promotes the V3 concept into a real custom element:
+smart-home-panel-v3.js V3.1.0. The validated Smart Home Panel V2.0.5,
+Suite runtime V1.1.0 and Card Layout V1.0.0 stay packaged and provide the
+functional compatibility base. The legacy layout-v3 runtime from 1.13.0
+remains in the repository but is no longer loaded by /smart-home.
 """
 
 from __future__ import annotations
@@ -40,18 +41,21 @@ LEGACY_DOMAIN = "smart_home_panel"
 PANEL_PATH = "smart-home"
 STATIC_URL = "/smart_home_suite_static"
 BRIDGE_FILE = "smart-home-native.js"
+V3_BRIDGE_FILE = "smart-home-native-v3.js"
 PANEL_FILE = "smart-home-panel.js"
 PANEL_RUNTIME_FILE = "smart-home-panel-runtime.js"
 CARD_LAYOUT_FILE = "smart-home-card-layout.js"
-LAYOUT_V3_FILE = "smart-home-layout-v3.js"
+LEGACY_LAYOUT_V3_FILE = "smart-home-layout-v3.js"
+PANEL_V3_FILE = "smart-home-panel-v3.js"
 
-MODULE_VERSION = "1.5.0"
+MODULE_VERSION = "1.6.0"
 BASE_PANEL_VERSION = "2.0.5"
+PANEL_V3_VERSION = "3.1.0"
 RUNTIME_VERSION = "1.1.0"
 RUNTIME_GUARD_VERSION = "1.0.0"
 CARD_LAYOUT_RUNTIME_VERSION = "1.0.0"
-LAYOUT_V3_RUNTIME_VERSION = "1.0.0"
-LAYOUT_V3_EFFECTIVE_VERSION = "3.0.0"
+LEGACY_LAYOUT_V3_RUNTIME_VERSION = "1.0.0"
+V3_BRIDGE_VERSION = "1.0.0"
 
 DASHBOARD_TITLE = "Smart Home"
 DASHBOARD_ICON = "mdi:home-lightning-bolt"
@@ -66,14 +70,11 @@ def _frontend_dir() -> Path:
 
 
 async def _ensure_exact_backend(hass: HomeAssistant) -> None:
-    """Initialize the exact V2.0.5 backend bundled inside the Suite."""
     data = _data(hass)
     if data.get("suite_exact_backend_ready"):
         return
-
     if "store" not in data:
         await exact_backend.async_setup(hass, {})
-
     _data(hass)["suite_exact_backend_ready"] = True
     _data(hass)["suite_backend_source"] = "bundled_exact_v2.0.5"
 
@@ -98,46 +99,51 @@ def _find_dashboard_item(
 async def _persist_collection(
     collection: dashboard.DashboardsCollection,
 ) -> None:
-    """Flush collection immediately instead of waiting for delayed storage save."""
     await collection.store.async_save({"items": list(collection.data.values())})
 
 
-async def _ensure_bridge_resource(hass: HomeAssistant) -> None:
-    """Persist the Smart Home bridge as a Lovelace module resource."""
+async def _ensure_resource(hass: HomeAssistant, url: str) -> None:
     lovelace_data = hass.data.get(LOVELACE_DATA)
     if lovelace_data is None:
         raise HomeAssistantError("Lovelace is not available")
 
-    resource_collection = lovelace_data.resources
-    bridge_url = f"{STATIC_URL}/{BRIDGE_FILE}?v=130-suite050"
+    resources = lovelace_data.resources
+    await resources.async_get_info()
+    items = resources.async_items() or []
 
-    await resource_collection.async_get_info()
-    items = resource_collection.async_items() or []
+    if any(item.get(CONF_URL) == url for item in items):
+        return
 
-    for item in items:
-        if item.get(CONF_URL) == bridge_url:
-            return
-
-    if not hasattr(resource_collection, "async_create_item"):
+    if not hasattr(resources, "async_create_item"):
         raise HomeAssistantError(
             "Smart Home requires Lovelace resources in storage mode."
         )
 
-    await resource_collection.async_create_item(
+    await resources.async_create_item(
         {
             CONF_RESOURCE_TYPE_WS: "module",
-            CONF_URL: bridge_url,
+            CONF_URL: url,
         }
     )
 
-    store = getattr(resource_collection, "store", None)
-    data = getattr(resource_collection, "data", None)
+    store = getattr(resources, "store", None)
+    data = getattr(resources, "data", None)
     if store is not None and data is not None:
         await store.async_save({"items": list(data.values())})
 
 
+async def _ensure_bridge_resources(hass: HomeAssistant) -> None:
+    await _ensure_resource(
+        hass,
+        f"{STATIC_URL}/{BRIDGE_FILE}?v=130-suite050",
+    )
+    await _ensure_resource(
+        hass,
+        f"{STATIC_URL}/{V3_BRIDGE_FILE}?v=100-v3bridge-suite1140",
+    )
+
+
 async def _ensure_native_dashboard(hass: HomeAssistant) -> None:
-    """Create/attach Smart Home as a real Lovelace storage dashboard."""
     lovelace_data = hass.data.get(LOVELACE_DATA)
     if lovelace_data is None:
         raise HomeAssistantError("Lovelace is not available")
@@ -177,8 +183,6 @@ async def _ensure_native_dashboard(hass: HomeAssistant) -> None:
             ll_config = dashboard.LovelaceStorage(hass, item)
             lovelace_data.dashboards[PANEL_PATH] = ll_config
 
-    # Normal Lovelace panel view. The bridge mounts the V3 runtime, which imports
-    # the existing validated V2.0.5 panel runtime and card-layout extension.
     await ll_config.async_save(
         {
             "title": DASHBOARD_TITLE,
@@ -189,10 +193,10 @@ async def _ensure_native_dashboard(hass: HomeAssistant) -> None:
                     "type": "panel",
                     "cards": [
                         {
-                            "type": "custom:smart-home-dashboard-card",
+                            "type": "custom:smart-home-dashboard-card-v3",
                             "panel_module_url": (
-                                f"{STATIC_URL}/{LAYOUT_V3_FILE}"
-                                "?v=100-v3-module150-suite1130"
+                                f"{STATIC_URL}/{PANEL_V3_FILE}"
+                                "?v=310-panel-module160-suite1140"
                             ),
                             "hide_ha_header": True,
                             "mobile_menu_access": "admins",
@@ -217,33 +221,35 @@ async def _ensure_native_dashboard(hass: HomeAssistant) -> None:
 
 
 async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up Smart Home 1.5.0 with Layout V3 on the exact V2.0.5 base."""
     frontend_dir = _frontend_dir()
-    panel_file = frontend_dir / PANEL_FILE
-    bridge_file = frontend_dir / BRIDGE_FILE
-    runtime_file = frontend_dir / PANEL_RUNTIME_FILE
-    card_layout_file = frontend_dir / CARD_LAYOUT_FILE
-    layout_v3_file = frontend_dir / LAYOUT_V3_FILE
 
-    if not all(
-        path.is_file()
-        for path in (
-            panel_file,
-            bridge_file,
-            runtime_file,
-            card_layout_file,
-            layout_v3_file,
-        )
-    ):
-        _LOGGER.error("Bundled Smart Home frontend sources are incomplete")
+    required = {
+        PANEL_FILE: frontend_dir / PANEL_FILE,
+        BRIDGE_FILE: frontend_dir / BRIDGE_FILE,
+        V3_BRIDGE_FILE: frontend_dir / V3_BRIDGE_FILE,
+        PANEL_RUNTIME_FILE: frontend_dir / PANEL_RUNTIME_FILE,
+        CARD_LAYOUT_FILE: frontend_dir / CARD_LAYOUT_FILE,
+        LEGACY_LAYOUT_V3_FILE: frontend_dir / LEGACY_LAYOUT_V3_FILE,
+        PANEL_V3_FILE: frontend_dir / PANEL_V3_FILE,
+    }
+
+    if not all(path.is_file() for path in required.values()):
+        missing = [name for name, path in required.items() if not path.is_file()]
+        _LOGGER.error("Bundled Smart Home frontend sources are incomplete: %s", missing)
         return False
 
-    panel_text = await hass.async_add_executor_job(panel_file.read_text, "utf-8")
+    panel_text = await hass.async_add_executor_job(
+        required[PANEL_FILE].read_text,
+        "utf-8",
+    )
     if 'PANEL_VERSION = "2.0.5"' not in panel_text:
-        _LOGGER.error("Bundled Smart Home frontend is not V2.0.5")
+        _LOGGER.error("Bundled Smart Home fallback frontend is not V2.0.5")
         return False
 
-    runtime_text = await hass.async_add_executor_job(runtime_file.read_text, "utf-8")
+    runtime_text = await hass.async_add_executor_job(
+        required[PANEL_RUNTIME_FILE].read_text,
+        "utf-8",
+    )
     for token in (
         'SMART_HOME_RUNTIME_GUARD_VERSION = "1.0.0"',
         'SMART_HOME_RUNTIME_VERSION = "1.1.0"',
@@ -253,44 +259,56 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             return False
 
     card_layout_text = await hass.async_add_executor_job(
-        card_layout_file.read_text, "utf-8"
+        required[CARD_LAYOUT_FILE].read_text,
+        "utf-8",
     )
     if 'SMART_HOME_CARD_LAYOUT_RUNTIME_VERSION = "1.0.0"' not in card_layout_text:
         _LOGGER.error("Bundled Smart Home card-layout runtime is not V1.0.0")
         return False
 
-    layout_v3_text = await hass.async_add_executor_job(
-        layout_v3_file.read_text, "utf-8"
+    panel_v3_text = await hass.async_add_executor_job(
+        required[PANEL_V3_FILE].read_text,
+        "utf-8",
     )
     for token in (
-        'SMART_HOME_LAYOUT_V3_RUNTIME_VERSION = "1.0.0"',
-        'SMART_HOME_LAYOUT_V3_EFFECTIVE_VERSION = "3.0.0"',
+        'SMART_HOME_PANEL_V3_VERSION = "3.1.0"',
+        'SMART_HOME_MODULE_VERSION = "1.6.0"',
         'SMART_HOME_LAYOUT_V3_SCHEMA_VERSION = 1',
-        'SMART_HOME_MODULE_VERSION = "1.5.0"',
-        'SMART_HOME_V3_DEFAULT_BREAKPOINT = 700',
-        'SMART_HOME_V3_DEFAULT_MAX_WIDTH = 1100',
-        'SMART_HOME_V3_WIDE_COLUMNS = 4',
-        'SMART_HOME_V3_LEGACY_AUTO_WIDTHS = new Set([520])',
-        'import "./smart-home-panel-runtime.js?v=110-guard100-cards100-module140-suite1123";',
+        'class SmartHomePanelV3 extends LegacyPanel',
+        'customElements.define("smart-home-panel-v3", SmartHomePanelV3)',
+        'container-type:inline-size',
+        '@container smart-home-v3-page',
         'layout_v3',
         'widget_layout',
         'v3-move-section',
         'v3-move-widget',
-        'v3-add-section',
-        'v3-add-widget',
-        'data-v3-widget-section',
-        'container-type:inline-size',
-        '@container smart-home-v3-page',
+        'ha-selector',
+        'ha-icon-picker',
     ):
-        if token not in layout_v3_text:
-            _LOGGER.error("Bundled Smart Home V3 runtime is missing token %s", token)
+        if token not in panel_v3_text:
+            _LOGGER.error("Bundled Smart Home native V3 panel is missing token %s", token)
+            return False
+
+    bridge_v3_text = await hass.async_add_executor_job(
+        required[V3_BRIDGE_FILE].read_text,
+        "utf-8",
+    )
+    for token in (
+        'SMART_HOME_NATIVE_V3_BRIDGE_VERSION = "1.0.0"',
+        'SMART_HOME_PANEL_V3_ELEMENT = "smart-home-panel-v3"',
+        'class SmartHomeDashboardCardV3 extends BaseDashboardCard',
+        'customElements.define("smart-home-dashboard-card-v3", SmartHomeDashboardCardV3)',
+    ):
+        if token not in bridge_v3_text:
+            _LOGGER.error("Bundled Smart Home V3 bridge is missing token %s", token)
             return False
 
     await _ensure_exact_backend(hass)
-    await _ensure_bridge_resource(hass)
+    await _ensure_bridge_resources(hass)
 
     data = _data(hass)
     data["suite_bridge_registered"] = True
+    data["suite_v3_bridge_registered"] = True
 
     await _ensure_native_dashboard(hass)
 
@@ -298,16 +316,16 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     data["suite_version"] = SUITE_VERSION
     data["module_version"] = MODULE_VERSION
     data["panel_version"] = BASE_PANEL_VERSION
+    data["panel_v3_version"] = PANEL_V3_VERSION
     data["runtime_version"] = RUNTIME_VERSION
     data["runtime_guard_version"] = RUNTIME_GUARD_VERSION
     data["card_layout_runtime_version"] = CARD_LAYOUT_RUNTIME_VERSION
-    data["layout_v3_runtime_version"] = LAYOUT_V3_RUNTIME_VERSION
-    data["layout_v3_effective_version"] = LAYOUT_V3_EFFECTIVE_VERSION
+    data["legacy_layout_v3_runtime_version"] = LEGACY_LAYOUT_V3_RUNTIME_VERSION
+    data["v3_bridge_version"] = V3_BRIDGE_VERSION
     return True
 
 
 async def async_unload_module(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    """Remove Suite-owned Smart Home dashboard while preserving panel settings."""
     lovelace_data = hass.data.get(LOVELACE_DATA)
     collection = await _load_dashboard_collection(hass)
     item = _find_dashboard_item(collection)

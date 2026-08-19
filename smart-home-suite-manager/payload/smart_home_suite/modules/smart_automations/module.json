@@ -10,7 +10,7 @@
   "sidebar_icon": "mdi:robot",
   "storage_key": "smart_automations.config",
   "storage_version": 1,
-  "suite_version": "1.13.0",
+  "suite_version": "1.14.0",
   "frontend_source": "Smart Automations Panel V1.0.0 + smart-automations-layout.js + smart-automations-runtime.js + smart-automations-responsive.js + smart-automations-alert-control.js",
   "layout_runtime_version": "1.0.0",
   "color_picker_guard_version": "1.0.0",
