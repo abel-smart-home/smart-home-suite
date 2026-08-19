@@ -1,135 +1,135 @@
-# Smart Home Suite Manager 1.12.3 · STABLE
+# Smart Home Suite Manager 1.13.0 · PRE-RELEASE
+
+Último estable: **1.12.3**.
 
 ## Versiones
 
-- Suite / Manager: **1.12.3**
-- Smart Home: **1.4.0**
+- Suite / Manager: **1.13.0**
+- Smart Home: **1.5.0**
+- Smart Home base: **2.0.5**
+- Smart Home Layout V3: **3.0.0 / runtime 1.0.0**
 - Smart Lighting: **1.4.1**
 - Smart Energy Advanced: **1.5.3**
 - Smart Automations: **1.3.0**
 - Smart Support: **1.2.0**
 
-## Smart Energy Advanced 1.5.3
+## Arquitectura Smart Home
 
-### Arquitectura preservada
+```text
+Smart Home Panel V2.0.5
+        ↓
+smart-home-card-layout.js V1.0.0
+        ↓
+smart-home-panel-runtime.js V1.1.0
+        ↓
+smart-home-layout-v3.js V1.0.0
+```
 
-- base: Smart Energy Advanced Panel V1.3.1;
-- ordering runtime: `smart-energy-advanced-layout.js` V1.0.0;
-- responsive runtime: `smart-energy-advanced-responsive.js` V1.3.0;
-- storage: `smart_energy_advanced_panel.config`;
-- storage version: 1.
+El backend V2.0.5 y Native Dashboard Bridge V1.3.0 permanecen sin cambio.
 
-No existe migración.
+## Configuración V3
 
-### Ancho adaptativo
+V3 añade claves opcionales dentro del mismo JSON existente:
 
-Con `panel_max_width = 520`:
+- `layout_v3.schema_version`
+- `layout_v3.enabled`
+- `layout_v3.adaptive_width`
+- `layout_v3.breakpoint`
+- `layout_v3.wide_max_width`
+- `layout_v3.grid_gap`
+- `layout_v3.section_gap`
+- `layout_v3.sections[]`
+- `layout_v3.widget_layout`
 
-- debajo de 700 px reales no existe expansión automática: móvil conserva el ancho original;
-- desde 700 px tablet puede crecer hasta 900 px;
-- desde 900 px PC puede crecer hasta 1000 px.
+No existe migración automática de storage.
 
-Un `panel_max_width` personalizado distinto de 520 se respeta.
+## Defaults de instalación limpia
 
-### Móvil
+- Resumen: monthly_cost, season, tariff.
+- Consumo: power.
+- Otros: tarjetas adicionales.
 
-Por debajo de 700 px reales:
+Las secciones vacías se pueden ocultar automáticamente.
 
-- 2 columnas;
-- `span:1` ocupa 1 de 2;
-- `span:2` ocupa toda la fila;
-- `hero` ocupa toda la fila;
-- gráfico nativo ocupa todo el ancho.
+## Secciones
 
-### Tablet
+Cada sección soporta:
 
-Desde 700 px reales:
+- `show`;
+- `show_header`;
+- `show_empty`;
+- título/subtítulo;
+- icono;
+- colores;
+- tamaños;
+- alineación;
+- superficie de encabezado opcional;
+- fondo/borde/radio/padding;
+- orden.
 
-- 4 columnas;
-- `span:1` ocupa 1 de 4;
-- `span:2` ocupa 2 de 4;
-- `hero` ocupa las 4 columnas;
-- gráfico nativo ocupa todo el ancho;
-- máximo adaptativo 900 px para el ancho heredado.
+Se pueden agregar, duplicar y reordenar. Las secciones personalizadas se pueden
+eliminar y sus widgets se trasladan antes de quitar la sección.
 
-### PC
+## Widgets
 
-Continúa con 4 columnas:
+Los refs existentes siguen siendo la fuente de verdad:
 
-- `span:1` ocupa 1 de 4;
-- `span:2` ocupa 2 de 4;
-- `hero` ocupa las 4 columnas;
-- gráfico nativo ocupa todo el ancho;
-- máximo adaptativo 1000 px para el ancho heredado.
+- `monthly_cost`
+- `season`
+- `tariff`
+- `power`
+- `extra:<id>`
 
-### Container queries
+V3 no duplica entidades ni tarjetas. Solo asigna cada ref a una sección y un
+tamaño semántico.
 
-La cuadrícula responde al ancho real de `.page`.
+Tamaños:
 
-Esto permite adaptación automática ante:
+- `auto`
+- `small`
+- `medium`
+- `large`
+- `full`
 
-- sidebar abierto/cerrado;
-- redimensionado del navegador;
-- tablet vertical/horizontal;
-- diferentes resoluciones de pantalla.
+## Responsive
 
-### Gráfico nativo
+Container: `.page` → `smart-home-v3-page`.
 
-`power-sources-graph` permanece:
+Predeterminado:
 
-- fuera de `.metric-grid`;
-- en light DOM mediante `<slot>`;
-- a ancho completo;
-- sin modificar sus internals.
+- `<700 px`: 1 columna;
+- `>=700 px`: 4 columnas;
+- max width adaptativo heredado: 1100 px.
 
-### Sin cambios funcionales
+El breakpoint y max width se pueden personalizar desde el editor.
 
-Se conserva:
+## Compatibilidad
 
-- WebSocket;
-- `.storage`;
-- entidades;
-- cálculos;
-- unidades;
-- decimales;
-- barras;
-- demo values;
-- tap;
-- hold;
-- more-info;
-- selector de entidades;
-- selector MDI;
-- navegación;
-- Personalización;
+V3 conserva:
+
+- `.storage` y WebSocket del backend actual;
 - Guardar/Cancelar;
 - Importar/Exportar/Restablecer;
-- orden de secciones;
-- orden de widgets.
+- selectores de entidades;
+- acciones tap/hold/more-info/toggle/navigate/url;
+- navegación;
+- gauge;
+- tarjetas adicionales value/bar/graph;
+- historial de gráficas;
+- Narrow Render Guard;
+- Native Dashboard Bridge.
 
-## Instalar / actualizar / reparar
+Guardar V3 sincroniza `card_layout.order` con el orden plano equivalente.
 
-1. Actualiza Smart Home Suite Manager a 1.12.3.
-2. Ejecuta `validate_only`.
-3. Confirma `VALIDATION_OK`.
-4. Selecciona `install_repair`.
-5. Mantén `create_backup: true`.
-6. Ejecuta.
-7. Confirma:
-   - `PAYLOAD_VALIDATION_OK`
-   - `STAGED_VALIDATION_OK`
-   - `POST_INSTALL_VALIDATION_OK`
-   - `INSTALLATION_OK`
-8. Reinicia Home Assistant.
-9. Haz una recarga completa del frontend.
+## Recuperación
 
-## Restaurar
+Si V3 produce un problema visual:
 
-1. Selecciona `restore_latest`.
-2. Ejecuta.
-3. Confirma `RESTORE_OK`.
-4. Reinicia Home Assistant.
-5. Haz una recarga completa del frontend.
+1. abre Personalización;
+2. Layout V3;
+3. desactiva `Activar Layout V3`;
+4. Guardar.
 
-## Estado
+El layout plano anterior vuelve a controlar la presentación.
 
-**Smart Home Suite 1.12.3 es la versión estable actual.**
+Para rollback de Suite usa `restore_latest`.

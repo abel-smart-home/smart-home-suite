@@ -209,6 +209,7 @@ def validate() -> None:
         "smart-home-native.js",
         "smart-home-panel-runtime.js",
         "smart-home-card-layout.js",
+        "smart-home-layout-v3.js",
         "smart-lighting-panel.js",
         "smart-lighting-layout.js",
         "smart-lighting-responsive.js",
@@ -251,15 +252,44 @@ def validate() -> None:
     )
 
     require_tokens(
+        PAYLOAD / "frontend" / "smart-home-layout-v3.js",
+        (
+            'SMART_HOME_LAYOUT_V3_RUNTIME_VERSION = "1.0.0"',
+            'SMART_HOME_LAYOUT_V3_EFFECTIVE_VERSION = "3.0.0"',
+            'SMART_HOME_LAYOUT_V3_SCHEMA_VERSION = 1',
+            'SMART_HOME_MODULE_VERSION = "1.5.0"',
+            'SMART_HOME_V3_DEFAULT_BREAKPOINT = 700',
+            'SMART_HOME_V3_DEFAULT_MAX_WIDTH = 1100',
+            'SMART_HOME_V3_WIDE_COLUMNS = 4',
+            'SMART_HOME_V3_LEGACY_AUTO_WIDTHS = new Set([520])',
+            'import "./smart-home-panel-runtime.js?v=110-guard100-cards100-module140-suite1123";',
+            "layout_v3",
+            "widget_layout",
+            "v3-move-section",
+            "v3-move-widget",
+            "v3-add-section",
+            "v3-add-widget",
+            "data-v3-widget-section",
+            "container-type:inline-size",
+            "@container smart-home-v3-page",
+            "SMART_HOME_V3_LEGACY_AUTO_WIDTHS",
+        ),
+        "smart-home-layout-v3.js",
+    )
+
+    require_tokens(
         PAYLOAD / "modules" / "smart_home" / "__init__.py",
         (
             'PANEL_RUNTIME_FILE = "smart-home-panel-runtime.js"',
             'CARD_LAYOUT_FILE = "smart-home-card-layout.js"',
-            'MODULE_VERSION = "1.4.0"',
+            'LAYOUT_V3_FILE = "smart-home-layout-v3.js"',
+            'MODULE_VERSION = "1.5.0"',
             'RUNTIME_VERSION = "1.1.0"',
             'RUNTIME_GUARD_VERSION = "1.0.0"',
             'CARD_LAYOUT_RUNTIME_VERSION = "1.0.0"',
-            "?v=205-guard100-cards100-module140",
+            'LAYOUT_V3_RUNTIME_VERSION = "1.0.0"',
+            'LAYOUT_V3_EFFECTIVE_VERSION = "3.0.0"',
+            "?v=100-v3-module150-suite1130",
         ),
         "smart_home wrapper",
     )

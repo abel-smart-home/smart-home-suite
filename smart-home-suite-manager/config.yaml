@@ -1,5 +1,5 @@
 name: Smart Home Suite Manager
-version: "1.12.3"
+version: "1.13.0"
 slug: smart_home_suite_manager
 description: Instala, repara, diagnostica y restaura Smart Home Suite en Home Assistant OS sin HACS.
 url: https://github.com/abel-smart-home/smart-home-suite

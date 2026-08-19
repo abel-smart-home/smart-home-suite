@@ -1,9 +1,9 @@
-"""Smart Home module for Smart Home Suite.
+"""Smart Home 1.5.0 module for Smart Home Suite.
 
 Smart Home Panel V2.0.5 and the V1.3.0 native dashboard bridge remain bundled
-exactly from the validated standalone packages. The Suite runtime keeps the
-existing narrow-render guard and adds configurable/reorderable cards without
-modifying the validated base panel source.
+from the validated stable package. Suite 1.13.0 keeps the existing narrow-render
+guard and configurable card layout, then layers Smart Home Layout V3 V1.0.0 on
+top without changing the legacy backend/storage contract.
 """
 
 from __future__ import annotations
@@ -43,12 +43,15 @@ BRIDGE_FILE = "smart-home-native.js"
 PANEL_FILE = "smart-home-panel.js"
 PANEL_RUNTIME_FILE = "smart-home-panel-runtime.js"
 CARD_LAYOUT_FILE = "smart-home-card-layout.js"
+LAYOUT_V3_FILE = "smart-home-layout-v3.js"
 
-MODULE_VERSION = "1.4.0"
+MODULE_VERSION = "1.5.0"
 BASE_PANEL_VERSION = "2.0.5"
 RUNTIME_VERSION = "1.1.0"
 RUNTIME_GUARD_VERSION = "1.0.0"
 CARD_LAYOUT_RUNTIME_VERSION = "1.0.0"
+LAYOUT_V3_RUNTIME_VERSION = "1.0.0"
+LAYOUT_V3_EFFECTIVE_VERSION = "3.0.0"
 
 DASHBOARD_TITLE = "Smart Home"
 DASHBOARD_ICON = "mdi:home-lightning-bolt"
@@ -68,12 +71,6 @@ async def _ensure_exact_backend(hass: HomeAssistant) -> None:
     if data.get("suite_exact_backend_ready"):
         return
 
-    # The exact V2.0.5 backend is imported package-relatively when this module
-    # is loaded. This avoids both an incorrect top-level module name and a
-    # blocking import_module() call inside Home Assistant's event loop.
-
-    # The exact backend owns hass.data[smart_home_panel]. Avoid replacing an
-    # already initialized exact backend on Config Entry reload.
     if "store" not in data:
         await exact_backend.async_setup(hass, {})
 
@@ -106,12 +103,7 @@ async def _persist_collection(
 
 
 async def _ensure_bridge_resource(hass: HomeAssistant) -> None:
-    """Persist the Smart Home bridge as a Lovelace module resource.
-
-    Custom dashboard strategies depend on registration timing. A normal Lovelace
-    resource is loaded by the dashboard frontend before custom cards are rendered,
-    so the Suite uses the bridge as a resource and mounts its card directly.
-    """
+    """Persist the Smart Home bridge as a Lovelace module resource."""
     lovelace_data = hass.data.get(LOVELACE_DATA)
     if lovelace_data is None:
         raise HomeAssistantError("Lovelace is not available")
@@ -119,8 +111,6 @@ async def _ensure_bridge_resource(hass: HomeAssistant) -> None:
     resource_collection = lovelace_data.resources
     bridge_url = f"{STATIC_URL}/{BRIDGE_FILE}?v=130-suite050"
 
-    # ResourceStorageCollection loads lazily. async_get_info() forces its store
-    # to be loaded without relying on private attributes.
     await resource_collection.async_get_info()
     items = resource_collection.async_items() or []
 
@@ -140,7 +130,6 @@ async def _ensure_bridge_resource(hass: HomeAssistant) -> None:
         }
     )
 
-    # Flush immediately so a browser reload right after setup sees the resource.
     store = getattr(resource_collection, "store", None)
     data = getattr(resource_collection, "data", None)
     if store is not None and data is not None:
@@ -155,11 +144,9 @@ async def _ensure_native_dashboard(hass: HomeAssistant) -> None:
 
     collection = await _load_dashboard_collection(hass)
     item = _find_dashboard_item(collection)
-
     current = lovelace_data.dashboards.get(PANEL_PATH)
 
     if item is None:
-        # Refuse to steal an unrelated route.
         if current is not None or frontend.async_panel_exists(hass, PANEL_PATH):
             raise HomeAssistantError(
                 "The /smart-home route is already in use by another dashboard or panel."
@@ -176,11 +163,9 @@ async def _ensure_native_dashboard(hass: HomeAssistant) -> None:
             }
         )
         await _persist_collection(collection)
-
         ll_config = dashboard.LovelaceStorage(hass, item)
         lovelace_data.dashboards[PANEL_PATH] = ll_config
     else:
-        # If Lovelace already loaded the stored dashboard, reuse its object.
         if current is not None:
             current_id = (current.config or {}).get("id")
             if current_id != item.get("id"):
@@ -192,13 +177,8 @@ async def _ensure_native_dashboard(hass: HomeAssistant) -> None:
             ll_config = dashboard.LovelaceStorage(hass, item)
             lovelace_data.dashboards[PANEL_PATH] = ll_config
 
-    # Use a normal Lovelace panel view instead of a custom dashboard strategy.
-    # The bridge resource registers smart-home-dashboard-card before Lovelace
-    # resolves this card, eliminating strategy-element registration races.
-    #
-    # The runtime imports the exact V2.0.5 panel, keeps the narrow-render guard,
-    # and then layers configurable/reorderable cards over the validated panel.
-    # A new URL/cache-buster guarantees browsers receive the feature runtime.
+    # Normal Lovelace panel view. The bridge mounts the V3 runtime, which imports
+    # the existing validated V2.0.5 panel runtime and card-layout extension.
     await ll_config.async_save(
         {
             "title": DASHBOARD_TITLE,
@@ -211,8 +191,8 @@ async def _ensure_native_dashboard(hass: HomeAssistant) -> None:
                         {
                             "type": "custom:smart-home-dashboard-card",
                             "panel_module_url": (
-                                f"{STATIC_URL}/{PANEL_RUNTIME_FILE}"
-                                "?v=205-guard100-cards100-module140"
+                                f"{STATIC_URL}/{LAYOUT_V3_FILE}"
+                                "?v=100-v3-module150-suite1130"
                             ),
                             "hide_ha_header": True,
                             "mobile_menu_access": "admins",
@@ -223,8 +203,6 @@ async def _ensure_native_dashboard(hass: HomeAssistant) -> None:
         }
     )
 
-    # On the first run the new collection has no listener attached to the main
-    # Lovelace runtime, so register the built-in panel immediately as well.
     if not frontend.async_panel_exists(hass, PANEL_PATH):
         frontend.async_register_built_in_panel(
             hass,
@@ -239,18 +217,23 @@ async def _ensure_native_dashboard(hass: HomeAssistant) -> None:
 
 
 async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up exact Smart Home V2.0.5 as a native storage dashboard."""
+    """Set up Smart Home 1.5.0 with Layout V3 on the exact V2.0.5 base."""
     frontend_dir = _frontend_dir()
     panel_file = frontend_dir / PANEL_FILE
     bridge_file = frontend_dir / BRIDGE_FILE
     runtime_file = frontend_dir / PANEL_RUNTIME_FILE
     card_layout_file = frontend_dir / CARD_LAYOUT_FILE
+    layout_v3_file = frontend_dir / LAYOUT_V3_FILE
 
-    if (
-        not panel_file.is_file()
-        or not bridge_file.is_file()
-        or not runtime_file.is_file()
-        or not card_layout_file.is_file()
+    if not all(
+        path.is_file()
+        for path in (
+            panel_file,
+            bridge_file,
+            runtime_file,
+            card_layout_file,
+            layout_v3_file,
+        )
     ):
         _LOGGER.error("Bundled Smart Home frontend sources are incomplete")
         return False
@@ -261,12 +244,13 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         return False
 
     runtime_text = await hass.async_add_executor_job(runtime_file.read_text, "utf-8")
-    if 'SMART_HOME_RUNTIME_GUARD_VERSION = "1.0.0"' not in runtime_text:
-        _LOGGER.error("Bundled Smart Home runtime guard is not V1.0.0")
-        return False
-    if 'SMART_HOME_RUNTIME_VERSION = "1.1.0"' not in runtime_text:
-        _LOGGER.error("Bundled Smart Home runtime is not V1.1.0")
-        return False
+    for token in (
+        'SMART_HOME_RUNTIME_GUARD_VERSION = "1.0.0"',
+        'SMART_HOME_RUNTIME_VERSION = "1.1.0"',
+    ):
+        if token not in runtime_text:
+            _LOGGER.error("Bundled Smart Home runtime is missing token %s", token)
+            return False
 
     card_layout_text = await hass.async_add_executor_job(
         card_layout_file.read_text, "utf-8"
@@ -275,10 +259,34 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER.error("Bundled Smart Home card-layout runtime is not V1.0.0")
         return False
 
-    await _ensure_exact_backend(hass)
+    layout_v3_text = await hass.async_add_executor_job(
+        layout_v3_file.read_text, "utf-8"
+    )
+    for token in (
+        'SMART_HOME_LAYOUT_V3_RUNTIME_VERSION = "1.0.0"',
+        'SMART_HOME_LAYOUT_V3_EFFECTIVE_VERSION = "3.0.0"',
+        'SMART_HOME_LAYOUT_V3_SCHEMA_VERSION = 1',
+        'SMART_HOME_MODULE_VERSION = "1.5.0"',
+        'SMART_HOME_V3_DEFAULT_BREAKPOINT = 700',
+        'SMART_HOME_V3_DEFAULT_MAX_WIDTH = 1100',
+        'SMART_HOME_V3_WIDE_COLUMNS = 4',
+        'SMART_HOME_V3_LEGACY_AUTO_WIDTHS = new Set([520])',
+        'import "./smart-home-panel-runtime.js?v=110-guard100-cards100-module140-suite1123";',
+        'layout_v3',
+        'widget_layout',
+        'v3-move-section',
+        'v3-move-widget',
+        'v3-add-section',
+        'v3-add-widget',
+        'data-v3-widget-section',
+        'container-type:inline-size',
+        '@container smart-home-v3-page',
+    ):
+        if token not in layout_v3_text:
+            _LOGGER.error("Bundled Smart Home V3 runtime is missing token %s", token)
+            return False
 
-    # Register the bridge through Lovelace's persistent resource collection.
-    # This is deterministic across reloads, restarts and default-dashboard use.
+    await _ensure_exact_backend(hass)
     await _ensure_bridge_resource(hass)
 
     data = _data(hass)
@@ -293,6 +301,8 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     data["runtime_version"] = RUNTIME_VERSION
     data["runtime_guard_version"] = RUNTIME_GUARD_VERSION
     data["card_layout_runtime_version"] = CARD_LAYOUT_RUNTIME_VERSION
+    data["layout_v3_runtime_version"] = LAYOUT_V3_RUNTIME_VERSION
+    data["layout_v3_effective_version"] = LAYOUT_V3_EFFECTIVE_VERSION
     return True
 
 

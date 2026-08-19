@@ -57,8 +57,9 @@ MODULE_CATALOG: tuple[ModuleSpec, ...] = (
         setup=setup_smart_home,
         unload=unload_smart_home,
         notes=(
-            "Native dashboard bridge 1.3.0 + Suite runtime 1.1.0 "
-            "(narrow guard 1.0.0 + configurable cards 1.0.0)"
+            "Native dashboard bridge 1.3.0 + Suite runtime 1.1.0 + configurable cards 1.0.0 + "
+            "Smart Home Layout V3 runtime 1.0.0; clean-install section defaults, semantic sizes, "
+            "container-query responsive 1/4-column layout and non-destructive storage compatibility"
         ),
     ),
     ModuleSpec(

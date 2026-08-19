@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.13.0 - 2026-08-19 · TEST
+
+- Actualiza **Smart Home module a 1.5.0** manteniendo Smart Home Panel V2.0.5 como base exacta.
+- Mantiene Native Dashboard Bridge V1.3.0, Suite runtime V1.1.0, Narrow Render Guard V1.0.0 y Card Layout V1.0.0.
+- Añade `smart-home-layout-v3.js` V1.0.0 / Layout V3.0.0.
+- Añade secciones opcionales, personalizables y reordenables.
+- Añade creación y duplicación de secciones y eliminación segura de secciones personalizadas.
+- Añade widgets movibles entre secciones y reordenables dentro de la sección.
+- Añade tamaños semánticos Auto/Small/Medium/Large/Full.
+- Añade responsive mediante container queries: móvil 1 columna, tablet/PC 4 columnas desde 700 px por defecto.
+- Añade breakpoint y ancho máximo V3 configurables.
+- El ancho adaptativo solo sustituye el valor heredado 520; anchos personalizados se respetan.
+- Instalaciones limpias reciben defaults V3 en memoria: Resumen / Consumo / Otros.
+- No existe escritura automática ni migración de `.storage` al actualizar o abrir el panel.
+- Guardar persiste V3 y sincroniza `card_layout.order` para compatibilidad con rollback.
+- V3 puede desactivarse para recuperar el layout plano dentro de la misma build.
+- Mantiene entidades, gauge, tarjetas extra value/bar/graph, historial, tap/hold/more-info, selectores, navegación, editor y backend.
+- Mantiene Smart Lighting 1.4.1, Smart Energy Advanced 1.5.3, Smart Automations 1.3.0 y Smart Support 1.2.0 sin cambios funcionales.
+
 ## 1.12.3 - 2026-08-19 · STABLE
 
 - Promueve a estable el mismo payload **1.12.3** validado previamente como pre-release en Home Assistant OS.
