@@ -2,159 +2,154 @@
 
 Repositorio de distribución de **Smart Home Suite** para Home Assistant OS sin HACS.
 
-## Smart Home Suite 1.12.3 — STABLE
+## Smart Home Suite 1.13.0 — PRE-RELEASE
 
 **Último release estable:** Smart Home Suite **1.12.3**.
 
-Smart Home Suite 1.12.3 incorpora como estable el responsive validado de
-**Smart Energy Advanced 1.5.3**, manteniendo intacto el panel base,
-el ordering runtime, la persistencia y el gráfico nativo de Home Assistant.
+Smart Home Suite 1.13.0 introduce la primera prueba de **Smart Home V3 Layout**:
+un dashboard principal por secciones, widgets reordenables y tamaños semánticos,
+con responsive nativo mediante container queries.
 
 ### Versiones
 
-- Smart Home Suite / Manager: **1.12.3**
-- Smart Home: **1.4.0**
+- Smart Home Suite / Manager: **1.13.0 PRE-RELEASE**
+- Smart Home: **1.5.0**
+- Smart Home base panel: **2.0.5**
+- Smart Home Layout V3: **3.0.0 / runtime 1.0.0**
 - Smart Lighting: **1.4.1**
 - Smart Energy Advanced: **1.5.3**
 - Smart Automations: **1.3.0**
 - Smart Support: **1.2.0**
 
-## Smart Energy Advanced 1.5.3
+## Smart Home V3
 
-Arquitectura estable:
+La arquitectura previa permanece disponible debajo de V3:
 
-- Smart Energy Advanced Panel V1.3.1;
-- `smart-energy-advanced-layout.js` V1.0.0;
-- `smart-energy-advanced-responsive.js` V1.3.0;
-- `.storage/smart_energy_advanced_panel.config` versión 1;
-- WebSocket y acciones existentes;
-- tarjeta oficial `power-sources-graph`.
+- Smart Home Panel V2.0.5;
+- Native Dashboard Bridge V1.3.0;
+- Suite runtime V1.1.0;
+- Narrow Render Guard V1.0.0;
+- Card Layout runtime V1.0.0;
+- nuevo `smart-home-layout-v3.js` V1.0.0.
 
-### Responsive móvil / tablet / PC
+### Secciones
 
-La versión estable conserva el diseño móvil validado y utiliza cuatro columnas
-en tablet y PC cuando el panel dispone del ancho suficiente.
+En una instalación limpia V3 genera en memoria:
 
-Reglas:
+1. **Resumen** — Costo mensual, Temporada y Tarifa.
+2. **Consumo** — Tacómetro / potencia.
+3. **Otros** — widgets adicionales.
 
-- ancho real `<700 px`: **2 columnas**;
-- ancho real `>=700 px`: **4 columnas** para tablet y PC;
-- con `panel_max_width = 520`, móvil conserva el ancho heredado sin expansión;
-- tablet puede crecer hasta **900 px**;
-- PC puede crecer hasta **1000 px**;
-- `span:1` ocupa 1 columna;
-- en móvil, `span:2` ocupa toda la fila;
-- en tablet/PC, `span:2` ocupa 2 de 4 columnas;
-- widgets `hero` permanecen a ancho completo;
-- `power-sources-graph` permanece a ancho completo;
-- secciones continúan una debajo de otra;
-- tarjetas se distribuyen desde la izquierda;
-- un `panel_max_width` personalizado distinto de 520 se respeta.
+Las secciones permiten:
 
-La adaptación usa container queries sobre el ancho real del panel, por lo que
-responde a cambios de tamaño, orientación y sidebar sin identificar el tipo
-de dispositivo.
+- mostrar/ocultar;
+- mostrar/ocultar encabezado;
+- mostrar una sección vacía;
+- título y subtítulo;
+- icono MDI manual + selector visual nativo cuando está disponible;
+- colores de icono, título y subtítulo;
+- alineación izquierda/centro/derecha;
+- fondo/borde opcional del encabezado;
+- tamaño de textos/icono;
+- radio/padding/borde;
+- subir/bajar;
+- duplicar una sección creando una copia vacía con el mismo estilo;
+- crear nuevas secciones;
+- eliminar secciones personalizadas moviendo sus widgets a una sección segura.
 
-### Persistencia y compatibilidad
+Las secciones base se ocultan en lugar de eliminarse para evitar pérdida accidental de estructura.
 
-No existe migración.
+### Widgets
 
-El responsive runtime no escribe configuración.
+Todos los widgets actuales continúan usando su configuración existente.
+V3 añade organización y tamaño semántico:
 
-Se conserva:
+- `Auto`;
+- `Pequeño`;
+- `Mediano`;
+- `Grande`;
+- `Ancho completo`.
 
-- `.storage/smart_energy_advanced_panel.config` versión 1;
-- WebSocket;
-- entidades;
-- cálculos;
-- unidades;
-- decimales;
-- barras;
-- demo values;
-- tap;
-- hold;
-- more-info;
-- selector de entidades;
-- selector MDI;
-- navegación;
-- Personalización;
-- Guardar/Cancelar;
-- Importar/Exportar/Restablecer;
-- orden de secciones;
-- orden de widgets.
+Desde Layout V3 se puede:
 
-### Gráfico nativo
+- mostrar/ocultar un widget;
+- subir/bajar dentro de una sección;
+- moverlo a cualquier otra sección;
+- cambiar su tamaño semántico;
+- crear un widget adicional directamente dentro de una sección;
+- saltar a su editor visual existente.
 
-`power-sources-graph` continúa fuera de `.metric-grid`, proyectado a ancho
-completo y sin modificar sus internals.
+Las tarjetas adicionales actuales `value`, `bar` y `graph` siguen siendo compatibles.
 
-## Smart Automations 1.3.0
+### Responsive
 
-Permanece estable con:
+V3 usa el ancho real de `.page`:
 
-- responsive adaptativo móvil/tablet/PC;
-- Alert Control V1.0.0;
-- 1 o 2 avisos configurables;
-- horario opcional;
-- segundo aviso con revalidación;
-- rearme/histéresis opcional;
-- Home Assistant como motor nativo;
-- `.storage` sin migración.
+- móvil: **1 columna**;
+- tablet/PC: **4 columnas** desde 700 px por defecto;
+- breakpoint configurable entre 600 y 900 px;
+- ancho máximo adaptativo configurable entre 760 y 1400 px;
+- valor predeterminado: 1100 px;
+- si `design.panel_max_width` es distinto del heredado 520, se respeta.
 
-## Smart Lighting 1.4.1
+Tamaños en tablet/PC:
 
-Permanece estable con:
+- Pequeño → 1 de 4;
+- Mediano → 2 de 4;
+- Grande → 3 de 4;
+- Full → 4 de 4.
 
-- responsive móvil/tablet/PC;
-- columnas configurables;
-- Global Actions alineadas al grid en tablet/PC;
-- `.storage` sin migración.
+En móvil todos ocupan la fila completa.
+
+Defaults inteligentes:
+
+- Costo mensual → Mediano;
+- Temporada → Pequeño;
+- Tarifa → Pequeño;
+- Tacómetro → Full;
+- gráfica adicional → Full;
+- valor/barra adicional → Mediano.
+
+### Compatibilidad y rollback
+
+V3 **no migra ni escribe `.storage` automáticamente**.
+
+Actualizar, reiniciar y abrir Smart Home no modifica la configuración guardada.
+Solo **Guardar** persiste `layout_v3`.
+
+Al guardar también se sincroniza el orden plano existente `card_layout.order`,
+por lo que una versión anterior puede ignorar las claves V3 y seguir leyendo un
+orden de tarjetas compatible.
+
+Además, V3 puede desactivarse desde Personalización para volver al layout plano
+actual dentro de la misma versión.
+
+## Módulos sin cambios funcionales
+
+- Smart Lighting 1.4.1
+- Smart Energy Advanced 1.5.3
+- Smart Automations 1.3.0
+- Smart Support 1.2.0
 
 ## Distribución
 
-Imagen:
+Imagen esperada:
 
-`ghcr.io/abel-smart-home/smart-home-suite-manager:1.12.3`
+`ghcr.io/abel-smart-home/smart-home-suite-manager:1.13.0`
 
 Arquitecturas:
 
 - `amd64`
 - `aarch64`
 
-## Instalación / actualización
+## Prueba recomendada
 
-1. Actualiza Smart Home Suite Manager.
-2. Ejecuta `validate_only`.
-3. Confirma `VALIDATION_OK`.
-4. Cambia a `install_repair`.
-5. Mantén `create_backup: true`.
-6. Ejecuta el Manager.
-7. Confirma:
-   - `PAYLOAD_VALIDATION_OK`
-   - `STAGED_VALIDATION_OK`
-   - `POST_INSTALL_VALIDATION_OK`
-   - `INSTALLATION_OK`
-8. Reinicia Home Assistant.
-9. Realiza una recarga completa del frontend si conserva recursos anteriores.
-
-## Rollback
-
-1. Abre Smart Home Suite Manager.
-2. Selecciona `restore_latest`.
-3. Ejecuta.
-4. Confirma `RESTORE_OK`.
-5. Reinicia Home Assistant.
-6. Realiza una recarga completa del frontend.
-
-## Política recomendada
-
-Para instalaciones productivas:
-
-1. validar primero nuevas versiones en laboratorio;
-2. conservar backup antes de actualizar;
-3. desplegar manualmente una combinación ya comprobada;
-4. evitar cambios innecesarios en sistemas que funcionan correctamente.
-
-## Importante
-
-No instales simultáneamente versiones standalone de paneles ya incluidos en Smart Home Suite.
+1. Publica `v1.13.0` como pre-release.
+2. Confirma Builder completamente verde.
+3. Prueba primero una instalación limpia.
+4. Prueba después una actualización desde 1.12.3 con configuración existente.
+5. Ejecuta `validate_only`.
+6. Ejecuta `install_repair` con backup.
+7. Prueba Smart Home en móvil, tablet y PC.
+8. Prueba secciones, widgets, Save/Cancel, Import/Export y rollback.
+9. Mantén 1.12.3 como Stable hasta completar el checklist.
