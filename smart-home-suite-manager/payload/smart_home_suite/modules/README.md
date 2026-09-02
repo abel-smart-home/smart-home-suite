@@ -1,15 +1,16 @@
-# Smart Home Suite modules · 1.11.0 STABLE
+# Smart Home Suite modules · 1.14.1 PRE-RELEASE
 
 | Módulo | Versión | Ruta |
 |---|---:|---|
-| Smart Home | 1.4.0 | `/smart-home` |
+| Smart Home | 1.6.0 · Panel V3.1.0 | `/smart-home` |
 | Smart Lighting | 1.4.1 | `/lighting` |
-| Smart Energy Advanced | 1.4.0 | `/energy-advanced` |
-| Smart Automations | 1.3.0 | `/smart-automations` |
+| Smart Energy Advanced | 1.5.3 | `/energy-advanced` |
+| Smart Automations | 1.3.1 · Alert Control 1.0.1 | `/smart-automations` |
 | Smart Support | 1.2.0 | `/support` |
 
-Smart Automations 1.3.0 conserva base/layout/color/responsive de 1.10.0 y añade Alert Control V1.0.0 para las dos recetas de energía.
+Único cambio funcional: Smart Automations genera `max_exceeded: silent` en las
+dos alertas energéticas que usan `mode: single`.
 
-No hay migración de `.storage`.
+No existe migración de `.storage`.
 
-Smart Home Suite 1.11.0 fue validada previamente como pre-release y promovida sin cambios funcionales a **STABLE**.
+Último release estable: **1.14.0**.

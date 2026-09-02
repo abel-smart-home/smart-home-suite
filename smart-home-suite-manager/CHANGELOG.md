@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.14.1 - 2026-09-02 · TEST
+
+- Actualiza **Smart Automations a 1.3.1**.
+- Actualiza Alert Control a **V1.0.1**.
+- Mantiene `mode: single` como bloqueo de reentradas durante la espera de rearme.
+- Añade `max_exceeded: silent` a `high_power` y `energy_limit`.
+- Suprime el warning esperado `Already running` sin permitir una segunda ejecución.
+- Mantiene horario opcional, descarte fuera de horario, 1/2 avisos, segundo aviso e histéresis.
+- No crea trigger al inicio del horario; un cruce ocurrido fuera de horario sigue descartado.
+- No cambia `.storage/smart_automations.config` versión 1.
+- No crea helpers.
+- Automatizaciones existentes requieren abrir + Guardar para adoptar el nuevo YAML.
+- Smart Home 1.6.0 / Panel V3.1.0 sin cambios.
+- Smart Lighting 1.4.1 sin cambios.
+- Smart Energy Advanced 1.5.3 sin cambios.
+- Smart Support 1.2.0 sin cambios.
+- Publicar inicialmente como PRE-RELEASE.
+
 ## 1.14.0 - 2026-08-19 · STABLE
 
 - Promueve a estable el payload funcional validado de Smart Home Suite 1.14.0.

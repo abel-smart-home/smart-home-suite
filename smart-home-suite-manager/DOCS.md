@@ -1,132 +1,81 @@
-# Smart Home Suite Manager 1.14.0 · STABLE
+# Smart Home Suite Manager 1.14.1 · PRE-RELEASE
 
-## Smart Home V3 nativo
+## Motivo
 
-### Arquitectura estable
+Home Assistant 2026.9.0 puede registrar `Already running` cuando una alerta
+energética generada por Smart Automations sigue esperando el rearme y el trigger
+intenta arrancar otra ejecución.
 
-```text
-Smart Home Panel V2.0.5
-        │ fallback / base funcional
-        ▼
-Runtime V1.1.0 + Card Layout V1.0.0
-        │
-        ▼
-SmartHomePanelV3 V3.1.0
+Ese bloqueo es intencional: `mode: single` evita un aviso duplicado.
+
+Alert Control V1.0.1 genera además:
+
+```yaml
+mode: single
+max_exceeded: silent
 ```
 
-Elemento activo:
+## Semántica preservada
 
-`<smart-home-panel-v3>`
+### Horario
 
-Dashboard card:
+Si está desactivado: 24/7.
 
-`<smart-home-dashboard-card-v3>`
+Si está activado y el evento cruza el límite fuera del horario:
 
-El bridge V3 reutiliza el comportamiento validado del Native Dashboard Bridge
-V1.3.0 para conservar:
+- no notifica;
+- no queda pendiente;
+- no notifica al comenzar posteriormente el horario;
+- necesita rearmarse y volver a cruzar el límite dentro del horario.
 
-- ocultamiento/restauración del header;
-- botón ☰ móvil;
-- control de acceso por rol;
-- comportamiento narrow;
-- lifecycle Lovelace fail-open.
+### Rearme
+
+La automatización sigue esperando el cruce hacia abajo del valor configurado.
+
+Ejemplo:
+
+- disparo: 350 kWh
+- rearme: 340 kWh
+
+Después del aviso permanece bloqueada hasta `<340`.
+
+### Reinicio o recuperación del sensor
+
+Si el sensor vuelve a estar disponible aún por encima del límite y Home
+Assistant intenta disparar otra ejecución mientras la anterior sigue activa:
+
+- `mode: single` la bloquea;
+- `max_exceeded: silent` evita el warning;
+- no debe emitirse una segunda notificación.
+
+## Aplicar a automatizaciones existentes
+
+La Suite no reescribe automatizaciones nativas silenciosamente.
+
+Después de instalar 1.14.1:
+
+1. Smart Automations → automatización;
+2. Editar;
+3. Guardar;
+4. abrir botón HA;
+5. confirmar `max_exceeded: silent`.
+
+## Instalación
+
+1. `validate_only`
+2. `install_repair`
+3. `create_backup: true`
+4. reiniciar Home Assistant
+5. recarga completa del frontend
+
+## Rollback
+
+`restore_latest` restaura la Suite. Una automatización nativa ya guardada con
+`max_exceeded: silent` puede conservar el campo porque es configuración nativa
+válida de Home Assistant.
 
 ## Compatibilidad
 
-`layout_v3.schema_version = 1`.
-
-No existe migración.
-
-Configuraciones creadas por Suite 1.13.0 se leen directamente por V3.1.0.
-
-Abrir el panel no escribe configuración automáticamente.
-
-## Secciones
-
-Cada sección puede configurar:
-
-- `show`;
-- `show_header`;
-- `show_empty`;
-- `section_surface`;
-- `header_surface`;
-- `title`;
-- `subtitle`;
-- `icon`;
-- colores;
-- tamaños;
-- alineación;
-- background;
-- border;
-- radius;
-- padding;
-- widgets.
-
-## Widgets
-
-Refs compatibles:
-
-- `monthly_cost`;
-- `season`;
-- `tariff`;
-- `power`;
-- `extra:<id>`.
-
-Tamaños:
-
-- `auto`;
-- `small`;
-- `medium`;
-- `large`;
-- `full`.
-
-## Responsive
-
-Default:
-
-- `<700 px`: 1 columna;
-- `>=700 px`: 4 columnas;
-- max width adaptativo: 1100 px.
-
-Container query:
-
-`smart-home-v3-page`
-
-## Editor
-
-Conserva:
-
-- General;
-- Tarjetas;
-- Tacómetro;
-- Navegación;
-- Avanzado.
-
-Añade:
-
-- Layout V3.
-
-Selector MDI:
-
-1. `ha-selector`;
-2. `ha-icon-picker`;
-3. campo manual `mdi:...`.
-
-## Recuperación
-
-Dentro de Smart Home:
-
-Personalización → Layout V3 → desactivar `Activar Layout V3` → Guardar.
-
-Para rollback de Suite:
-
-Smart Home Suite Manager → `restore_latest`.
-
-## Otros módulos
-
-- Lighting 1.4.1
-- Energy Advanced 1.5.3
-- Automations 1.3.0
-- Support 1.2.0
-
-Todos permanecen funcionalmente sin cambios en la promoción Stable 1.14.0.
+No cambia `.storage`, Storage version 1, WebSocket, REST, navegación,
+personalización, responsive, selectores, Smart Home V3, Lighting, Energy
+Advanced ni Support.

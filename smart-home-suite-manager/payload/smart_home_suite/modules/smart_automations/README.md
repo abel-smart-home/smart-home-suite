@@ -1,57 +1,56 @@
-# Smart Automations 1.3.0 · STABLE
-
-Versión validada en Home Assistant OS y promovida desde el mismo payload pre-release.
+# Smart Automations 1.3.1 · PRE-RELEASE
 
 ## Arquitectura
-
-Cadena preservada:
 
 1. Smart Automations Panel V1.0.0
 2. `smart-automations-layout.js` V1.0.0
 3. `smart-automations-runtime.js` V1.0.0
 4. `smart-automations-responsive.js` V1.0.0
-5. `smart-automations-alert-control.js` V1.0.0
+5. `smart-automations-alert-control.js` V1.0.1
 
-## Alert Control
+## Alert Control V1.0.1
 
 Sólo extiende:
 
 - `high_power`
 - `energy_limit`
 
-Funciones:
+Mantiene toda la funcionalidad de V1.0.0 y añade:
 
-- 1/2 avisos por evento;
-- segundo aviso configurable;
+```yaml
+mode: single
+max_exceeded: silent
+```
+
+El objetivo es silenciar el warning esperado cuando Home Assistant intenta
+iniciar la automatización mientras todavía está ejecutándose y esperando el
+rearme.
+
+No desactiva la protección: la ejecución adicional continúa siendo rechazada.
+
+## Horario
+
+No cambia:
+
 - horario opcional;
-- rangos nocturnos que cruzan medianoche;
-- descarte absoluto fuera de horario;
-- comprobación de horario también para el segundo aviso;
-- rearme controlado/histéresis;
-- umbral de rearme configurable.
+- fuera de horario se descarta;
+- no se recupera al inicio de la ventana;
+- el segundo aviso también revalida el horario.
 
-No crea helpers.
-
-## Compatibilidad
+## Persistencia
 
 - `.storage`: `smart_automations.config`
 - Storage version: 1
 - WebSocket: sin cambios
-- REST nativo: mismo endpoint de Home Assistant
-- Home Assistant sigue ejecutando la automatización
-- Iluminación/Presencia no cambian
-- ordering/personalización/Color Picker Guard/responsive no cambian
+- helpers: ninguno
 
 ## Automatizaciones existentes
 
-No se migran automáticamente.
+No se actualizan automáticamente.
 
-Abrir y Guardar una automatización de energía aplica la nueva receta.
-
-## Reinicios
-
-Las esperas son nativas. Reiniciar Home Assistant o recargar automatizaciones puede cancelar `for`/`wait_for_trigger`; no se añade estado persistente auxiliar.
+Abrir y Guardar desde Smart Automations aplica Alert Control V1.0.1 y actualiza
+el marker a `energy-alert-control-1.0.1`.
 
 ## Estado
 
-**STABLE**
+**PRE-RELEASE**

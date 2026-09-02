@@ -96,15 +96,15 @@ MODULE_CATALOG: tuple[ModuleSpec, ...] = (
         module_id="smart_automations",
         name="Smart Automations",
         option_label="Automatizaciones",
-        version="1.3.0",
+        version="1.3.1",
         panel_path="smart-automations",
         enabled_by_default=True,
         setup=setup_smart_automations,
         unload=unload_smart_automations,
         notes=(
             "Base panel 1.0.0 + layout 1.0.0 + color guard 1.0.0 + responsive "
-            "1.0.0 + alert control 1.0.0; controlled energy notifications remain "
-            "native Home Assistant automations without helpers or storage migration"
+            "1.0.0 + alert control 1.0.1; generated energy alerts keep mode: single "
+            "and add max_exceeded: silent to suppress expected rearm warnings"
         ),
     ),
     ModuleSpec(

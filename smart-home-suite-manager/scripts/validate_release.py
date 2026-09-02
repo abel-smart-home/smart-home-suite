@@ -48,7 +48,11 @@ def catalog_specs() -> list[dict[str, object]]:
         spec: dict[str, object] = {}
         for keyword in node.keywords:
             if keyword.arg in {
-                "module_id", "name", "version", "panel_path", "enabled_by_default",
+                "module_id",
+                "name",
+                "version",
+                "panel_path",
+                "enabled_by_default",
             }:
                 try:
                     spec[keyword.arg] = ast.literal_eval(keyword.value)
@@ -72,7 +76,9 @@ def validate() -> None:
 
     manifest = read_json(PAYLOAD / "manifest.json")
     if manifest.get("version") != version:
-        fail(f"Version mismatch: app={version} integration={manifest.get('version')}")
+        fail(
+            f"Version mismatch: app={version} integration={manifest.get('version')}"
+        )
 
     const_source = (PAYLOAD / "const.py").read_text(encoding="utf-8")
     if not re.search(
@@ -106,6 +112,7 @@ def validate() -> None:
     specs = catalog_specs()
     catalog_ids = [str(spec.get("module_id", "")) for spec in specs]
     catalog_paths = [str(spec.get("panel_path", "")) for spec in specs]
+
     if len(catalog_ids) != len(set(catalog_ids)):
         fail("Duplicate module_id in module_catalog.py")
     if len(catalog_paths) != len(set(catalog_paths)):
@@ -128,7 +135,9 @@ def validate() -> None:
         if module_id != folder.name:
             fail(f"Module folder/id mismatch: folder={folder.name} id={module_id}")
         if descriptor.get("suite_version") != version:
-            fail(f"{module_id}: suite_version {descriptor.get('suite_version')} != {version}")
+            fail(
+                f"{module_id}: suite_version {descriptor.get('suite_version')} != {version}"
+            )
         if not re.fullmatch(r"\d+\.\d+\.\d+", module_version):
             fail(f"{module_id}: invalid module version {module_version!r}")
         if not panel_path:
@@ -185,8 +194,13 @@ def validate() -> None:
 
     require_tokens(
         PAYLOAD / "support_health.py",
-        ("enable_user", "disable_user", "EVENT_SERVICE_REGISTERED",
-         "EVENT_SERVICE_REMOVED", "smart_support_provider_unavailable"),
+        (
+            "enable_user",
+            "disable_user",
+            "EVENT_SERVICE_REGISTERED",
+            "EVENT_SERVICE_REMOVED",
+            "smart_support_provider_unavailable",
+        ),
         "support_health.py",
     )
 
@@ -214,6 +228,7 @@ def validate() -> None:
         path = PAYLOAD / "frontend" / filename
         if not path.is_file() or path.stat().st_size < 1000:
             fail(f"Frontend missing or unexpectedly small: {filename}")
+
 
     smart_home_base = (PAYLOAD / "frontend" / "smart-home-panel.js").read_text(
         encoding="utf-8"
@@ -321,7 +336,6 @@ def validate() -> None:
         "smart_home wrapper",
     )
 
-
     smart_lighting_base = (
         PAYLOAD / "frontend" / "smart-lighting-panel.js"
     ).read_text(encoding="utf-8")
@@ -381,6 +395,7 @@ def validate() -> None:
         ),
         "smart_lighting wrapper",
     )
+
 
     smart_energy_base = (
         PAYLOAD / "frontend" / "smart-energy-advanced-panel.js"
@@ -500,8 +515,8 @@ def validate() -> None:
     require_tokens(
         PAYLOAD / "frontend" / "smart-automations-alert-control.js",
         (
-            'SMART_AUTOMATIONS_ALERT_CONTROL_RUNTIME_VERSION = "1.0.0"',
-            'SMART_AUTOMATIONS_EFFECTIVE_VERSION = "1.3.0"',
+            'SMART_AUTOMATIONS_ALERT_CONTROL_RUNTIME_VERSION = "1.0.1"',
+            'SMART_AUTOMATIONS_EFFECTIVE_VERSION = "1.3.1"',
             'import "./smart-automations-responsive.js?v=100-responsive-module120-suite1100";',
             '"high_power"',
             '"energy_limit"',
@@ -515,6 +530,7 @@ def validate() -> None:
             "wait_for_trigger",
             'condition: "time"',
             'mode: "single"',
+            'max_exceeded: "silent"',
             "fuera del horario",
         ),
         "smart-automations-alert-control.js",
@@ -528,13 +544,13 @@ def validate() -> None:
             'RUNTIME_FRONTEND_FILE = "smart-automations-runtime.js"',
             'RESPONSIVE_FRONTEND_FILE = "smart-automations-responsive.js"',
             'FRONTEND_FILE = "smart-automations-alert-control.js"',
-            'MODULE_VERSION = "1.3.0"',
+            'MODULE_VERSION = "1.3.1"',
             'BASE_PANEL_VERSION = "1.0.0"',
             'LAYOUT_RUNTIME_VERSION = "1.0.0"',
             'COLOR_PICKER_GUARD_VERSION = "1.0.0"',
             'RESPONSIVE_RUNTIME_VERSION = "1.0.0"',
-            'ALERT_CONTROL_RUNTIME_VERSION = "1.0.0"',
-            "?v=100-alert-module130-suite1110",
+            'ALERT_CONTROL_RUNTIME_VERSION = "1.0.1"',
+            "?v=101-alert-module131-suite1141",
         ),
         "smart_automations wrapper",
     )

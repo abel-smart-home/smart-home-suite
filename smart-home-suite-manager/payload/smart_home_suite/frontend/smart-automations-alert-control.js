@@ -1,12 +1,12 @@
 /**
- * Smart Home Suite · Smart Automations alert control runtime v1.0.0
+ * Smart Home Suite · Smart Automations alert control runtime v1.0.1
  *
  * Preserved chain:
  *   Smart Automations Panel V1.0.0
  *   -> layout runtime V1.0.0
  *   -> color-picker runtime V1.0.0
  *   -> responsive runtime V1.0.0
- *   -> this alert-control runtime V1.0.0
+ *   -> this alert-control runtime V1.0.1
  *
  * Scope is intentionally limited to the two energy alert recipes:
  * - high_power
@@ -23,16 +23,20 @@
  * Home Assistant remains the execution engine. No helper entities are created.
  * Existing automations are never rewritten automatically; the new native recipe
  * is applied when the user opens the Smart Automation and presses Guardar.
+ *
+ * V1.0.1: mode: single remains the intentional rearm lock, but generated
+ * energy alerts now add max_exceeded: silent so duplicate trigger attempts
+ * are ignored without an expected 'Already running' warning in Home Assistant.
  */
 
 import "./smart-automations-responsive.js?v=100-responsive-module120-suite1100";
 
-const SMART_AUTOMATIONS_ALERT_CONTROL_RUNTIME_VERSION = "1.0.0";
-const SMART_AUTOMATIONS_EFFECTIVE_VERSION = "1.3.0";
-const SMART_AUTOMATIONS_ALERT_RECIPE_REVISION = "energy-alert-control-1.0.0";
+const SMART_AUTOMATIONS_ALERT_CONTROL_RUNTIME_VERSION = "1.0.1";
+const SMART_AUTOMATIONS_EFFECTIVE_VERSION = "1.3.1";
+const SMART_AUTOMATIONS_ALERT_RECIPE_REVISION = "energy-alert-control-1.0.1";
 
 const ALERT_CONTROL_MARKER = Symbol.for(
-  "smart-home-suite-smart-automations-alert-control-v1.0.0"
+  "smart-home-suite-smart-automations-alert-control-v1.0.1"
 );
 
 const ALERT_RECIPES = new Set(["high_power", "energy_limit"]);
@@ -435,6 +439,7 @@ function buildHighPowerNativeConfig(panel, ed) {
       rearmState
     ),
     mode: "single",
+    max_exceeded: "silent",
   };
 }
 
@@ -476,6 +481,7 @@ function buildEnergyLimitNativeConfig(panel, ed) {
       rearmState
     ),
     mode: "single",
+    max_exceeded: "silent",
   };
 }
 
