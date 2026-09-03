@@ -1,44 +1,41 @@
-# Smart Home Suite Manager 1.14.1
+# Smart Home Suite Manager 1.14.2
 
-**PRE-RELEASE** — Smart Automations Alert Control warning fix.
+**PRE-RELEASE** — Smart Automations pending out-of-hours alerts.
 
 ## Estado
 
 - Último Stable: **1.14.0**
-- Candidato: **1.14.1**
-- Smart Automations: **1.3.1**
-- Alert Control: **1.0.1**
+- Pre-release anterior: **1.14.1**
+- Candidato actual: **1.14.2**
+- Smart Automations: **1.3.2**
+- Alert Control: **1.1.0**
 
-## Corrección
+## Nuevo
 
-Las recetas Consumo elevado y Límite de kWh mantienen:
+Cuando el horario de notificación está activado:
 
-- `mode: single`;
-- espera de rearme;
-- histéresis;
-- horario opcional;
-- 1/2 avisos.
+- `Descartar el aviso`
+- `Dejar aviso pendiente`
 
-Ahora añaden:
+`Descartar` sigue siendo el default para compatibilidad.
 
-`max_exceeded: silent`
+Pendiente espera el siguiente inicio del horario o el rearme, lo que ocurra primero.
 
-para que intentos adicionales mientras la automatización sigue ejecutándose se
-ignoren sin llenar el registro con `Already running`.
+## Preservado
 
-## Módulos preservados
+- `mode: single`
+- `max_exceeded: silent`
+- 1/2 avisos
+- segundo aviso
+- histéresis
+- `.storage` v1
+- Smart Home 1.6.0 / V3.1.0
+- Lighting 1.4.1
+- Energy Advanced 1.5.3
+- Support 1.2.0
 
-- Smart Home 1.6.0 · Panel V3.1.0
-- Smart Lighting 1.4.1
-- Smart Energy Advanced 1.5.3
-- Smart Support 1.2.0
-
-## Acciones del Manager
+Acciones del Manager:
 
 - `validate_only`
 - `install_repair`
 - `restore_latest`
-
-Imagen de prueba:
-
-`ghcr.io/abel-smart-home/smart-home-suite-manager:1.14.1`

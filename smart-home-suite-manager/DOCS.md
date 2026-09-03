@@ -1,81 +1,77 @@
-# Smart Home Suite Manager 1.14.1 · PRE-RELEASE
+# Smart Home Suite Manager 1.14.2 · PRE-RELEASE
 
-## Motivo
+## Smart Automations 1.3.2
 
-Home Assistant 2026.9.0 puede registrar `Already running` cuando una alerta
-energética generada por Smart Automations sigue esperando el rearme y el trigger
-intenta arrancar otra ejecución.
+Alert Control V1.1.0 añade un selector bajo Horario de notificaciones:
 
-Ese bloqueo es intencional: `mode: single` evita un aviso duplicado.
+### Si el límite se alcanza fuera del horario
 
-Alert Control V1.0.1 genera además:
+**Descartar el aviso**
+
+Conserva exactamente el comportamiento de 1.14.1.
+
+**Dejar aviso pendiente**
+
+La ejecución espera:
+
+- el siguiente `schedule_start`; o
+- el cruce del umbral de rearme.
+
+Si ocurre el rearme primero, termina sin aviso.
+
+Si ocurre el inicio del horario primero:
+
+- si el sensor sigue arriba del límite → notifica;
+- si ya está debajo del límite pero todavía no alcanzó el rearme → no notifica y sigue bloqueada hasta el rearme;
+- si ya se rearmó → termina.
+
+## Dos avisos
+
+Después del primer aviso pendiente, el segundo conserva la lógica existente:
+
+- espera configurable;
+- exige seguir arriba del límite;
+- vuelve a comprobar horario;
+- se cancela por rearme;
+- no existe tercer aviso.
+
+## Warning fix preservado
 
 ```yaml
 mode: single
 max_exceeded: silent
 ```
 
-## Semántica preservada
+## Automatizaciones existentes
 
-### Horario
+Instalar la Suite no reescribe YAML nativo.
 
-Si está desactivado: 24/7.
+Para adoptar el nuevo modo:
 
-Si está activado y el evento cruza el límite fuera del horario:
-
-- no notifica;
-- no queda pendiente;
-- no notifica al comenzar posteriormente el horario;
-- necesita rearmarse y volver a cruzar el límite dentro del horario.
-
-### Rearme
-
-La automatización sigue esperando el cruce hacia abajo del valor configurado.
-
-Ejemplo:
-
-- disparo: 350 kWh
-- rearme: 340 kWh
-
-Después del aviso permanece bloqueada hasta `<340`.
-
-### Reinicio o recuperación del sensor
-
-Si el sensor vuelve a estar disponible aún por encima del límite y Home
-Assistant intenta disparar otra ejecución mientras la anterior sigue activa:
-
-- `mode: single` la bloquea;
-- `max_exceeded: silent` evita el warning;
-- no debe emitirse una segunda notificación.
-
-## Aplicar a automatizaciones existentes
-
-La Suite no reescribe automatizaciones nativas silenciosamente.
-
-Después de instalar 1.14.1:
-
-1. Smart Automations → automatización;
+1. abrir la tarjeta;
 2. Editar;
-3. Guardar;
-4. abrir botón HA;
-5. confirmar `max_exceeded: silent`.
+3. activar horario;
+4. elegir `Dejar aviso pendiente`;
+5. Guardar.
+
+Marker esperado:
+
+`energy-alert-control-1.1.0`
+
+## Persistencia
+
+Sin migración.
+
+`smart_automations.config`, Storage version 1.
+
+## Limitación
+
+`wait_for_trigger` no es persistente a un reinicio completo de Home Assistant. No se crean helpers ocultos.
 
 ## Instalación
 
 1. `validate_only`
-2. `install_repair`
-3. `create_backup: true`
-4. reiniciar Home Assistant
-5. recarga completa del frontend
-
-## Rollback
-
-`restore_latest` restaura la Suite. Una automatización nativa ya guardada con
-`max_exceeded: silent` puede conservar el campo porque es configuración nativa
-válida de Home Assistant.
-
-## Compatibilidad
-
-No cambia `.storage`, Storage version 1, WebSocket, REST, navegación,
-personalización, responsive, selectores, Smart Home V3, Lighting, Energy
-Advanced ni Support.
+2. `install_repair` con backup
+3. reiniciar Home Assistant
+4. recarga completa
+5. completar `TEST-CHECKLIST-1.14.2.md`

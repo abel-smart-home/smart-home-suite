@@ -1,12 +1,12 @@
 /**
- * Smart Home Suite · Smart Automations alert control runtime v1.0.1
+ * Smart Home Suite · Smart Automations alert control runtime v1.1.0
  *
  * Preserved chain:
  *   Smart Automations Panel V1.0.0
  *   -> layout runtime V1.0.0
  *   -> color-picker runtime V1.0.0
  *   -> responsive runtime V1.0.0
- *   -> this alert-control runtime V1.0.1
+ *   -> this alert-control runtime V1.1.0
  *
  * Scope is intentionally limited to the two energy alert recipes:
  * - high_power
@@ -16,7 +16,7 @@
  * - 1 or 2 notifications per alert cycle;
  * - configurable delay before the second notification;
  * - optional notification schedule;
- * - events outside the schedule are discarded, never postponed;
+ * - configurable out-of-hours behavior: discard or pending until schedule start;
  * - second notification is skipped if its time is outside the schedule;
  * - optional controlled rearm with configurable lower threshold/hysteresis.
  *
@@ -25,18 +25,23 @@
  * is applied when the user opens the Smart Automation and presses Guardar.
  *
  * V1.0.1: mode: single remains the intentional rearm lock, but generated
- * energy alerts now add max_exceeded: silent so duplicate trigger attempts
+ * energy alerts add max_exceeded: silent so duplicate trigger attempts
  * are ignored without an expected 'Already running' warning in Home Assistant.
+ *
+ * V1.1.0: when a notification schedule is enabled, the user can keep the
+ * legacy discard behavior or leave an out-of-hours event pending until the
+ * next schedule start. Pending events are cancelled by rearm and only notify
+ * if the sensor is still above the main threshold at schedule start.
  */
 
 import "./smart-automations-responsive.js?v=100-responsive-module120-suite1100";
 
-const SMART_AUTOMATIONS_ALERT_CONTROL_RUNTIME_VERSION = "1.0.1";
-const SMART_AUTOMATIONS_EFFECTIVE_VERSION = "1.3.1";
-const SMART_AUTOMATIONS_ALERT_RECIPE_REVISION = "energy-alert-control-1.0.1";
+const SMART_AUTOMATIONS_ALERT_CONTROL_RUNTIME_VERSION = "1.1.0";
+const SMART_AUTOMATIONS_EFFECTIVE_VERSION = "1.3.2";
+const SMART_AUTOMATIONS_ALERT_RECIPE_REVISION = "energy-alert-control-1.1.0";
 
 const ALERT_CONTROL_MARKER = Symbol.for(
-  "smart-home-suite-smart-automations-alert-control-v1.0.1"
+  "smart-home-suite-smart-automations-alert-control-v1.1.0"
 );
 
 const ALERT_RECIPES = new Set(["high_power", "energy_limit"]);
@@ -99,6 +104,12 @@ function normalizeAlertParams(recipe, params) {
   params.schedule_start = normalizeClock(params.schedule_start, "07:00");
   params.schedule_end = normalizeClock(params.schedule_end, "22:00");
 
+  if (!["discard", "pending"].includes(String(params.schedule_outside_behavior))) {
+    params.schedule_outside_behavior = "discard";
+  } else {
+    params.schedule_outside_behavior = String(params.schedule_outside_behavior);
+  }
+
   if (params.rearm_enabled === undefined) params.rearm_enabled = true;
   params.rearm_enabled = Boolean(params.rearm_enabled);
 
@@ -152,6 +163,35 @@ function waitForBelow(entityId, below, timeoutMinutes = null) {
     action.continue_on_timeout = true;
   }
   return action;
+}
+
+function waitForScheduleStartOrBelow(
+  entityId,
+  scheduleStart,
+  below
+) {
+  return {
+    wait_for_trigger: [
+      {
+        trigger: "time",
+        at: clockWithSeconds(scheduleStart, "07:00"),
+        id: "schedule_start",
+      },
+      {
+        trigger: "numeric_state",
+        entity_id: entityId,
+        below,
+        id: "rearmed",
+      },
+    ],
+  };
+}
+
+function waitTriggerIdCondition(id) {
+  return {
+    condition: "template",
+    value_template: `{{ wait.trigger is not none and wait.trigger.id == '${id}' }}`,
+  };
 }
 
 function notWaitCompletedCondition() {
@@ -254,6 +294,92 @@ function buildAlertActions(
   return actions;
 }
 
+
+function buildScheduledExecution(
+  panel,
+  params,
+  entityId,
+  unit,
+  triggerThresholdState,
+  rearmThresholdState
+) {
+  const normalActions = buildAlertActions(
+    panel,
+    params,
+    entityId,
+    unit,
+    triggerThresholdState,
+    rearmThresholdState
+  );
+
+  if (!params.schedule_enabled) {
+    return {
+      conditions: [],
+      actions: normalActions,
+    };
+  }
+
+  const schedule = timeCondition(params);
+  if (params.schedule_outside_behavior !== "pending") {
+    return {
+      conditions: [schedule],
+      actions: normalActions,
+    };
+  }
+
+  const rearmEnabled = params.rearm_enabled !== false;
+  const cancellationBelow = rearmEnabled
+    ? rearmThresholdState
+    : triggerThresholdState;
+
+  const afterScheduleStartChoices = [
+    {
+      conditions: [
+        waitTriggerIdCondition("schedule_start"),
+        numericAboveCondition(entityId, triggerThresholdState),
+      ],
+      sequence: normalActions,
+    },
+  ];
+
+  if (rearmEnabled) {
+    // The event may no longer be above the main threshold at schedule start
+    // while still not having reached the deeper rearm threshold. In that case
+    // no notification is sent, but mode:single remains locked until true rearm.
+    afterScheduleStartChoices.push({
+      conditions: [
+        waitTriggerIdCondition("schedule_start"),
+        currentNotBelowCondition(entityId, rearmThresholdState),
+      ],
+      sequence: [waitForBelow(entityId, rearmThresholdState)],
+    });
+  }
+
+  return {
+    conditions: [],
+    actions: [
+      {
+        choose: [
+          {
+            conditions: [schedule],
+            sequence: normalActions,
+          },
+        ],
+        default: [
+          waitForScheduleStartOrBelow(
+            entityId,
+            params.schedule_start,
+            cancellationBelow
+          ),
+          {
+            choose: afterScheduleStartChoices,
+          },
+        ],
+      },
+    ],
+  };
+}
+
 function alertControlFields(panel, ed) {
   const p = normalizeAlertParams(ed.recipe, ed.params);
   const isPower = ed.recipe === "high_power";
@@ -269,7 +395,7 @@ function alertControlFields(panel, ed) {
         ${panel._icon("mdi:bell-check-outline", 20)}
         <span>
           El horario es opcional. Si el límite se cumple <b>fuera del horario</b>,
-          el evento se descarta y no se recupera después.
+          puedes descartarlo o dejar un aviso pendiente hasta el siguiente inicio.
         </span>
       </div>
 
@@ -317,9 +443,25 @@ function alertControlFields(panel, ed) {
                 "time"
               )}
             </div>
+            ${panel._fieldSelect(
+              "auto.schedule_outside_behavior",
+              "Si el límite se alcanza fuera del horario",
+              p.schedule_outside_behavior,
+              [
+                ["discard", "Descartar el aviso"],
+                ["pending", "Dejar aviso pendiente"],
+              ]
+            )}
             <div class="help">
-              Se permiten rangos que crucen medianoche, por ejemplo 22:00 → 06:00.
-              Si el primer o segundo aviso cae fuera del horario, no se envía.
+              ${
+                p.schedule_outside_behavior === "pending"
+                  ? `Pendiente: espera el siguiente inicio del horario. Si antes se
+                     alcanza el rearme, se cancela. Al iniciar el horario sólo avisa
+                     si el sensor continúa por encima del límite principal.`
+                  : `Descartar: conserva el comportamiento anterior. El evento
+                     ocurrido fuera del horario termina sin notificación atrasada.`
+              }
+              El segundo aviso siempre vuelve a comprobar el horario.
             </div>`
           : `<div class="help">
               Horario desactivado: funciona 24/7, como la receta original.
@@ -387,6 +529,9 @@ function validateAlertParams(ed) {
     if (p.schedule_start === p.schedule_end) {
       return "La hora inicial y final no pueden ser iguales. Desactiva el horario para usar 24/7.";
     }
+    if (!["discard", "pending"].includes(String(p.schedule_outside_behavior))) {
+      return "Comportamiento fuera de horario inválido.";
+    }
   }
 
   if (p.rearm_enabled) {
@@ -420,24 +565,22 @@ function buildHighPowerNativeConfig(panel, ed) {
     trigger.for = { minutes: Number(p.duration_minutes) };
   }
 
-  const conditions = [];
-  const schedule = timeCondition(p);
-  if (schedule) conditions.push(schedule);
+  const execution = buildScheduledExecution(
+    panel,
+    p,
+    p.power_sensor,
+    unit,
+    thresholdState,
+    rearmState
+  );
 
   return {
     alias: p.alias,
     description:
       `${panel._marker(ed)} | ${SMART_AUTOMATIONS_ALERT_RECIPE_REVISION}`,
     triggers: [trigger],
-    conditions,
-    actions: buildAlertActions(
-      panel,
-      p,
-      p.power_sensor,
-      unit,
-      thresholdState,
-      rearmState
-    ),
+    conditions: execution.conditions,
+    actions: execution.actions,
     mode: "single",
     max_exceeded: "silent",
   };
@@ -456,9 +599,14 @@ function buildEnergyLimitNativeConfig(panel, ed) {
   const rearmState =
     unit === "Wh" ? Number(p.rearm_below) * 1000 : Number(p.rearm_below);
 
-  const conditions = [];
-  const schedule = timeCondition(p);
-  if (schedule) conditions.push(schedule);
+  const execution = buildScheduledExecution(
+    panel,
+    p,
+    p.energy_sensor,
+    unit,
+    thresholdState,
+    rearmState
+  );
 
   return {
     alias: p.alias,
@@ -471,15 +619,8 @@ function buildEnergyLimitNativeConfig(panel, ed) {
         above: thresholdState,
       },
     ],
-    conditions,
-    actions: buildAlertActions(
-      panel,
-      p,
-      p.energy_sensor,
-      unit,
-      thresholdState,
-      rearmState
-    ),
+    conditions: execution.conditions,
+    actions: execution.actions,
     mode: "single",
     max_exceeded: "silent",
   };
@@ -489,7 +630,11 @@ function alertDetail(panel, instance) {
   const p = normalizeAlertParams(instance.recipe, instance.params || {});
   const count = Number(p.notification_count || 1);
   const schedule = p.schedule_enabled
-    ? `${p.schedule_start}–${p.schedule_end}`
+    ? `${p.schedule_start}–${p.schedule_end} · ${
+        p.schedule_outside_behavior === "pending"
+          ? "pendiente fuera de horario"
+          : "descarta fuera de horario"
+      }`
     : "24/7";
   const rearm = p.rearm_enabled
     ? `rearme <${Number(p.rearm_below)} ${instance.recipe === "high_power" ? "W" : "kWh"}`
@@ -594,6 +739,7 @@ function installAlertControlRuntime() {
         [
           "auto.notification_count",
           "auto.schedule_enabled",
+          "auto.schedule_outside_behavior",
           "auto.rearm_enabled",
         ].includes(bind)
       ) {

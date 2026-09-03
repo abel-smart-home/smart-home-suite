@@ -1,4 +1,4 @@
-"""Smart Automations 1.3.1 module for Smart Home Suite.
+"""Smart Automations 1.3.2 module for Smart Home Suite.
 
 Preserved frontend chain:
 - Smart Automations Panel V1.0.0
@@ -6,11 +6,11 @@ Preserved frontend chain:
 - Color Picker Guard V1.0.0
 - responsive runtime V1.0.0
 
-Suite 1.14.1 patches Alert Control runtime to V1.0.1 for high_power and
-energy_limit only. Generated mode: single automations add max_exceeded:
-silent to suppress expected duplicate-run warnings while rearm is pending.
-Home Assistant remains the execution engine. No helper entities or .storage
-migrations are introduced.
+Suite 1.14.2 updates Alert Control runtime to V1.1.0 for high_power and
+energy_limit only. The 1.14.1 mode: single + max_exceeded: silent fix is
+preserved, and users can optionally keep an out-of-hours alert pending until
+the next notification window starts. Home Assistant remains the execution
+engine. No helper entities or .storage migrations are introduced.
 """
 
 from __future__ import annotations
@@ -45,12 +45,12 @@ RUNTIME_FRONTEND_FILE = "smart-automations-runtime.js"
 RESPONSIVE_FRONTEND_FILE = "smart-automations-responsive.js"
 FRONTEND_FILE = "smart-automations-alert-control.js"
 
-MODULE_VERSION = "1.3.1"
+MODULE_VERSION = "1.3.2"
 BASE_PANEL_VERSION = "1.0.0"
 LAYOUT_RUNTIME_VERSION = "1.0.0"
 COLOR_PICKER_GUARD_VERSION = "1.0.0"
 RESPONSIVE_RUNTIME_VERSION = "1.0.0"
-ALERT_CONTROL_RUNTIME_VERSION = "1.0.1"
+ALERT_CONTROL_RUNTIME_VERSION = "1.1.0"
 
 
 def _frontend_dir() -> Path:
@@ -69,7 +69,7 @@ def _store(hass: HomeAssistant) -> Store[dict[str, Any]]:
 
 
 async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Register Smart Automations 1.3.1 backend and panel."""
+    """Register Smart Automations 1.3.2 backend and panel."""
     data = _data(hass)
 
     frontend_dir = _frontend_dir()
@@ -143,8 +143,8 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     alert_text = await hass.async_add_executor_job(alert_file.read_text, "utf-8")
     for required_token in (
-        'SMART_AUTOMATIONS_ALERT_CONTROL_RUNTIME_VERSION = "1.0.1"',
-        'SMART_AUTOMATIONS_EFFECTIVE_VERSION = "1.3.1"',
+        'SMART_AUTOMATIONS_ALERT_CONTROL_RUNTIME_VERSION = "1.1.0"',
+        'SMART_AUTOMATIONS_EFFECTIVE_VERSION = "1.3.2"',
         '"high_power"',
         '"energy_limit"',
         "notification_count",
@@ -158,6 +158,10 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         'condition: "time"',
         'mode: "single"',
         'max_exceeded: "silent"',
+        "schedule_outside_behavior",
+        '"pending"',
+        "wait.trigger.id",
+        'trigger: "time"',
     ):
         if required_token not in alert_text:
             _LOGGER.error(
@@ -201,7 +205,7 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         sidebar_icon="mdi:robot",
         module_url=(
             f"{STATIC_URL}/{FRONTEND_FILE}"
-            "?v=101-alert-module131-suite1141"
+            "?v=110-alert-module132-suite1142"
         ),
         require_admin=False,
         handle_safe_area=True,

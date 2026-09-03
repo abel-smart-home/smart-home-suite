@@ -1,27 +1,27 @@
 {
   "id": "smart_automations",
   "name": "Smart Automations",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "base_panel_version": "1.0.0",
-  "source": "Smart Automations Panel V1.0.0 exact + layout V1.0.0 + color guard V1.0.0 + responsive V1.0.0 + alert control V1.0.1",
+  "source": "Smart Automations Panel V1.0.0 exact + layout V1.0.0 + color guard V1.0.0 + responsive V1.0.0 + alert control V1.1.0",
   "enabled_by_default": true,
   "panel_path": "smart-automations",
   "sidebar_title": "Automatizaciones",
   "sidebar_icon": "mdi:robot",
   "storage_key": "smart_automations.config",
   "storage_version": 1,
-  "suite_version": "1.14.1",
+  "suite_version": "1.14.2",
   "frontend_source": "Smart Automations Panel V1.0.0 + smart-automations-layout.js + smart-automations-runtime.js + smart-automations-responsive.js + smart-automations-alert-control.js",
   "layout_runtime_version": "1.0.0",
   "color_picker_guard_version": "1.0.0",
   "responsive_runtime_version": "1.0.0",
-  "alert_control_runtime_version": "1.0.1",
+  "alert_control_runtime_version": "1.1.0",
   "alert_control_recipes": [
     "high_power",
     "energy_limit"
   ],
-  "alert_control_features": "1/2 notifications, optional time window, discard outside schedule, second-notification recheck, optional controlled rearm/hysteresis, silent duplicate-run handling while mode: single is waiting for rearm",
+  "alert_control_features": "1/2 notifications, optional time window, configurable discard/pending out-of-hours behavior, pending cancellation by rearm, second-notification recheck, optional controlled rearm/hysteresis, silent duplicate-run handling while mode: single is waiting",
   "migration": "none; existing smart_automations.config version 1 remains valid; existing native automations are not rewritten automatically",
-  "native_automation_contract": "Home Assistant remains the execution engine; only high_power and energy_limit configs are extended when saved from Smart Automations; mode single adds max_exceeded silent",
-  "notes": "No helpers are created. Existing automation must be opened and saved to receive max_exceeded: silent."
+  "native_automation_contract": "Home Assistant remains the execution engine; high_power and energy_limit are extended only when saved from Smart Automations; mode single keeps max_exceeded silent; pending mode waits natively for schedule start or rearm",
+  "notes": "No helpers are created. Existing configs default to discard for compatibility. Existing native automations must be opened and saved to opt into Alert Control V1.1.0."
 }

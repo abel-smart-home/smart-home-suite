@@ -96,15 +96,15 @@ MODULE_CATALOG: tuple[ModuleSpec, ...] = (
         module_id="smart_automations",
         name="Smart Automations",
         option_label="Automatizaciones",
-        version="1.3.1",
+        version="1.3.2",
         panel_path="smart-automations",
         enabled_by_default=True,
         setup=setup_smart_automations,
         unload=unload_smart_automations,
         notes=(
             "Base panel 1.0.0 + layout 1.0.0 + color guard 1.0.0 + responsive "
-            "1.0.0 + alert control 1.0.1; generated energy alerts keep mode: single "
-            "and add max_exceeded: silent to suppress expected rearm warnings"
+            "1.0.0 + alert control 1.1.0; preserves mode: single + max_exceeded: silent "
+            "and adds optional pending delivery for out-of-hours energy alerts"
         ),
     ),
     ModuleSpec(

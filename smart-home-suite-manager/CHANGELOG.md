@@ -1,59 +1,40 @@
 # Changelog
 
+## 1.14.2 - 2026-09-02 · TEST
+
+- Actualiza **Smart Automations a 1.3.2**.
+- Actualiza Alert Control a **V1.1.0**.
+- Añade `schedule_outside_behavior`.
+- Default `discard`: conserva exactamente el comportamiento de 1.14.1.
+- Nuevo `pending`: un evento fuera del horario puede esperar al siguiente inicio.
+- La espera compite entre `schedule_start` y el rearme mediante `wait_for_trigger`.
+- Si rearma antes del horario, cancela el aviso pendiente.
+- Si llega el horario y sigue arriba del límite, envía el primer aviso.
+- Si al llegar el horario ya está debajo del límite principal pero aún no alcanzó el rearme, no avisa y conserva el bloqueo hasta el rearme.
+- Mantiene 1/2 avisos, segundo aviso, horario y histéresis.
+- Mantiene `mode: single` + `max_exceeded: silent` de 1.14.1.
+- No crea helpers.
+- No migra `.storage`.
+- Automatizaciones existentes no se reescriben automáticamente.
+- Smart Home V3, Lighting, Energy Advanced y Support sin cambios.
+- Publicar como PRE-RELEASE.
+
 ## 1.14.1 - 2026-09-02 · TEST
 
-- Actualiza **Smart Automations a 1.3.1**.
-- Actualiza Alert Control a **V1.0.1**.
-- Mantiene `mode: single` como bloqueo de reentradas durante la espera de rearme.
-- Añade `max_exceeded: silent` a `high_power` y `energy_limit`.
-- Suprime el warning esperado `Already running` sin permitir una segunda ejecución.
-- Mantiene horario opcional, descarte fuera de horario, 1/2 avisos, segundo aviso e histéresis.
-- No crea trigger al inicio del horario; un cruce ocurrido fuera de horario sigue descartado.
-- No cambia `.storage/smart_automations.config` versión 1.
-- No crea helpers.
-- Automatizaciones existentes requieren abrir + Guardar para adoptar el nuevo YAML.
-- Smart Home 1.6.0 / Panel V3.1.0 sin cambios.
-- Smart Lighting 1.4.1 sin cambios.
-- Smart Energy Advanced 1.5.3 sin cambios.
-- Smart Support 1.2.0 sin cambios.
-- Publicar inicialmente como PRE-RELEASE.
+- Smart Automations 1.3.1.
+- Alert Control V1.0.1.
+- Añade `max_exceeded: silent` a las dos alertas energéticas.
+- Mantiene `mode: single` y elimina el warning esperado `Already running`.
+- Sin migración de `.storage`.
 
 ## 1.14.0 - 2026-08-19 · STABLE
 
-- Promueve a estable el payload funcional validado de Smart Home Suite 1.14.0.
-- Smart Home module **1.6.0**.
-- `smart-home-panel-v3.js` **V3.1.0** como custom element propio.
-- `smart-home-native-v3.js` **V1.0.0** como bridge V3.
-- Smart Home Panel V2.0.5 permanece como fallback intacto.
-- Runtime V1.1.0, Narrow Guard V1.0.0 y Card Layout V1.0.0 preservados.
-- `layout_v3` schema 1 compatible con configuración de Suite 1.13.0.
-- Secciones DOM reales con grids internos.
-- Superficie opcional de sección y encabezado.
-- Reordenamiento de secciones y widgets.
-- Tamaños semánticos Auto / Small / Medium / Large / Full.
-- Responsive: móvil 1 columna, tablet/PC 4 columnas desde 700 px por defecto.
-- Container queries sobre ancho real.
-- Header configurable, menú móvil por rol y selector MDI preservados.
-- Sin cambios en backend, `.storage`, WebSocket, entidades, acciones, gauge,
-  navegación, extra cards o historial.
-- Validada actualización desde Suite 1.13.0.
-- Validada instalación limpia.
-- Smart Lighting 1.4.1 sin cambios.
-- Smart Energy Advanced 1.5.3 sin cambios.
-- Smart Automations 1.3.0 sin cambios.
-- Smart Support 1.2.0 sin cambios.
-- La promoción Stable no modifica el payload funcional probado.
-
-## 1.13.0 - 2026-08-19 · TEST
-
-- Introdujo Smart Home Layout V3 runtime V1.0.0 sobre Smart Home Panel V2.0.5.
-- Añadió secciones, widgets movibles, tamaños semánticos y container queries.
-- Mantuvo storage/backend sin migración.
-
-## 1.12.3 - 2026-08-19 · STABLE
-
+- Smart Home module 1.6.0.
+- Smart Home Panel V3.1.0.
+- Smart Lighting 1.4.1.
 - Smart Energy Advanced 1.5.3.
-- Energy móvil 2 columnas; tablet/PC 4 columnas.
-- Sin migración de storage.
+- Smart Automations 1.3.0.
+- Smart Support 1.2.0.
+- Payload estable validado.
 
 Historial anterior disponible en releases previos.

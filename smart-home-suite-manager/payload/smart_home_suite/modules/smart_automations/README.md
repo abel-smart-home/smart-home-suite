@@ -1,55 +1,54 @@
-# Smart Automations 1.3.1 · PRE-RELEASE
+# Smart Automations 1.3.2 · PRE-RELEASE
 
-## Arquitectura
+## Cadena
 
 1. Smart Automations Panel V1.0.0
-2. `smart-automations-layout.js` V1.0.0
-3. `smart-automations-runtime.js` V1.0.0
-4. `smart-automations-responsive.js` V1.0.0
-5. `smart-automations-alert-control.js` V1.0.1
+2. Layout V1.0.0
+3. Color Picker Guard V1.0.0
+4. Responsive V1.0.0
+5. Alert Control V1.1.0
 
-## Alert Control V1.0.1
+## Alert Control V1.1.0
 
-Sólo extiende:
+Recetas:
 
 - `high_power`
 - `energy_limit`
 
-Mantiene toda la funcionalidad de V1.0.0 y añade:
+Nuevo parámetro:
 
-```yaml
-mode: single
-max_exceeded: silent
-```
+`schedule_outside_behavior`
 
-El objetivo es silenciar el warning esperado cuando Home Assistant intenta
-iniciar la automatización mientras todavía está ejecutándose y esperando el
-rearme.
+Valores:
 
-No desactiva la protección: la ejecución adicional continúa siendo rechazada.
+- `discard` — default y compatibilidad.
+- `pending` — espera el siguiente inicio del horario.
 
-## Horario
+Pendiente se cancela por rearme. En el inicio del horario sólo notifica si continúa sobre el límite.
 
-No cambia:
+Si ya bajó del límite principal pero aún no alcanzó el rearme, no notifica y mantiene `mode: single` hasta el rearme.
 
-- horario opcional;
-- fuera de horario se descarta;
-- no se recupera al inicio de la ventana;
-- el segundo aviso también revalida el horario.
+## Preservado
 
-## Persistencia
+- `max_exceeded: silent`
+- 1/2 avisos
+- segundo aviso
+- horario opcional
+- rangos que cruzan medianoche
+- histéresis
+- `.storage` v1
+- sin helpers
+- REST/WebSocket sin cambios
 
-- `.storage`: `smart_automations.config`
-- Storage version: 1
-- WebSocket: sin cambios
-- helpers: ninguno
+## Existentes
 
-## Automatizaciones existentes
+No se reescriben automáticamente.
 
-No se actualizan automáticamente.
+Abrir + Guardar aplica `energy-alert-control-1.1.0`.
 
-Abrir y Guardar desde Smart Automations aplica Alert Control V1.0.1 y actualiza
-el marker a `energy-alert-control-1.0.1`.
+## Limitación
+
+Un reinicio completo de Home Assistant puede cancelar una espera pendiente activa.
 
 ## Estado
 
