@@ -22,7 +22,16 @@ component_version() {
     "${path}/manifest.json" | head -n 1
 }
 
+# Bash ignores `set -e` inside any function called from `if`, `!`, `&&` or `||`,
+# which silently turned every `test` below into a no-op (an empty directory
+# "validated"). Run the real checks in a fresh shell where errexit is active.
 validate_component() {
+  bash -Eeuo pipefail -c \
+    "$(declare -f component_version _validate_component); _validate_component \"\$1\"" \
+    _ "$1"
+}
+
+_validate_component() {
   local path="$1"
   local version module_count duplicate_paths module_dir descriptor suite_version
 
@@ -84,6 +93,15 @@ validate_component() {
       test -f "${path}/frontend/smart-home-panel-runtime.js"
       grep -Fq 'SMART_HOME_RUNTIME_GUARD_VERSION = "1.0.0"' \
         "${path}/frontend/smart-home-panel-runtime.js"
+      ;;
+  esac
+
+  # Suite 1.15 adds Client Mode. Keep older backups restorable.
+  case "${version}" in
+    0.*|1.[0-9].*|1.1[0-4].*)
+      ;;
+    *)
+      test -f "${path}/client_mode.py"
       ;;
   esac
 

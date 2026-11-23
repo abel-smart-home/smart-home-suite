@@ -9,6 +9,7 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
+from .client_mode import client_mode_status
 from .const import DOMAIN, MODULE_SMART_SUPPORT, VERSION
 from .module_catalog import MODULE_CATALOG
 from .module_manager import module_enabled
@@ -42,6 +43,7 @@ class SuiteVersionSensor(SensorEntity):
     @property
     def extra_state_attributes(self):
         return {
+            "client_mode": client_mode_status(self.hass, self._entry),
             "modules": {
                 spec.module_id: {
                     "name": spec.name,

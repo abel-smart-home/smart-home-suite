@@ -7,8 +7,10 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
+from homeassistant.helpers import selector
 
-from .const import DOMAIN
+from .client_mode import client_mode_config
+from .const import CLIENT_MODE_OPTION, CLIENT_MODE_PANEL_CHOICES, DOMAIN
 from .module_catalog import MODULE_CATALOG
 
 
@@ -32,7 +34,7 @@ class SmartHomeSuiteConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
 
 class SmartHomeSuiteOptionsFlow(config_entries.OptionsFlow):
-    """Enable or disable Suite modules from the central module catalog."""
+    """Enable or disable Suite modules and configure Client Mode (alpha)."""
 
     async def async_step_init(self, user_input: dict | None = None) -> FlowResult:
         current = self.config_entry.options.get("modules", {})
@@ -46,6 +48,12 @@ class SmartHomeSuiteOptionsFlow(config_entries.OptionsFlow):
                         spec.module_id: bool(user_input[spec.module_id])
                         for spec in MODULE_CATALOG
                     },
+                    CLIENT_MODE_OPTION: {
+                        "enabled": bool(user_input.get("client_mode_enabled", False)),
+                        "hidden_panels": list(
+                            user_input.get("client_hidden_panels", [])
+                        ),
+                    },
                 },
             )
 
@@ -55,6 +63,18 @@ class SmartHomeSuiteOptionsFlow(config_entries.OptionsFlow):
                 current.get(spec.module_id, spec.enabled_by_default)
             )
             schema[vol.Required(spec.module_id, default=enabled)] = bool
+
+        client = client_mode_config(self.config_entry)
+        schema[vol.Required("client_mode_enabled", default=client["enabled"])] = bool
+        schema[
+            vol.Required("client_hidden_panels", default=client["hidden_panels"])
+        ] = selector.SelectSelector(
+            selector.SelectSelectorConfig(
+                options=list(CLIENT_MODE_PANEL_CHOICES),
+                multiple=True,
+                translation_key="client_hidden_panels",
+            )
+        )
 
         return self.async_show_form(
             step_id="init",

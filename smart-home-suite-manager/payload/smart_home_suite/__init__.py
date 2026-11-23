@@ -10,6 +10,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 
+from .client_mode import async_setup_client_mode, async_unload_client_mode
 from .const import DOMAIN, MODULE_SMART_SUPPORT, VERSION
 from .module_manager import (
     async_setup_modules,
@@ -64,6 +65,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         entry,
         enabled=module_enabled(entry, MODULE_SMART_SUPPORT),
     )
+    # Client Mode runs after the modules so their panels already exist.
+    await async_setup_client_mode(hass, entry)
     return True
 
 
@@ -71,6 +74,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload the Suite while keeping persistent module configuration."""
     platforms_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     clear_smart_support_provider_health(hass)
+    # Restore client access before modules remove their own panels.
+    await async_unload_client_mode(hass, entry)
     await async_unload_modules(hass, entry)
 
     domain_data = hass.data.get(DOMAIN, {})

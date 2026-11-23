@@ -15,13 +15,19 @@
     "step": {
       "init": {
         "title": "Smart Home Suite modules",
-        "description": "Enable only the modules used by this installation.",
+        "description": "Enable only the modules used by this installation. Client Mode (alpha) hides the selected panels from non-administrator users.",
         "data": {
           "smart_home": "Smart Home",
           "smart_lighting": "Smart Lighting",
           "smart_energy_advanced": "Advanced Energy",
           "smart_automations": "Automations",
-          "smart_support": "Remote Support"
+          "smart_support": "Remote Support",
+          "client_mode_enabled": "Client Mode (alpha)",
+          "client_hidden_panels": "Panels hidden from clients"
+        },
+        "data_description": {
+          "client_mode_enabled": "Administrators keep the full interface. Only non-administrator users are restricted.",
+          "client_hidden_panels": "Choose the sidebar panels clients must not see."
         }
       }
     }
@@ -34,6 +40,27 @@
     "smart_support_provider_unavailable": {
       "title": "Smart Support requires attention",
       "description": "Smart Support is enabled and has a support user configured, but its account-action provider is not ready. Missing: {actions}. Other Smart Home Suite modules are not affected. If a support session was active, immediately verify the state of that account before continuing. Check Spook and restart Home Assistant if it was just installed."
+    },
+    "client_mode_no_client_users": {
+      "title": "Client Mode has no client accounts",
+      "description": "Client Mode is enabled but there is no active non-administrator user, so every account still sees the full interface. Create a regular (non-administrator) user for the customer in Settings → People."
+    }
+  },
+  "selector": {
+    "client_hidden_panels": {
+      "options": {
+        "logbook": "Logbook",
+        "history": "History",
+        "map": "Map",
+        "energy": "Energy (Home Assistant)",
+        "media-browser": "Media",
+        "todo": "To-do lists",
+        "calendar": "Calendar",
+        "lighting": "Smart Lighting",
+        "energy-advanced": "Advanced Energy",
+        "smart-automations": "Automations",
+        "support": "Remote Support"
+      }
     }
   }
 }

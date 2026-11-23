@@ -10,6 +10,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import __version__ as HA_VERSION
 from homeassistant.core import HomeAssistant
 
+from .client_mode import client_mode_status
 from .const import DOMAIN, VERSION
 from .module_catalog import MODULE_CATALOG
 from .module_manager import module_enabled
@@ -78,6 +79,7 @@ async def async_get_config_entry_diagnostics(
             "python": platform.python_version(),
         },
         "modules": modules,
+        "client_mode": client_mode_status(hass, entry),
         "smart_support": {
             "provider": support_provider,
             "verification": support_verification,

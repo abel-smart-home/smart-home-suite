@@ -15,13 +15,19 @@
     "step": {
       "init": {
         "title": "Módulos de Smart Home Suite",
-        "description": "Activa solo los módulos que utilizará esta instalación.",
+        "description": "Activa solo los módulos que utilizará esta instalación. El Modo cliente (alpha) oculta los paneles elegidos a los usuarios que no son administradores.",
         "data": {
           "smart_home": "Smart Home",
           "smart_lighting": "Smart Lighting",
           "smart_energy_advanced": "Energía avanzada",
           "smart_automations": "Automatizaciones",
-          "smart_support": "Soporte remoto"
+          "smart_support": "Soporte remoto",
+          "client_mode_enabled": "Modo cliente (alpha)",
+          "client_hidden_panels": "Paneles ocultos al cliente"
+        },
+        "data_description": {
+          "client_mode_enabled": "Los administradores conservan la interfaz completa. Solo se restringe a los usuarios que no son administradores.",
+          "client_hidden_panels": "Elige los paneles de la barra lateral que el cliente no debe ver."
         }
       }
     }
@@ -34,6 +40,27 @@
     "smart_support_provider_unavailable": {
       "title": "Smart Support requiere atención",
       "description": "Smart Support está habilitado y tiene un usuario de soporte configurado, pero el proveedor de acciones de cuenta no está listo. Faltan: {actions}. Los demás módulos de Smart Home Suite no están afectados. Si una sesión de soporte estaba activa, revisa inmediatamente el estado de esa cuenta antes de continuar. Verifica Spook y reinicia Home Assistant si acabas de instalarlo."
+    },
+    "client_mode_no_client_users": {
+      "title": "El Modo cliente no tiene cuentas de cliente",
+      "description": "El Modo cliente está activado pero no hay ningún usuario activo que no sea administrador, así que todas las cuentas siguen viendo la interfaz completa. Crea un usuario normal (no administrador) para el cliente en Ajustes → Personas."
+    }
+  },
+  "selector": {
+    "client_hidden_panels": {
+      "options": {
+        "logbook": "Bitácora",
+        "history": "Historial",
+        "map": "Mapa",
+        "energy": "Energía (Home Assistant)",
+        "media-browser": "Multimedia",
+        "todo": "Listas de tareas",
+        "calendar": "Calendario",
+        "lighting": "Iluminación",
+        "energy-advanced": "Energía avanzada",
+        "smart-automations": "Automatizaciones",
+        "support": "Soporte remoto"
+      }
     }
   }
 }

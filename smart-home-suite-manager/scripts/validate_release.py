@@ -98,6 +98,7 @@ def validate() -> None:
         PAYLOAD / "sensor.py",
         PAYLOAD / "binary_sensor.py",
         PAYLOAD / "support_health.py",
+        PAYLOAD / "client_mode.py",
         PAYLOAD / "translations" / "en.json",
         PAYLOAD / "translations" / "es.json",
         PAYLOAD / "brand" / "icon.png",
@@ -184,7 +185,11 @@ def validate() -> None:
                 f"!= descriptor effective version {expected_version}"
             )
 
-    required_issues = ("module_setup_failed", "smart_support_provider_unavailable")
+    required_issues = (
+        "module_setup_failed",
+        "smart_support_provider_unavailable",
+        "client_mode_no_client_users",
+    )
     for language in ("en", "es"):
         translation = read_json(PAYLOAD / "translations" / f"{language}.json")
         for issue_key in required_issues:
@@ -203,6 +208,32 @@ def validate() -> None:
         ),
         "support_health.py",
     )
+
+    require_tokens(
+        PAYLOAD / "client_mode.py",
+        (
+            "async_setup_client_mode",
+            "async_unload_client_mode",
+            "require_admin=True",
+            "require_admin=False",
+            "EVENT_PANELS_UPDATED",
+            "CLIENT_MODE_ISSUE_NO_CLIENTS",
+        ),
+        "client_mode.py",
+    )
+    require_tokens(
+        PAYLOAD / "__init__.py",
+        ("async_setup_client_mode", "async_unload_client_mode"),
+        "__init__.py",
+    )
+    for language in ("en", "es"):
+        translation = read_json(PAYLOAD / "translations" / f"{language}.json")
+        init_data = translation.get("options", {}).get("step", {}).get("init", {}).get("data", {})
+        for key in ("client_mode_enabled", "client_hidden_panels"):
+            if not init_data.get(key):
+                fail(f"{language}: options label for {key} is missing")
+        if not translation.get("selector", {}).get("client_hidden_panels", {}).get("options"):
+            fail(f"{language}: client_hidden_panels selector options are missing")
 
     for filename in (
         "smart-home-panel.js",
