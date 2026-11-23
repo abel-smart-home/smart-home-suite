@@ -8,7 +8,7 @@ Support frontend ordering/personalization layer and Suite version metadata.
 from __future__ import annotations
 
 import logging
-from functools import partial
+from functools import partial, wraps
 from typing import Any
 
 import voluptuous as vol
@@ -17,10 +17,11 @@ from homeassistant.components import frontend, panel_custom, websocket_api
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_HOMEASSISTANT_STARTED
 from homeassistant.core import HomeAssistant, ServiceCall
-from homeassistant.exceptions import HomeAssistantError
+from homeassistant.exceptions import HomeAssistantError, Unauthorized
 from homeassistant.helpers.service import async_register_admin_service, async_set_service_schema
 from homeassistant.helpers.storage import Store
 
+from ...client_mode import client_support_authorization_enabled, may_authorize_support
 from ...const import VERSION as SUITE_VERSION
 from .const import (
     DOMAIN,
@@ -41,7 +42,7 @@ PANEL_PATH = "support"
 WEB_COMPONENT = "smart-support-panel"
 STATIC_URL = "/smart_home_suite_static"
 FRONTEND_FILE = "smart-support-panel.js"
-MODULE_VERSION = "1.2.0"
+MODULE_VERSION = "1.3.0"
 
 HOURS_SCHEMA = vol.Schema(
     {vol.Optional("hours"): vol.All(
@@ -178,7 +179,7 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         webcomponent_name=WEB_COMPONENT,
         sidebar_title="Soporte",
         sidebar_icon="mdi:headset",
-        module_url=f"{STATIC_URL}/{FRONTEND_FILE}?v=120-module120-suite180",
+        module_url=f"{STATIC_URL}/{FRONTEND_FILE}?v=130-module130-suite1150a2",
         require_admin=False,
         handle_safe_area=True,
         config={
@@ -256,9 +257,58 @@ async def async_unload_module(hass: HomeAssistant, entry: ConfigEntry) -> None:
     data["suite_panel_registered"] = False
 
 
+def _require_support_authorizer(action: str):
+    """Websocket guard replacing ``require_admin`` for start/extend/stop.
+
+    Same position and mechanics as ``websocket_api.require_admin``. Administrators
+    pass as before; non-administrators pass only when Client Mode allows clients
+    to authorize remote support. See ``may_authorize_support``.
+    """
+
+    def decorator(func):
+        @wraps(func)
+        def with_authorizer(hass, connection, msg):
+            manager = hass.data.get(DOMAIN, {}).get("manager")
+            if not may_authorize_support(
+                hass,
+                connection.user,
+                support_user_id=manager.user_id if manager else "",
+                action=action,
+            ):
+                raise Unauthorized()
+            _LOGGER.info(
+                "Remote support %s requested by %s (%s)",
+                action,
+                connection.user.name,
+                connection.user.id,
+            )
+            return func(hass, connection, msg)
+
+        return with_authorizer
+
+    return decorator
+
+
+def _assert_not_self_authorization(hass: HomeAssistant, call: ServiceCall) -> None:
+    """The external support account must not grant itself access."""
+    manager = hass.data.get(DOMAIN, {}).get("manager")
+    user_id = call.context.user_id
+    if (
+        manager
+        and user_id
+        and user_id == manager.user_id
+        and client_support_authorization_enabled(hass)
+    ):
+        raise HomeAssistantError(
+            "The support account cannot authorize its own access; "
+            "the customer must authorize it."
+        )
+
+
 async def _service_start(hass: HomeAssistant, call: ServiceCall) -> None:
     if not _enabled(hass):
         raise HomeAssistantError("Smart Support module is disabled in Smart Home Suite.")
+    _assert_not_self_authorization(hass, call)
     await _manager(hass).async_start(call.data.get("hours"))
 
 
@@ -269,6 +319,7 @@ async def _service_stop(hass: HomeAssistant, call: ServiceCall) -> None:
 async def _service_extend(hass: HomeAssistant, call: ServiceCall) -> None:
     if not _enabled(hass):
         raise HomeAssistantError("Smart Support module is disabled in Smart Home Suite.")
+    _assert_not_self_authorization(hass, call)
     await _manager(hass).async_extend(call.data.get("hours"))
 
 
@@ -329,7 +380,7 @@ async def websocket_support_verify(hass, connection, msg) -> None:
     )
 
 
-@websocket_api.require_admin
+@_require_support_authorizer("start")
 @websocket_api.async_response
 @websocket_api.websocket_command(
     {
@@ -346,14 +397,14 @@ async def websocket_support_start(hass, connection, msg) -> None:
     connection.send_result(msg["id"], await _manager(hass).async_start(msg.get("hours")))
 
 
-@websocket_api.require_admin
+@_require_support_authorizer("stop")
 @websocket_api.async_response
 @websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/support/stop"})
 async def websocket_support_stop(hass, connection, msg) -> None:
     connection.send_result(msg["id"], await _manager(hass).async_stop())
 
 
-@websocket_api.require_admin
+@_require_support_authorizer("extend")
 @websocket_api.async_response
 @websocket_api.websocket_command(
     {

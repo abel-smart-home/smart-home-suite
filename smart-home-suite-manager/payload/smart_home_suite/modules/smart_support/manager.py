@@ -14,6 +14,7 @@ from homeassistant.helpers.event import async_call_later
 from homeassistant.helpers.storage import Store
 from homeassistant.util import dt as dt_util
 
+from ...client_mode import client_support_authorization_enabled
 from .const import (
     DEFAULT_EXTENSION_HOURS,
     DEFAULT_HOURS,
@@ -285,6 +286,7 @@ class SupportManager:
             "active": actual_active,
             "authorized_active": bool(self.active and actual_active),
             "tracked_active": self.active,
+            "client_can_authorize": client_support_authorization_enabled(self.hass),
             "account_active": actual_active,
             "started_at": self._iso(self.started_at),
             "expires_at": self._iso(self.expires_at),

@@ -14,7 +14,7 @@
  * - no external JavaScript dependencies
  */
 
-const PANEL_VERSION = "1.2.0";
+const PANEL_VERSION = "1.3.0";
 const BACKEND_DOMAIN = "smart_support_panel";
 const HOLD_MS = 550;
 const MOVE_CANCEL_PX = 12;
@@ -410,6 +410,7 @@ class SmartSupportPanel extends HTMLElement {
       active: Boolean(state.active),
       account_active: Boolean(state.account_active),
       tracked_active: Boolean(state.tracked_active),
+      client_can_authorize: state.client_can_authorize === true,
       started_at: state.started_at || null,
       expires_at: state.expires_at || null,
       duration_hours: state.duration_hours ?? null,
@@ -604,7 +605,12 @@ class SmartSupportPanel extends HTMLElement {
     if (!item?.show) return false;
     const visibility = item.visibility || "all";
     if (visibility === "hidden") return false;
-    if (visibility === "admin" && !this._hass?.user?.is_admin) return false;
+    if (visibility === "admin" && !this._hass?.user?.is_admin) {
+      // Clients may authorize/close remote support when the backend allows it.
+      const clientSupportAction = ["support_start", "support_stop", "support_extend"].includes(item.type)
+        && this._supportState?.client_can_authorize === true;
+      if (!clientSupportAction) return false;
+    }
     const showWhen = item.show_when || "always";
     if (status) {
       if (showWhen === "active" && status.active !== true) return false;

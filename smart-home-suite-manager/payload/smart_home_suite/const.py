@@ -3,7 +3,7 @@
 from typing import Final
 
 DOMAIN: Final = "smart_home_suite"
-VERSION: Final = "1.15.0-alpha.1"
+VERSION: Final = "1.15.0-alpha.2"
 SIGNAL_SUITE_HEALTH_UPDATE: Final = f"{DOMAIN}_health_update"
 
 # Client Mode (alpha). Options live in config_entry.options["client_mode"].
@@ -33,7 +33,6 @@ CLIENT_MODE_DEFAULT_HIDDEN_PANELS: Final = (
     "todo",
     "calendar",
     "smart-automations",
-    "support",
 )
 
 MODULE_SMART_HOME: Final = "smart_home"

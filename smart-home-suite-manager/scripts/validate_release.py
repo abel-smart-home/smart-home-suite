@@ -226,10 +226,30 @@ def validate() -> None:
         ("async_setup_client_mode", "async_unload_client_mode"),
         "__init__.py",
     )
+    # Client-authorized remote support: exactly start/extend/stop use the guard,
+    # and configuration, verification and reset must stay administrator-only.
+    support_source = (PAYLOAD / "modules" / "smart_support" / "__init__.py").read_text(
+        encoding="utf-8"
+    )
+    for action in ("start", "stop", "extend"):
+        if f'@_require_support_authorizer("{action}")' not in support_source:
+            fail(f"smart_support: {action} must use _require_support_authorizer")
+    if support_source.count("@websocket_api.require_admin") != 3:
+        fail("smart_support: config/save, config/reset and support/verify must stay require_admin")
+    require_tokens(
+        PAYLOAD / "modules" / "smart_support" / "__init__.py",
+        ("may_authorize_support", "_assert_not_self_authorization", "Unauthorized"),
+        "smart_support/__init__.py",
+    )
+    require_tokens(
+        PAYLOAD / "frontend" / "smart-support-panel.js",
+        ("client_can_authorize", 'PANEL_VERSION = "1.3.0"'),
+        "smart-support-panel.js",
+    )
     for language in ("en", "es"):
         translation = read_json(PAYLOAD / "translations" / f"{language}.json")
         init_data = translation.get("options", {}).get("step", {}).get("init", {}).get("data", {})
-        for key in ("client_mode_enabled", "client_hidden_panels"):
+        for key in ("client_mode_enabled", "client_hidden_panels", "client_allow_support"):
             if not init_data.get(key):
                 fail(f"{language}: options label for {key} is missing")
         if not translation.get("selector", {}).get("client_hidden_panels", {}).get("options"):

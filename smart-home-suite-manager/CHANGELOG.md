@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.15.0-alpha.2 - 2026-11-22 · ALPHA
+
+- **El cliente puede autorizar el acceso remoto de soporte** (Smart Support 1.3.0), sin poder iniciar sesión como soporte ni cambiar su configuración.
+- Con Modo cliente activo y la opción *El cliente puede autorizar soporte remoto* (activada por defecto), un usuario activo que no es administrador puede **iniciar, extender y finalizar** la ventana de acceso temporal de la cuenta de soporte.
+- Siguen siendo solo administrador: guardar o restablecer la configuración de Soporte, verificar la cuenta y los servicios `start/extend/stop/verify_support`.
+- La cuenta de soporte **no puede iniciar ni extender su propia ventana** (sí puede finalizarla). Aplica a comandos del panel y a servicios.
+- Cada inicio, extensión o cierre queda en el registro con el nombre y el ID del usuario que lo pidió.
+- El panel Soporte ya no está en la lista de paneles ocultos por defecto del Modo cliente.
+- El panel muestra los botones Permitir/Extender/Finalizar a no administradores solo si el backend lo permite (`client_can_authorize`); el resto de botones de administrador siguen ocultos.
+- Con el Modo cliente desactivado, o con la opción apagada, el comportamiento es idéntico a 1.14.2 y alpha.1.
+- Nueva versión del archivo JS del panel (cache-buster) para que los navegadores no usen el anterior.
+- Límite: durante la ventana autorizada la cuenta de soporte es **administrador completa** de Home Assistant. El control es el tiempo (máximo configurable) y el cierre por el cliente, no un permiso reducido.
+
 ## 1.15.0-alpha.1 - 2026-11-21 · ALPHA
 
 Rama `alpha`. No se publica en `main` ni se construye con el CI de producción.

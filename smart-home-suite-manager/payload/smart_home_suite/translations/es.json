@@ -23,11 +23,13 @@
           "smart_automations": "Automatizaciones",
           "smart_support": "Soporte remoto",
           "client_mode_enabled": "Modo cliente (alpha)",
-          "client_hidden_panels": "Paneles ocultos al cliente"
+          "client_hidden_panels": "Paneles ocultos al cliente",
+          "client_allow_support": "El cliente puede autorizar soporte remoto"
         },
         "data_description": {
           "client_mode_enabled": "Los administradores conservan la interfaz completa. Solo se restringe a los usuarios que no son administradores.",
-          "client_hidden_panels": "Elige los paneles de la barra lateral que el cliente no debe ver."
+          "client_hidden_panels": "Elige los paneles de la barra lateral que el cliente no debe ver.",
+          "client_allow_support": "Permite que los usuarios que no son administradores abran, extiendan y cierren la ventana de acceso temporal de la cuenta de soporte externa. Nunca podrán iniciar sesión como soporte ni cambiar su configuración."
         }
       }
     }

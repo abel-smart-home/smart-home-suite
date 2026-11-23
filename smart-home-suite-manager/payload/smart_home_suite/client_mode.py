@@ -57,13 +57,16 @@ def client_mode_config(entry: ConfigEntry) -> dict[str, Any]:
     return {
         "enabled": bool(raw.get("enabled", False)),
         "hidden_panels": [str(path) for path in hidden if str(path).strip()],
+        # Clients may open/extend/close the remote-support window, never log in
+        # as the support account nor change its configuration.
+        "allow_support_authorization": bool(raw.get("allow_support_authorization", True)),
     }
 
 
 def _runtime(hass: HomeAssistant) -> dict[str, Any]:
     return hass.data.setdefault(DOMAIN, {}).setdefault(
         RUNTIME_KEY,
-        {"hidden": set(), "restricted": {}, "unsubs": []},
+        {"hidden": set(), "restricted": {}, "unsubs": [], "enabled": False, "allow_support": False},
     )
 
 
@@ -165,6 +168,8 @@ async def async_setup_client_mode(hass: HomeAssistant, entry: ConfigEntry) -> No
     config = client_mode_config(entry)
     runtime = _runtime(hass)
     runtime["hidden"] = set(config["hidden_panels"])
+    runtime["enabled"] = config["enabled"]
+    runtime["allow_support"] = config["allow_support_authorization"]
 
     await _async_check_client_accounts(hass, config["enabled"])
     if not config["enabled"]:
@@ -195,6 +200,8 @@ async def async_unload_client_mode(hass: HomeAssistant, entry: ConfigEntry) -> N
     runtime["unsubs"].clear()
     _async_restore(hass)
     runtime["hidden"] = set()
+    runtime["enabled"] = False
+    runtime["allow_support"] = False
     ir.async_delete_issue(hass, DOMAIN, CLIENT_MODE_ISSUE_NO_CLIENTS)
 
 
@@ -205,5 +212,34 @@ def client_mode_status(hass: HomeAssistant, entry: ConfigEntry) -> dict[str, Any
     return {
         "enabled": config["enabled"],
         "configured_hidden_panels": config["hidden_panels"],
+        "allow_support_authorization": config["allow_support_authorization"],
         "restricted_panels": sorted(runtime.get("restricted", {})),
     }
+
+
+def client_support_authorization_enabled(hass: HomeAssistant) -> bool:
+    """Return True while clients may authorize remote support."""
+    runtime = hass.data.get(DOMAIN, {}).get(RUNTIME_KEY, {})
+    return bool(runtime.get("enabled") and runtime.get("allow_support"))
+
+
+def may_authorize_support(
+    hass: HomeAssistant, user: Any, *, support_user_id: str, action: str
+) -> bool:
+    """Decide who may start, extend or stop the remote-support window.
+
+    * Administrators always may, as before.
+    * With client authorization enabled, an active non-administrator may too:
+      the customer grants (and revokes) access for the external support account.
+    * With it enabled, the support account itself may not start or extend its
+      own window; the customer must authorize it. It can still stop it.
+    """
+    if user is None:
+        return False
+    enabled = client_support_authorization_enabled(hass)
+    is_support_account = bool(support_user_id) and user.id == support_user_id
+    if enabled and is_support_account and action in ("start", "extend"):
+        return False
+    if user.is_admin:
+        return True
+    return bool(enabled and user.is_active and not is_support_account)

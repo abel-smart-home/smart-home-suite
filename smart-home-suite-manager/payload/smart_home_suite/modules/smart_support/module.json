@@ -1,20 +1,21 @@
 {
   "id": "smart_support",
   "name": "Smart Support",
-  "version": "1.2.0",
-  "source": "Smart Support Panel V1.2.0 based on validated V1.1.2 with action ordering and visual personalization",
+  "version": "1.3.0",
+  "source": "Smart Support Panel V1.3.0 based on V1.2.0; start/extend/stop can be authorized by clients when Client Mode allows it",
   "enabled_by_default": true,
   "panel_path": "support",
   "sidebar_title": "Soporte",
   "sidebar_icon": "mdi:headset",
   "storage_key": "smart_support_panel.config",
   "session_storage_key": "smart_support_panel.session",
-  "suite_version": "1.15.0-alpha.1",
+  "suite_version": "1.15.0-alpha.2",
   "frontend_source": "Smart Support Panel V1.2.0; V1.1.2 backend/session contract preserved",
   "storage_migration": "none; optional action presentation fields live inside existing smart_support_panel.config",
   "ordering": "compact action order editor mutates only actions.buttons order in the editor working copy",
   "personalization": "global and per-action text, colors, alignment, layout and sizes with inherited fallbacks",
   "color_picker_guard": "native color input events update working copy without rebuilding the drawer until change",
   "external_runtime_dependency": "Spook services homeassistant.enable_user/disable_user",
-  "dependency_supervision": "Suite Health + Home Assistant Repairs"
+  "dependency_supervision": "Suite Health + Home Assistant Repairs",
+  "client_authorization": "start/extend/stop websocket commands accept non-administrators only when Client Mode enables it; config, verify and reset stay administrator-only; the support account cannot start or extend itself"
 }

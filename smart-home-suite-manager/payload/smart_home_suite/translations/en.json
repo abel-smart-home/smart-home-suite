@@ -23,11 +23,13 @@
           "smart_automations": "Automations",
           "smart_support": "Remote Support",
           "client_mode_enabled": "Client Mode (alpha)",
-          "client_hidden_panels": "Panels hidden from clients"
+          "client_hidden_panels": "Panels hidden from clients",
+          "client_allow_support": "Clients can authorize remote support"
         },
         "data_description": {
           "client_mode_enabled": "Administrators keep the full interface. Only non-administrator users are restricted.",
-          "client_hidden_panels": "Choose the sidebar panels clients must not see."
+          "client_hidden_panels": "Choose the sidebar panels clients must not see.",
+          "client_allow_support": "Lets non-administrator users open, extend and close the temporary access window of the external support account. They can never sign in as support or change its settings."
         }
       }
     }

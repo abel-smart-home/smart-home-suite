@@ -53,6 +53,9 @@ class SmartHomeSuiteOptionsFlow(config_entries.OptionsFlow):
                         "hidden_panels": list(
                             user_input.get("client_hidden_panels", [])
                         ),
+                        "allow_support_authorization": bool(
+                            user_input.get("client_allow_support", True)
+                        ),
                     },
                 },
             )
@@ -66,6 +69,11 @@ class SmartHomeSuiteOptionsFlow(config_entries.OptionsFlow):
 
         client = client_mode_config(self.config_entry)
         schema[vol.Required("client_mode_enabled", default=client["enabled"])] = bool
+        schema[
+            vol.Required(
+                "client_allow_support", default=client["allow_support_authorization"]
+            )
+        ] = bool
         schema[
             vol.Required("client_hidden_panels", default=client["hidden_panels"])
         ] = selector.SelectSelector(
