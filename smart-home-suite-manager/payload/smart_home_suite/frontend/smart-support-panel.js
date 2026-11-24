@@ -505,7 +505,23 @@ class SmartSupportPanel extends HTMLElement {
   }
 
   _config() {
-    return deepMerge(DEFAULTS, (this._editorOpen && this._editConfig) ? this._editConfig : this._storedConfig);
+    const cfg = deepMerge(DEFAULTS, (this._editorOpen && this._editConfig) ? this._editConfig : this._storedConfig);
+    return this._withClientNavigation(cfg);
+  }
+
+  // Un cliente nunca debe quedar atrapado en /support: si la configuración guardada tiene la
+  // navegación apagada, o sin ningún botón hacia otro panel, se usa la navegación de fábrica.
+  // Solo afecta a usuarios no administradores y no cambia lo guardado.
+  _withClientNavigation(cfg) {
+    const user = this._hass?.user;
+    if (!user || user.is_admin || (this._editorOpen && this._editConfig)) return cfg;
+    const nav = cfg.navigation;
+    const leaves = (b) => b && b.show && b.path && String(b.path).replace(/\/+$/, "") !== "/support";
+    const usable = Array.isArray(nav.buttons) && nav.buttons.some(leaves);
+    if (nav.show && usable) return cfg;
+    nav.show = true;
+    if (!usable) nav.buttons = deepClone(DEFAULTS.navigation.buttons);
+    return cfg;
   }
 
   _queueRender() {
@@ -766,7 +782,7 @@ class SmartSupportPanel extends HTMLElement {
     const n = cfg.navigation;
     if (!n.show) return "";
     const path = window.location.pathname;
-    const buttons = (n.buttons || []).filter(b => b.show).map((b, index) => {
+    const buttons = (n.buttons || []).map((b, index) => ({ b, index })).filter(({ b }) => b.show).map(({ b, index }) => {
       const active = b.path && (path === b.path || path.startsWith(`${b.path}/`));
       return `<button class="nav-button ${active ? "active" : ""}" data-nav-index="${index}" style="--nav-color:${this._escape(b.color || n.active_color)}">
         ${this._icon(b.icon, n.icon_size, active ? (b.color || n.active_color) : n.text_color)}

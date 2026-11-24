@@ -315,7 +315,7 @@ def validate() -> None:
     )
     require_tokens(
         PAYLOAD / "frontend" / "smart-support-panel.js",
-        ("client_can_authorize", 'PANEL_VERSION = "1.3.0"'),
+        ("client_can_authorize", 'PANEL_VERSION = "1.3.0"', "_withClientNavigation", "({ b, index })"),
         "smart-support-panel.js",
     )
     for language in ("en", "es"):

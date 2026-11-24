@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.15.0-alpha.6 - 2026-11-23 · ALPHA
+
+- **El cliente ya no queda atrapado en `/support`.** Prueba en HA real: la configuración de Soporte guardada de una casa tenía la navegación apagada (el valor de fábrica de alpha.5 no pisa lo guardado) y el cliente no podía salir. Ahora, para usuarios **no administradores**, si la navegación está apagada o no tiene ningún botón hacia otro panel, se usa la navegación de fábrica. Es una red de seguridad en pantalla: no modifica lo guardado y el administrador ve exactamente lo que configuró.
+- **Corregido un desajuste de índices en la navegación de Soporte.** Los botones se numeraban solo entre los visibles pero el clic buscaba el número en la lista completa; con botones ocultos antes de uno visible, el clic podía llevar a otro destino (con la configuración antigua de Soporte, «Soporte» abría Iluminación).
+- Los otros cuatro paneles abren por ruta directa y no tienen este desajuste.
+- Cache de Soporte renovada (`suite1150a6`).
+- Probado con el código real del panel: la prueba reproduce el fallo en alpha.5 (4 comprobaciones fallan) y pasa en alpha.6.
+- Pendiente: la misma red de seguridad en los demás paneles, por si alguno tiene guardada la navegación apagada.
+
 ## 1.15.0-alpha.5 - 2026-11-23 · ALPHA
 
 Perfil de fábrica: lo que ve el cliente en una instalación limpia. Solo cambia valores por defecto; **no modifica ninguna configuración ya guardada** (las matrices de botones guardadas reemplazan a las de fábrica).
