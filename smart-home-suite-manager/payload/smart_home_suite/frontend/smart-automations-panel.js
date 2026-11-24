@@ -13,6 +13,22 @@ const RECIPE_VERSION = "0.1.0";
 
 const deepClone = (value) => JSON.parse(JSON.stringify(value));
 
+// Un cliente (usuario no administrador) nunca debe quedar sin forma de moverse entre páginas:
+// si la configuración guardada apaga la navegación o no deja ningún botón hacia otro panel,
+// se usa la navegación de fábrica. Solo afecta a la vista: no cambia lo guardado ni lo que
+// ve el administrador (que puede seguir apagándola).
+function withClientNavigation(cfg, hass, ownPath = "/smart-automations") {
+  const user = hass?.user;
+  if (!user || user.is_admin || !cfg?.navigation) return cfg;
+  const nav = cfg.navigation;
+  const leaves = (b) => b && b.show !== false && b.path && String(b.path).replace(/\/+$/, "") !== ownPath;
+  const usable = Array.isArray(nav.buttons) && nav.buttons.some(leaves);
+  if (nav.show && usable) return cfg;
+  nav.show = true;
+  if (!usable) nav.buttons = deepClone(DEFAULTS.navigation.buttons);
+  return cfg;
+}
+
 function deepMerge(base, extra) {
   if (Array.isArray(base)) return Array.isArray(extra) ? deepClone(extra) : deepClone(base);
   if (!base || typeof base !== "object") return extra === undefined ? base : extra;
@@ -293,7 +309,7 @@ class SmartAutomationsPanel extends HTMLElement {
     const source = this._settingsOpen && this._editSettings
       ? this._editSettings
       : (this._storedConfig || {});
-    return deepMerge(DEFAULTS, source);
+    return withClientNavigation(deepMerge(DEFAULTS, source), this._hass, "/smart-automations");
   }
 
   _captureSettingsState() {

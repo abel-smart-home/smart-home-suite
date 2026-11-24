@@ -196,7 +196,7 @@ async def _ensure_native_dashboard(hass: HomeAssistant) -> None:
                             "type": "custom:smart-home-dashboard-card-v3",
                             "panel_module_url": (
                                 f"{STATIC_URL}/{PANEL_V3_FILE}"
-                                "?v=310-panel-module160-suite1150a5"
+                                "?v=310-panel-module160-suite1150a8"
                             ),
                             "hide_ha_header": True,
                             "mobile_menu_access": "admins",

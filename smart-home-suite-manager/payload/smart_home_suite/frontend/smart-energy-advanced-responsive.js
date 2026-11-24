@@ -19,7 +19,7 @@
  * - no config/API/.storage writes are performed.
  */
 
-import "./smart-energy-advanced-layout.js?v=100-module140-suite1150a5";
+import "./smart-energy-advanced-layout.js?v=100-module140-suite1150a8";
 
 const SMART_ENERGY_RESPONSIVE_RUNTIME_VERSION = "1.3.0";
 const SMART_ENERGY_EFFECTIVE_VERSION = "1.5.3";

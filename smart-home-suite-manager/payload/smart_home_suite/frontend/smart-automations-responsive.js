@@ -17,7 +17,7 @@
  * - no configuration, REST API, WebSocket or .storage writes are performed.
  */
 
-import "./smart-automations-runtime.js?v=100-layout100-color100-module111-suite1150a5";
+import "./smart-automations-runtime.js?v=100-layout100-color100-module111-suite1150a8";
 
 const SMART_AUTOMATIONS_RESPONSIVE_RUNTIME_VERSION = "1.0.0";
 const SMART_AUTOMATIONS_EFFECTIVE_VERSION = "1.2.0";

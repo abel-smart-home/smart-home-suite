@@ -1,4 +1,4 @@
-# Smart Home Suite · rama ALPHA (1.15.0-alpha.7)
+# Smart Home Suite · rama ALPHA (1.15.0-alpha.9)
 
 Esta rama prueba el **Modo cliente**: el instalador (administrador) ve todo Home Assistant; el cliente (usuario no administrador) solo ve los paneles que tú decidas.
 
@@ -27,7 +27,7 @@ Esta rama prueba el **Modo cliente**: el instalador (administrador) ve todo Home
 
 La integración usa el mismo dominio `smart_home_suite` que la versión actual, así que **reemplaza** a la instalada. Haz un respaldo de Home Assistant antes.
 
-1. Descomprime `smart_home_suite-1.15.0-alpha.7-custom_component.zip` en la carpeta de configuración de HA (donde está `configuration.yaml`). Debe quedar `config/custom_components/smart_home_suite/manifest.json`.
+1. Descomprime `smart_home_suite-1.15.0-alpha.9-custom_component.zip` en la carpeta de configuración de HA (donde está `configuration.yaml`). Debe quedar `config/custom_components/smart_home_suite/manifest.json`.
    - Con el add-on *Samba share* o *File editor/Studio Code Server*; o por SSH.
    - Si ya tenías la Suite instalada, bórrala primero o deja que se sobrescriba.
 2. Reinicia Home Assistant completo.
@@ -45,11 +45,26 @@ La integración usa el mismo dominio `smart_home_suite` que la versión actual, 
 - [ ] Sin usuarios no administradores y modo activo: aparece la reparación "Modo cliente sin cuentas".
 - [ ] Reiniciar HA con el modo activo: los paneles siguen ocultos al cliente (también los integrados que cargan tarde).
 - [ ] Ajustes → Dispositivos y servicios → Smart Home Suite → Diagnóstico: aparece la sección `client_mode`.
-- [ ] Sensor "Versión" muestra `1.15.0-alpha.7` y el atributo `client_mode`.
+- [ ] Sensor "Versión" muestra `1.15.0-alpha.9` y el atributo `client_mode`.
 
 ### Paso recomendado del instalador: panel predeterminado del sistema
 
 Desde HA 2025.12 el panel de inicio es un ajuste del sistema (y cada usuario puede cambiarlo en su perfil). Para que HA aterrice en Smart Home sin redirección ni parpadeo: Ajustes → Paneles de control → Smart Home → ⋮ → **Establecer como predeterminado** (si aparece en la lista). El script de aterrizaje queda como respaldo. Pendiente: automatizar este paso.
+
+### Prueba: colores de los iconos de navegación en Soporte (alpha.9)
+
+- [ ] En `/support` los iconos de la navegación se ven con el color de cada botón (no todos grises), igual que en los otros tableros.
+- [ ] En Personalización → Navegación de Soporte, al cambiar el **Color** de un botón el icono cambia en pantalla al guardar.
+- [ ] Un botón sin color propio sigue usando el color del texto (inactivo) o el activo.
+
+### Prueba: navegación en todas las páginas del cliente (alpha.8)
+
+Úsala en una casa que ya tenía paneles configurados (guardados con versiones anteriores) además de en una instalación limpia.
+
+- [ ] Con el Modo cliente activo, el cliente ve la barra de navegación **arriba** en Smart Home, Iluminación, Energía avanzada, Automatizaciones y Soporte, aunque el administrador la tenga apagada en Personalización de ese panel.
+- [ ] Desde cualquiera de las 5 páginas el cliente llega a las otras 4 solo con los botones.
+- [ ] El administrador sigue viendo en cada panel lo que guardó (si apagó la navegación, sigue apagada para él) y puede encenderla en Personalización → Navegación.
+- [ ] Una instalación limpia trae la barra encendida con 4 botones en los 5 paneles.
 
 ### Prueba: botón Energía de Soporte con ruta antigua (alpha.7)
 
@@ -111,6 +126,9 @@ Requiere Spook instalado y una cuenta de soporte **administradora, no propietari
 - restaura la Suite 1.14.2 desde el add-on Manager (`restore_latest`) o reinstálala desde `main`, y reinicia.
 
 ## Notas para desarrollo
+
+- **No quitar funcionalidades existentes** salvo que se necesite mejorarlas. Todo cambio de valores de fábrica debe decir qué sustituye y por qué (ver CHANGELOG).
+- Los valores de fábrica no pisan configuraciones ya guardadas. Si algo debe llegar también a casas ya configuradas, se resuelve al mostrar (red de seguridad) sin reescribir lo guardado.
 
 - Validación local: `python3 smart-home-suite-manager/scripts/validate_release.py`.
 - La lógica de `client_mode.py` se probó contra un simulador de la API de paneles de HA, **no** contra un Home Assistant real: el punto 4 de la checklist es la prueba que falta.

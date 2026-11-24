@@ -25,6 +25,22 @@ const repairNavigationPaths = (cfg) => {
   return cfg;
 };
 
+// Un cliente (usuario no administrador) nunca debe quedar sin forma de moverse entre páginas:
+// si la configuración guardada apaga la navegación o no deja ningún botón hacia otro panel,
+// se usa la navegación de fábrica. Solo afecta a la vista: no cambia lo guardado ni lo que
+// ve el administrador (que puede seguir apagándola).
+function withClientNavigation(cfg, hass, ownPath = "/lighting") {
+  const user = hass?.user;
+  if (!user || user.is_admin || !cfg?.navigation) return cfg;
+  const nav = cfg.navigation;
+  const leaves = (b) => b && b.show && b.path && String(b.path).replace(/\/+$/, "") !== ownPath;
+  const usable = Array.isArray(nav.buttons) && nav.buttons.some(leaves);
+  if (nav.show && usable) return cfg;
+  nav.show = true;
+  if (!usable) nav.buttons = deepClone(DEFAULTS.navigation.buttons);
+  return cfg;
+}
+
 function deepMerge(base, custom) {
   if (Array.isArray(base)) return Array.isArray(custom) ? deepClone(custom) : deepClone(base);
   if (base && typeof base === "object") {
@@ -220,7 +236,7 @@ class SmartLightingPanel extends HTMLElement {
     const source = this._editorOpen && this._editConfig ? this._editConfig : this._storedConfig;
     const cfg = repairNavigationPaths(deepMerge(DEFAULTS, source || {}));
     if (!Array.isArray(cfg.areas) || !cfg.areas.length) cfg.areas = deepClone(DEFAULTS.areas);
-    return cfg;
+    return withClientNavigation(cfg, this._hass, "/lighting");
   }
 
   _queueRender(preserve = false) {

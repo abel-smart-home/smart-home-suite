@@ -20,6 +20,30 @@ const SMART_HOME_PANEL_V3_VERSION = "3.1.0";
 const SMART_HOME_MODULE_VERSION = "1.6.0";
 const SMART_HOME_LAYOUT_V3_SCHEMA_VERSION = 1;
 const SMART_HOME_V3_DEFAULT_BREAKPOINT = 700;
+
+// Navegación de fábrica de Smart Home (igual que la del panel base): los otros 4 destinos.
+const SMART_HOME_FACTORY_NAV_BUTTONS = Object.freeze([
+  { show: true, label: "Energía", icon: "mdi:lightning-bolt-circle", path: "/energy-advanced", color: "#35ddd5" },
+  { show: true, label: "Luces", icon: "mdi:lightbulb-group", path: "/lighting", color: "#ffd66b" },
+  { show: true, label: "Automatiza", icon: "mdi:robot", path: "/smart-automations", color: "#b59cff" },
+  { show: true, label: "Soporte", icon: "mdi:face-agent", path: "/support", color: "#35ddd5" },
+]);
+
+// Un cliente (usuario no administrador) nunca debe quedar sin forma de moverse entre páginas:
+// si la configuración guardada apaga la navegación o no deja ningún botón hacia otro panel,
+// se usa la navegación de fábrica. Solo afecta a la vista: no cambia lo guardado ni lo que ve
+// el administrador (que puede seguir apagándola).
+function withClientNavigation(cfg, hass, ownPath = "/smart-home") {
+  const user = hass?.user;
+  if (!user || user.is_admin || !cfg?.navigation) return cfg;
+  const nav = cfg.navigation;
+  const leaves = (b) => b && b.show && b.path && String(b.path).replace(/\/+$/, "") !== ownPath;
+  const usable = Array.isArray(nav.buttons) && nav.buttons.some(leaves);
+  if (nav.show && usable) return cfg;
+  nav.show = true;
+  if (!usable) nav.buttons = SMART_HOME_FACTORY_NAV_BUTTONS.map((b) => ({ ...b }));
+  return cfg;
+}
 const SMART_HOME_V3_DEFAULT_MAX_WIDTH = 1100;
 const SMART_HOME_V3_WIDE_COLUMNS = 4;
 const SMART_HOME_V3_LEGACY_AUTO_WIDTHS = new Set([520]);
@@ -1067,7 +1091,7 @@ class SmartHomePanelV3 extends LegacyPanel {
   }
 
   _config() {
-    return normalizeV3Config(super._config());
+    return withClientNavigation(normalizeV3Config(super._config()), this._hass, "/smart-home");
   }
 
   _styles(cfg) {

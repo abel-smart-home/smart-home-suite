@@ -793,7 +793,7 @@ class SmartSupportPanel extends HTMLElement {
     const buttons = (n.buttons || []).map((b, index) => ({ b, index })).filter(({ b }) => b.show).map(({ b, index }) => {
       const active = b.path && (path === b.path || path.startsWith(`${b.path}/`));
       return `<button class="nav-button ${active ? "active" : ""}" data-nav-index="${index}" style="--nav-color:${this._escape(b.color || n.active_color)}">
-        ${this._icon(b.icon, n.icon_size, active ? (b.color || n.active_color) : n.text_color)}
+        ${this._icon(b.icon, n.icon_size, b.color || (active ? n.active_color : n.text_color))}
         ${n.show_labels ? `<span>${this._escape(b.label)}</span>` : ""}
       </button>`;
     }).join("");

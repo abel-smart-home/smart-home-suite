@@ -34,7 +34,7 @@
  * if the sensor is still above the main threshold at schedule start.
  */
 
-import "./smart-automations-responsive.js?v=100-responsive-module120-suite1150a5";
+import "./smart-automations-responsive.js?v=100-responsive-module120-suite1150a8";
 
 const SMART_AUTOMATIONS_ALERT_CONTROL_RUNTIME_VERSION = "1.1.0";
 const SMART_AUTOMATIONS_EFFECTIVE_VERSION = "1.3.2";

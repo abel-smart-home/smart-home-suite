@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.15.0-alpha.9 - 2026-11-24 · ALPHA
+
+- **Iconos de la navegación de Soporte con su color.** En Soporte el color de cada botón solo se aplicaba al botón activo; si el botón «Soporte» estaba oculto (como en una casa real), ningún icono tomaba color y todos salían en gris, y cambiar el color en Personalización no tenía efecto visible. Ahora el color del botón se aplica siempre, igual que en Smart Home, Iluminación, Energía avanzada y Automatizaciones; solo si un botón no tiene color propio se usa el del texto (inactivo) o el activo.
+- Los colores de fábrica de Soporte ya coinciden con los de los demás paneles (Inicio y Energía y Soporte en turquesa, Luces amarillo, Automatiza morado); no hizo falta cambiarlos.
+- Prueba: la comprobación de colores falla contra alpha.8 (iconos en `#aeb7be`) y pasa en alpha.9. El resto de pruebas y el validador siguen pasando.
+- Caché de Soporte renovada (`suite1150a9`).
+
+## 1.15.0-alpha.8 - 2026-11-24 · ALPHA
+
+Incluye lo de alpha.7 (ruta antigua `/smart-energy-advanced`), que no llegó a publicarse.
+
+- **En todas las páginas hay navegación para el cliente.** La red de seguridad de alpha.6 (solo Soporte) ahora cubre **Smart Home, Iluminación, Energía avanzada y Automatizaciones**. Causa: los valores de fábrica nuevos (alpha.5) no pisan una configuración guardada, y las configuraciones guardadas con versiones anteriores traen la navegación apagada (antes era el valor de fábrica). Para un usuario **no administrador**, si la navegación guardada está apagada o no tiene ningún botón hacia otro panel, se usa la de fábrica. No modifica lo guardado y el administrador sigue pudiendo apagarla.
+- Probado con la cadena real de cada panel (archivos base + capas de diseño/ejecución): 4 paneles × 7 casos. La misma prueba **falla 9 comprobaciones contra alpha.7** y pasa en alpha.8.
+- Comprobado que en una instalación limpia los 4 paneles ya traían la barra encendida con los otros 4 destinos (alpha.5); lo que faltaba eran las instalaciones con configuración guardada antigua.
+- Cache renovada (`suite1150a8`) en toda la cadena de Smart Home (tarjeta del dashboard), Iluminación, Energía avanzada y Automatizaciones.
+- `validate_release.py` exige la red de seguridad en los cuatro paneles.
+- Regla de trabajo anotada en `ALPHA.md`: no quitar funcionalidades existentes salvo mejora justificada.
+
 ## 1.15.0-alpha.7 - 2026-11-24 · ALPHA
 
 - **Ruta antigua guardada en la navegación de Soporte.** Una configuración de Soporte real de una casa tenía el botón Energía apuntando a `/smart-energy-advanced` (valor de fábrica de versiones anteriores, nunca existió como panel). Los valores de fábrica corregidos en alpha.5 no pisan lo guardado, así que el botón seguía roto. Ahora el panel de Soporte migra esa ruta a `/energy-advanced` al cargar la configuración (y queda corregida al guardar).
