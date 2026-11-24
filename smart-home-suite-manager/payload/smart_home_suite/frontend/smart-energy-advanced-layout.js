@@ -14,7 +14,7 @@
  * section and widget ordering is persisted by the existing arrays themselves.
  */
 
-import "./smart-energy-advanced-panel.js?v=131-suite120-base";
+import "./smart-energy-advanced-panel.js?v=131-suite1150a5-base";
 
 const SMART_ENERGY_ORDERING_RUNTIME_VERSION = "1.0.0";
 const SMART_ENERGY_EFFECTIVE_VERSION = "1.4.0";

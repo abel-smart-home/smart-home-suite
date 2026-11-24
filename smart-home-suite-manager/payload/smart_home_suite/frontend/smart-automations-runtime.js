@@ -12,7 +12,7 @@
  * allowing the full panel rerender. Guardar/Cancelar semantics are unchanged.
  */
 
-import "./smart-automations-layout.js?v=100-module110-suite170";
+import "./smart-automations-layout.js?v=100-module110-suite1150a5";
 
 const SMART_AUTOMATIONS_RUNTIME_VERSION = "1.0.0";
 const SMART_AUTOMATIONS_COLOR_PICKER_GUARD_VERSION = "1.0.0";

@@ -7,7 +7,7 @@
  * replacing the base panel source.
  */
 
-import "./smart-home-panel.js?v=205-suite050";
+import "./smart-home-panel.js?v=205-suite1150a5";
 import "./smart-home-card-layout.js?v=100-module140";
 
 const SMART_HOME_RUNTIME_GUARD_VERSION = "1.0.0";

@@ -15,7 +15,7 @@
  * Visual metadata is stored only inside smart_automations.config.
  */
 
-import "./smart-automations-panel.js?v=100-suite160-base";
+import "./smart-automations-panel.js?v=100-suite1150a5-base";
 
 const SMART_AUTOMATIONS_LAYOUT_RUNTIME_VERSION = "1.0.0";
 const SMART_AUTOMATIONS_EFFECTIVE_VERSION = "1.1.0";

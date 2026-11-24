@@ -9,7 +9,7 @@
   "panel_path": "smart-home",
   "sidebar_title": "Smart Home",
   "sidebar_icon": "mdi:home-lightning-bolt",
-  "suite_version": "1.15.0-alpha.4",
+  "suite_version": "1.15.0-alpha.5",
   "bridge_source": "Smart Home Native V3 Bridge V1.0.0 imports and preserves Native Dashboard Bridge V1.3.0 shell/header/menu behavior",
   "native_bridge_v3_version": "1.0.0",
   "base_frontend_source": "bundled exact Smart Home Panel V2.0.5",

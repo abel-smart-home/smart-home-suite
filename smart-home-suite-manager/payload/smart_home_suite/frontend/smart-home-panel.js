@@ -54,7 +54,7 @@ const LEGACY_ENTITY_MIGRATIONS = {
 
 const DEFAULTS = {
   locale: "es-MX",
-  demo_when_missing: true,
+  demo_when_missing: false,
   show_demo_badge: true,
 
   header: {
@@ -93,7 +93,7 @@ const DEFAULTS = {
   },
 
   navigation: {
-    show: false,
+    show: true,
     position: "top",
     columns: 4,
     gap: 8,
@@ -107,10 +107,10 @@ const DEFAULTS = {
     font_size: 11,
     show_labels: true,
     buttons: [
-      { show: true, label: "Inicio", icon: "mdi:home", path: "/smart-home", color: "#35ddd5" },
-      { show: false, label: "Energía", icon: "mdi:flash", path: "/lovelace/energia", color: "#35ddd5" },
-      { show: false, label: "Clima", icon: "mdi:thermostat", path: "/lovelace/clima", color: "#35ddd5" },
-      { show: false, label: "Seguridad", icon: "mdi:shield-home", path: "/lovelace/seguridad", color: "#35ddd5" },
+      { show: true, label: "Energía", icon: "mdi:lightning-bolt-circle", path: "/energy-advanced", color: "#35ddd5" },
+      { show: true, label: "Luces", icon: "mdi:lightbulb-group", path: "/lighting", color: "#ffd66b" },
+      { show: true, label: "Automatiza", icon: "mdi:robot", path: "/smart-automations", color: "#b59cff" },
+      { show: true, label: "Soporte", icon: "mdi:face-agent", path: "/support", color: "#35ddd5" },
     ],
   },
 

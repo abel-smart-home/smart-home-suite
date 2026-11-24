@@ -14,7 +14,7 @@
  * - Save synchronizes card_layout.order for rollback compatibility.
  */
 
-import "./smart-home-panel-runtime.js?v=110-guard100-cards100-module140-suite1123";
+import "./smart-home-panel-runtime.js?v=110-guard100-cards100-module140-suite1150a5";
 
 const SMART_HOME_PANEL_V3_VERSION = "3.1.0";
 const SMART_HOME_MODULE_VERSION = "1.6.0";

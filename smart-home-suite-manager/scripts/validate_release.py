@@ -71,6 +71,67 @@ def require_tokens(path: Path, tokens: tuple[str, ...], label: str) -> None:
             fail(f"{label} is missing required token {token!r}")
 
 
+FACTORY_PANELS = {
+    "smart-home-panel.js": "/smart-home",
+    "smart-lighting-panel.js": "/lighting",
+    "smart-energy-advanced-panel.js": "/energy-advanced",
+    "smart-automations-panel.js": "/smart-automations",
+    "smart-support-panel.js": "/support",
+}
+
+
+def validate_factory_profile() -> None:
+    """Factory defaults a clean install shows to a client (alpha.5)."""
+    all_paths = set(FACTORY_PANELS.values())
+    for filename, own_path in FACTORY_PANELS.items():
+        text = (PAYLOAD / "frontend" / filename).read_text(encoding="utf-8")
+        match = re.search(
+            r"navigation:\s*\{.*?buttons:\s*\[(.*?)\n\s*\]", text, re.DOTALL
+        )
+        if not match:
+            fail(f"{filename}: default navigation buttons not found")
+        block = match.group(1)
+        entries = re.findall(r'show:\s*(true|false).*?path:\s*"([^"]+)"', block)
+        shown = [path for flag, path in entries if flag == "true"]
+        expected = sorted(all_paths - {own_path})
+        if sorted(shown) != expected:
+            fail(
+                f"{filename}: factory navigation must show the other panels "
+                f"{expected}, got {sorted(shown)}"
+            )
+        nav_head = text[text.index("navigation:"):text.index("navigation:") + 120]
+        if not re.search(r"show:\s*true", nav_head):
+            fail(f"{filename}: factory navigation must be visible")
+        if 'position: "top"' not in nav_head:
+            fail(f"{filename}: factory navigation must be on top")
+        if not re.search(r"columns:\s*4", text[text.index("navigation:"):text.index("navigation:") + 200]):
+            fail(f"{filename}: factory navigation must use 4 columns")
+        if len(entries) != len(shown):
+            fail(f"{filename}: factory navigation must not ship hidden buttons")
+
+    for filename in ("smart-home-panel.js", "smart-energy-advanced-panel.js"):
+        text = (PAYLOAD / "frontend" / filename).read_text(encoding="utf-8")
+        if "demo_when_missing: false," not in text:
+            fail(f"{filename}: demo mode must be off by default")
+        if "demo_when_missing: true," in text:
+            fail(f"{filename}: demo mode must be off by default")
+
+    const_text = (PAYLOAD / "const.py").read_text(encoding="utf-8")
+    hidden_match = re.search(
+        r"CLIENT_MODE_DEFAULT_HIDDEN_PANELS: Final = \((.*?)\)", const_text, re.DOTALL
+    )
+    if not hidden_match:
+        fail("CLIENT_MODE_DEFAULT_HIDDEN_PANELS not found")
+    hidden = set(re.findall(r'"([^"]+)"', hidden_match.group(1)))
+    for panel in ("smart-home", "lighting", "energy-advanced", "smart-automations", "support"):
+        if panel in hidden:
+            fail(f"Client Mode must not hide suite panel {panel} by default")
+    for panel in ("home", "lovelace", "logbook", "history", "map", "energy",
+                  "media-browser", "todo", "calendar"):
+        if panel not in hidden:
+            fail(f"Client Mode must hide native panel {panel} by default")
+
+
 def validate() -> None:
     version = app_version()
 
@@ -347,7 +408,7 @@ def validate() -> None:
             'SMART_HOME_V3_DEFAULT_MAX_WIDTH = 1100',
             'SMART_HOME_V3_WIDE_COLUMNS = 4',
             'SMART_HOME_V3_LEGACY_AUTO_WIDTHS = new Set([520])',
-            'import "./smart-home-panel-runtime.js?v=110-guard100-cards100-module140-suite1123";',
+            'import "./smart-home-panel-runtime.js?v=110-guard100-cards100-module140-suite1150a5";',
             "class SmartHomePanelV3 extends LegacyPanel",
             'customElements.define("smart-home-panel-v3", SmartHomePanelV3)',
             "layout_v3",
@@ -397,7 +458,7 @@ def validate() -> None:
             'CARD_LAYOUT_RUNTIME_VERSION = "1.0.0"',
             'V3_BRIDGE_VERSION = "1.0.0"',
             '"type": "custom:smart-home-dashboard-card-v3"',
-            "?v=310-panel-module160-suite1140",
+            "?v=310-panel-module160-suite1150a5",
             "?v=100-v3bridge-suite1140",
         ),
         "smart_home wrapper",
@@ -437,7 +498,7 @@ def validate() -> None:
             'SMART_LIGHTING_EFFECTIVE_VERSION = "1.4.1"',
             'SMART_LIGHTING_ADAPTIVE_MAX_WIDTH = 1200',
             'LEGACY_AUTO_WIDTHS = new Set([520, 760])',
-            'import "./smart-lighting-layout.js?v=120-module130-suite180";',
+            'import "./smart-lighting-layout.js?v=120-module130-suite1150a5";',
             "container-type:inline-size",
             "@container smart-lighting-page",
             ".smart-global-actions-grid",
@@ -458,7 +519,7 @@ def validate() -> None:
             'BASE_PANEL_VERSION = "1.0.3"',
             'LAYOUT_RUNTIME_VERSION = "1.2.0"',
             'RESPONSIVE_RUNTIME_VERSION = "1.1.0"',
-            "?v=110-responsive-module141-suite191",
+            "?v=110-responsive-module141-suite1150a5",
         ),
         "smart_lighting wrapper",
     )
@@ -475,7 +536,7 @@ def validate() -> None:
         (
             'SMART_ENERGY_ORDERING_RUNTIME_VERSION = "1.0.0"',
             'SMART_ENERGY_EFFECTIVE_VERSION = "1.4.0"',
-            'import "./smart-energy-advanced-panel.js?v=131-suite120-base";',
+            'import "./smart-energy-advanced-panel.js?v=131-suite1150a5-base";',
             "move-energy-section",
             "move-energy-widget",
             "smart_energy_advanced_panel.config",
@@ -497,7 +558,7 @@ def validate() -> None:
             'repeat(2,minmax(0,1fr))',
             'repeat(4,minmax(0,1fr))',
             'LEGACY_AUTO_WIDTHS = new Set([520])',
-            'import "./smart-energy-advanced-layout.js?v=100-module140-suite130";',
+            'import "./smart-energy-advanced-layout.js?v=100-module140-suite1150a5";',
             "container-type:inline-size",
             ".metric-card.span-2",
             "grid-column:span 2",
@@ -519,7 +580,7 @@ def validate() -> None:
             'BASE_PANEL_VERSION = "1.3.1"',
             'LAYOUT_RUNTIME_VERSION = "1.0.0"',
             'RESPONSIVE_RUNTIME_VERSION = "1.3.0"',
-            "?v=130-responsive-module153-suite1123",
+            "?v=130-responsive-module153-suite1150a5",
         ),
         "smart_energy_advanced wrapper",
     )
@@ -566,7 +627,7 @@ def validate() -> None:
             'SMART_AUTOMATIONS_EFFECTIVE_VERSION = "1.2.0"',
             'SMART_AUTOMATIONS_ADAPTIVE_MAX_WIDTH = 1000',
             'LEGACY_AUTO_WIDTHS = new Set([520])',
-            'import "./smart-automations-runtime.js?v=100-layout100-color100-module111-suite191";',
+            'import "./smart-automations-runtime.js?v=100-layout100-color100-module111-suite1150a5";',
             "container-type:inline-size",
             "@container smart-automations-page",
             "columns_mobile",
@@ -584,7 +645,7 @@ def validate() -> None:
         (
             'SMART_AUTOMATIONS_ALERT_CONTROL_RUNTIME_VERSION = "1.1.0"',
             'SMART_AUTOMATIONS_EFFECTIVE_VERSION = "1.3.2"',
-            'import "./smart-automations-responsive.js?v=100-responsive-module120-suite1100";',
+            'import "./smart-automations-responsive.js?v=100-responsive-module120-suite1150a5";',
             '"high_power"',
             '"energy_limit"',
             "notification_count",
@@ -622,10 +683,12 @@ def validate() -> None:
             'COLOR_PICKER_GUARD_VERSION = "1.0.0"',
             'RESPONSIVE_RUNTIME_VERSION = "1.0.0"',
             'ALERT_CONTROL_RUNTIME_VERSION = "1.1.0"',
-            "?v=110-alert-module132-suite1142",
+            "?v=110-alert-module132-suite1150a5",
         ),
         "smart_automations wrapper",
     )
+
+    validate_factory_profile()
 
     print(f"RELEASE_VALIDATION_OK version={version} modules={len(catalog_ids)}")
 

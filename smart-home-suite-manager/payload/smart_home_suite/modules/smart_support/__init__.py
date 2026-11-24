@@ -179,7 +179,7 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         webcomponent_name=WEB_COMPONENT,
         sidebar_title="Soporte",
         sidebar_icon="mdi:headset",
-        module_url=f"{STATIC_URL}/{FRONTEND_FILE}?v=130-module130-suite1150a4",
+        module_url=f"{STATIC_URL}/{FRONTEND_FILE}?v=130-module130-suite1150a5",
         require_admin=False,
         handle_safe_area=True,
         config={

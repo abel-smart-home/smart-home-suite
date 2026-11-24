@@ -1,4 +1,4 @@
-# Smart Home Suite · rama ALPHA (1.15.0-alpha.4)
+# Smart Home Suite · rama ALPHA (1.15.0-alpha.5)
 
 Esta rama prueba el **Modo cliente**: el instalador (administrador) ve todo Home Assistant; el cliente (usuario no administrador) solo ve los paneles que tú decidas.
 
@@ -8,9 +8,10 @@ Esta rama prueba el **Modo cliente**: el instalador (administrador) ve todo Home
 
 - Oculta de la barra lateral los paneles elegidos a los usuarios **no administradores**.
 - Paneles configurables: Home, Resumen, Bitácora, Historial, Mapa, Energía (HA), Multimedia, Tareas, Calendario, Iluminación, Energía avanzada, Automatizaciones y Soporte.
-- Por defecto oculta los paneles nativos de HA (Home, Resumen, Historial, Bitácora, Mapa, Energía, Multimedia, Tareas, Calendario) y Automatizaciones; deja Smart Home, Iluminación, Energía avanzada y Soporte.
+- Por defecto oculta los paneles nativos de HA (Home, Resumen, Historial, Bitácora, Mapa, Energía, Multimedia, Tareas, Calendario); deja visibles Smart Home, Iluminación, Energía avanzada, Automatizaciones y Soporte (alpha.5: Automatizaciones ya no se oculta por defecto).
 - **Aterrizaje del cliente** (alpha.4): el cliente abre en Smart Home (configurable). Si intenta entrar a `/history`, `/home/overview` o `/`, se le redirige ahí. Los administradores no se tocan.
-- Desactivado por defecto. Se activa en *Configurar* de la integración.
+- Desactivado por defecto: lo activa el instalador en *Configurar* al terminar la instalación.
+- **Perfil de fábrica** (alpha.5): una instalación limpia trae navegación arriba en los 5 paneles (cada uno muestra los otros 4 destinos) y el modo demo apagado. Solo aplica a paneles que no tengan configuración guardada.
 - Si está activo y no existe ningún usuario cliente (activo y no administrador), crea una reparación avisándote.
 - **Soporte remoto autorizado por el cliente** (alpha.2): el cliente puede *Permitir*, *Extender* y *Finalizar* el acceso temporal de una cuenta de soporte externa. No puede iniciar sesión como esa cuenta, ni cambiar su ID, límites o verificación.
 
@@ -26,7 +27,7 @@ Esta rama prueba el **Modo cliente**: el instalador (administrador) ve todo Home
 
 La integración usa el mismo dominio `smart_home_suite` que la versión actual, así que **reemplaza** a la instalada. Haz un respaldo de Home Assistant antes.
 
-1. Descomprime `smart_home_suite-1.15.0-alpha.4-custom_component.zip` en la carpeta de configuración de HA (donde está `configuration.yaml`). Debe quedar `config/custom_components/smart_home_suite/manifest.json`.
+1. Descomprime `smart_home_suite-1.15.0-alpha.5-custom_component.zip` en la carpeta de configuración de HA (donde está `configuration.yaml`). Debe quedar `config/custom_components/smart_home_suite/manifest.json`.
    - Con el add-on *Samba share* o *File editor/Studio Code Server*; o por SSH.
    - Si ya tenías la Suite instalada, bórrala primero o deja que se sobrescriba.
 2. Reinicia Home Assistant completo.
@@ -44,11 +45,21 @@ La integración usa el mismo dominio `smart_home_suite` que la versión actual, 
 - [ ] Sin usuarios no administradores y modo activo: aparece la reparación "Modo cliente sin cuentas".
 - [ ] Reiniciar HA con el modo activo: los paneles siguen ocultos al cliente (también los integrados que cargan tarde).
 - [ ] Ajustes → Dispositivos y servicios → Smart Home Suite → Diagnóstico: aparece la sección `client_mode`.
-- [ ] Sensor "Versión" muestra `1.15.0-alpha.4` y el atributo `client_mode`.
+- [ ] Sensor "Versión" muestra `1.15.0-alpha.5` y el atributo `client_mode`.
 
 ### Paso recomendado del instalador: panel predeterminado del sistema
 
 Desde HA 2025.12 el panel de inicio es un ajuste del sistema (y cada usuario puede cambiarlo en su perfil). Para que HA aterrice en Smart Home sin redirección ni parpadeo: Ajustes → Paneles de control → Smart Home → ⋮ → **Establecer como predeterminado** (si aparece en la lista). El script de aterrizaje queda como respaldo. Pendiente: automatizar este paso.
+
+### Prueba del perfil de fábrica (alpha.5)
+
+Solo se ve en una instalación **limpia** o en un panel sin configuración guardada (las configuraciones ya guardadas se respetan tal cual). Para probarlo sin tocar tu casa: usa una instancia de prueba nueva, o exporta la configuración de un panel, bórrala con *Restablecer* y reimporta después.
+
+- [ ] Los 5 paneles muestran una barra de navegación **arriba** con 4 botones (los otros paneles, sin el propio).
+- [ ] Ningún botón lleva a `/lovelace/...` ni a `/smart-energy-advanced`; todos abren su panel.
+- [ ] Smart Home y Energía avanzada **no** muestran valores de ejemplo ni el aviso "Modo demo" (las entidades no mapeadas salen como no disponibles).
+- [ ] Con Modo cliente activo y el cliente en un móvil (sin menú lateral): puede ir de Smart Home a Iluminación, Energía, Automatiza y Soporte solo con los botones.
+- [ ] Si ocultas un panel al cliente, su botón sigue en los demás paneles y lo devuelve a Smart Home: oculta también el botón en *Personalización* de cada panel (pendiente automatizarlo).
 
 ### Prueba del aterrizaje del cliente (alpha.4)
 

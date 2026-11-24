@@ -205,7 +205,7 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         sidebar_icon="mdi:robot",
         module_url=(
             f"{STATIC_URL}/{FRONTEND_FILE}"
-            "?v=110-alert-module132-suite1142"
+            "?v=110-alert-module132-suite1150a5"
         ),
         require_admin=False,
         handle_safe_area=True,

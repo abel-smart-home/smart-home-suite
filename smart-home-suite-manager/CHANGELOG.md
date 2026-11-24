@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.15.0-alpha.5 - 2026-11-23 · ALPHA
+
+Perfil de fábrica: lo que ve el cliente en una instalación limpia. Solo cambia valores por defecto; **no modifica ninguna configuración ya guardada** (las matrices de botones guardadas reemplazan a las de fábrica).
+
+- **Navegación de fábrica en los 5 paneles.** Antes la barra venía apagada en Smart Home, Iluminación, Automatizaciones y Soporte, y en Energía avanzada venía apagada y a 3 columnas. Ahora todos: visible, arriba, 4 columnas, y cada panel muestra los otros 4 destinos (Inicio/Resumen, Luces, Energía, Automatiza, Soporte, sin el propio). Sin botones ocultos de relleno.
+- Corregida la ruta `/smart-energy-advanced` (Iluminación y Soporte) a `/energy-advanced`, y eliminados los botones de Smart Home hacia `/lovelace/energia|clima|seguridad`, que no existen.
+- **Modo demo apagado por defecto** en Smart Home y Energía avanzada (`demo_when_missing: false`): una casa nueva ya no muestra cifras de ejemplo como si fueran reales.
+- **Automatizaciones deja de ocultarse al cliente por defecto**: el panel está pensado para que el cliente cree recetas simples. Los paneles nativos de HA siguen ocultos. Las instalaciones que ya guardaron su lista de paneles ocultos no cambian.
+- Modo cliente sigue **apagado por defecto**; lo activa el instalador al terminar.
+- Nuevas versiones de caché (`suite1150a5`) en toda la cadena de importación de cada panel modificado.
+- `validate_release.py` comprueba el perfil de fábrica (navegación, demo, paneles ocultos) y falla si se rompe; probado con tres regresiones simuladas.
+- Probado en simulación con los DEFAULTS reales de cada panel: la configuración real de una casa (Smart Home, Iluminación, Energía) conserva su navegación y su modo demo al mezclarse con los nuevos valores.
+
 ## 1.15.0-alpha.4 - 2026-11-23 · ALPHA
 
 alpha.3 no se publicó en GitHub; alpha.4 la incluye completa más esta corrección.

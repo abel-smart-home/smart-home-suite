@@ -20,7 +20,7 @@
  * - V3 can be disabled to fall back to the validated flat layout in the same build.
  */
 
-import "./smart-home-panel-runtime.js?v=110-guard100-cards100-module140-suite1123";
+import "./smart-home-panel-runtime.js?v=110-guard100-cards100-module140-suite1150a5";
 
 const SMART_HOME_LAYOUT_V3_RUNTIME_VERSION = "1.0.0";
 const SMART_HOME_LAYOUT_V3_EFFECTIVE_VERSION = "3.0.0";

@@ -38,7 +38,7 @@ const DEFAULT_ACTIONS = () => ({
 
 const DEFAULTS = {
   locale: "es-MX",
-  demo_when_missing: true,
+  demo_when_missing: false,
   show_demo_badge: true,
 
   header: {
@@ -81,9 +81,9 @@ const DEFAULTS = {
   },
 
   navigation: {
-    show: false,
+    show: true,
     position: "top",
-    columns: 3,
+    columns: 4,
     gap: 8,
     button_height: 56,
     radius: 16,
@@ -96,7 +96,9 @@ const DEFAULTS = {
     show_labels: true,
     buttons: [
       { show: true, label: "Resumen", icon: "mdi:home-lightning-bolt", path: "/smart-home", color: "#35ddd5" },
-      { show: true, label: "Avanzado", icon: "mdi:lightning-bolt-circle", path: "/energy-advanced", color: "#35ddd5" },
+      { show: true, label: "Luces", icon: "mdi:lightbulb-group", path: "/lighting", color: "#ffd66b" },
+      { show: true, label: "Automatiza", icon: "mdi:robot", path: "/smart-automations", color: "#b59cff" },
+      { show: true, label: "Soporte", icon: "mdi:face-agent", path: "/support", color: "#35ddd5" },
     ],
   },
 

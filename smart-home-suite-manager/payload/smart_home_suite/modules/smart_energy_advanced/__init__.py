@@ -111,7 +111,7 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         'SMART_ENERGY_WIDE_GRID_MIN_WIDTH = 700',
         'repeat(4,minmax(0,1fr))',
         'LEGACY_AUTO_WIDTHS = new Set([520])',
-        'import "./smart-energy-advanced-layout.js?v=100-module140-suite130";',
+        'import "./smart-energy-advanced-layout.js?v=100-module140-suite1150a5";',
         'container-type:inline-size',
         '@container smart-energy-advanced-page',
         '.metric-card.span-2',
@@ -152,7 +152,7 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         sidebar_icon="mdi:lightning-bolt-circle",
         module_url=(
             f"{STATIC_URL}/{FRONTEND_FILE}"
-            "?v=130-responsive-module153-suite1123"
+            "?v=130-responsive-module153-suite1150a5"
         ),
         require_admin=False,
         handle_safe_area=True,

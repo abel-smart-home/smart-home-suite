@@ -223,8 +223,8 @@ const DEFAULTS = {
     fallback_icon: "mdi:home-assistant"
   },
   navigation: {
-    show: false,
-    position: "bottom",
+    show: true,
+    position: "top",
     columns: 4,
     gap: 8,
     button_height: 58,
@@ -238,9 +238,9 @@ const DEFAULTS = {
     show_labels: true,
     buttons: [
       { id: "home", show: true, label: "Inicio", icon: "mdi:home", path: "/smart-home", color: "#35ddd5" },
-      { id: "lighting", show: false, label: "Luces", icon: "mdi:lightbulb-group", path: "/lighting", color: "#35ddd5" },
-      { id: "energy", show: false, label: "Energía", icon: "mdi:flash", path: "/smart-energy-advanced", color: "#35ddd5" },
-      { id: "support", show: true, label: "Soporte", icon: "mdi:headset", path: "/support", color: "#35ddd5" }
+      { id: "lighting", show: true, label: "Luces", icon: "mdi:lightbulb-group", path: "/lighting", color: "#ffd66b" },
+      { id: "energy", show: true, label: "Energía", icon: "mdi:lightning-bolt-circle", path: "/energy-advanced", color: "#35ddd5" },
+      { id: "automations", show: true, label: "Automatiza", icon: "mdi:robot", path: "/smart-automations", color: "#b59cff" }
     ]
   }
 };
