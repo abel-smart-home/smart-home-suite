@@ -116,6 +116,15 @@ def validate_factory_profile() -> None:
         if "demo_when_missing: true," in text:
             fail(f"{filename}: demo mode must be off by default")
 
+    for filename, token in (
+        ("smart-support-panel.js", "LEGACY_PANEL_PATHS"),
+        ("smart-lighting-panel.js", "LEGACY_NAV_PATHS"),
+        ("smart-home-client-landing.js", "LEGACY_PANEL_PATHS"),
+    ):
+        text = (PAYLOAD / "frontend" / filename).read_text(encoding="utf-8")
+        if token not in text or "/energy-advanced" not in text and "energy-advanced" not in text:
+            fail(f"{filename}: must repair the legacy /smart-energy-advanced path")
+
     const_text = (PAYLOAD / "const.py").read_text(encoding="utf-8")
     hidden_match = re.search(
         r"CLIENT_MODE_DEFAULT_HIDDEN_PANELS: Final = \((.*?)\)", const_text, re.DOTALL
@@ -315,7 +324,7 @@ def validate() -> None:
     )
     require_tokens(
         PAYLOAD / "frontend" / "smart-support-panel.js",
-        ("client_can_authorize", 'PANEL_VERSION = "1.3.0"', "_withClientNavigation", "({ b, index })"),
+        ("client_can_authorize", 'PANEL_VERSION = "1.3.0"', "_withClientNavigation", "({ b, index })", "LEGACY_PANEL_PATHS"),
         "smart-support-panel.js",
     )
     for language in ("en", "es"):
@@ -498,7 +507,7 @@ def validate() -> None:
             'SMART_LIGHTING_EFFECTIVE_VERSION = "1.4.1"',
             'SMART_LIGHTING_ADAPTIVE_MAX_WIDTH = 1200',
             'LEGACY_AUTO_WIDTHS = new Set([520, 760])',
-            'import "./smart-lighting-layout.js?v=120-module130-suite1150a5";',
+            'import "./smart-lighting-layout.js?v=120-module130-suite1150a7";',
             "container-type:inline-size",
             "@container smart-lighting-page",
             ".smart-global-actions-grid",
@@ -519,7 +528,7 @@ def validate() -> None:
             'BASE_PANEL_VERSION = "1.0.3"',
             'LAYOUT_RUNTIME_VERSION = "1.2.0"',
             'RESPONSIVE_RUNTIME_VERSION = "1.1.0"',
-            "?v=110-responsive-module141-suite1150a5",
+            "?v=110-responsive-module141-suite1150a7",
         ),
         "smart_lighting wrapper",
     )

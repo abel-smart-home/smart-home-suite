@@ -16,6 +16,14 @@ const HOLD_MS = 550;
 const MOVE_TOLERANCE = 12;
 
 const deepClone = (obj) => JSON.parse(JSON.stringify(obj));
+// Rutas que versiones anteriores traían de fábrica y que no existen. Las configuraciones ya
+// guardadas las conservan, así que se corrigen al mostrar (no se modifica lo guardado).
+const LEGACY_NAV_PATHS = { "/smart-energy-advanced": "/energy-advanced" };
+const repairNavigationPaths = (cfg) => {
+  const buttons = cfg?.navigation?.buttons;
+  if (Array.isArray(buttons)) buttons.forEach((b) => { if (b && LEGACY_NAV_PATHS[b.path]) b.path = LEGACY_NAV_PATHS[b.path]; });
+  return cfg;
+};
 
 function deepMerge(base, custom) {
   if (Array.isArray(base)) return Array.isArray(custom) ? deepClone(custom) : deepClone(base);
@@ -210,7 +218,7 @@ class SmartLightingPanel extends HTMLElement {
 
   _config() {
     const source = this._editorOpen && this._editConfig ? this._editConfig : this._storedConfig;
-    const cfg = deepMerge(DEFAULTS, source || {});
+    const cfg = repairNavigationPaths(deepMerge(DEFAULTS, source || {}));
     if (!Array.isArray(cfg.areas) || !cfg.areas.length) cfg.areas = deepClone(DEFAULTS.areas);
     return cfg;
   }

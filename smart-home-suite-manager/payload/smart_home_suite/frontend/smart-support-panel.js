@@ -15,6 +15,8 @@
  */
 
 const PANEL_VERSION = "1.3.0";
+// Rutas guardadas por versiones anteriores que nunca existieron como panel.
+const LEGACY_PANEL_PATHS = { "/smart-energy-advanced": "/energy-advanced" };
 const BACKEND_DOMAIN = "smart_support_panel";
 const HOLD_MS = 550;
 const MOVE_CANCEL_PX = 12;
@@ -496,6 +498,12 @@ class SmartSupportPanel extends HTMLElement {
       if (whatsappIndex >= 0) buttons.splice(whatsappIndex, 0, ext); else buttons.push(ext);
     }
     cfg.actions.buttons = buttons;
+    if (Array.isArray(cfg.navigation?.buttons)) {
+      cfg.navigation.buttons = cfg.navigation.buttons.map((b) => {
+        const fixed = b && LEGACY_PANEL_PATHS[String(b.path || "").replace(/\/+$/, "")];
+        return fixed ? { ...b, path: fixed } : b;
+      });
+    }
     const remote = cfg.remote_support || (cfg.remote_support = {});
     remote.min_hours = Math.min(168, Math.max(2, this._num(remote.min_hours, 2)));
     remote.max_hours = Math.min(168, Math.max(remote.min_hours, this._num(remote.max_hours, 24)));

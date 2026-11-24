@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.15.0-alpha.7 - 2026-11-24 · ALPHA
+
+- **Ruta antigua guardada en la navegación de Soporte.** Una configuración de Soporte real de una casa tenía el botón Energía apuntando a `/smart-energy-advanced` (valor de fábrica de versiones anteriores, nunca existió como panel). Los valores de fábrica corregidos en alpha.5 no pisan lo guardado, así que el botón seguía roto. Ahora el panel de Soporte migra esa ruta a `/energy-advanced` al cargar la configuración (y queda corregida al guardar).
+- El script de aterrizaje del cliente también reconoce esa ruta antigua: si un cliente llega a `/smart-energy-advanced` (enlace guardado en otro panel) va a `/energy-advanced`, siempre que ese panel no esté oculto; si lo está, a Smart Home.
+- Con la configuración real de Soporte de la casa, cliente y administrador ven Inicio, Luces y Energía, y Energía abre el panel correcto.
+- El panel de **Iluminación** corrige la misma ruta antigua al mostrar su navegación (su configuración guardada también la traía, aunque ese botón estaba oculto).
+- Caché renovada: Soporte e Iluminación (`suite1150a7`) y script de aterrizaje (`102-suite1150a7`).
+- Pruebas: el caso nuevo del aterrizaje falla con el script de alpha.6 y pasa con alpha.7.
+
 ## 1.15.0-alpha.6 - 2026-11-23 · ALPHA
 
 - **El cliente ya no queda atrapado en `/support`.** Prueba en HA real: la configuración de Soporte guardada de una casa tenía la navegación apagada (el valor de fábrica de alpha.5 no pisa lo guardado) y el cliente no podía salir. Ahora, para usuarios **no administradores**, si la navegación está apagada o no tiene ningún botón hacia otro panel, se usa la navegación de fábrica. Es una red de seguridad en pantalla: no modifica lo guardado y el administrador ve exactamente lo que configuró.

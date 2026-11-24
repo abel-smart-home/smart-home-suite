@@ -111,7 +111,7 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         'container-type:inline-size',
         '@container smart-lighting-page',
         '.smart-global-actions-grid',
-        'import "./smart-lighting-layout.js?v=120-module130-suite1150a5";',
+        'import "./smart-lighting-layout.js?v=120-module130-suite1150a7";',
     ):
         if required_token not in runtime_text:
             _LOGGER.error(
@@ -154,7 +154,7 @@ async def async_setup_module(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         webcomponent_name=WEB_COMPONENT,
         sidebar_title="Iluminación",
         sidebar_icon="mdi:lightbulb-group",
-        module_url=f"{STATIC_URL}/{FRONTEND_FILE}?v=110-responsive-module141-suite1150a5",
+        module_url=f"{STATIC_URL}/{FRONTEND_FILE}?v=110-responsive-module141-suite1150a7",
         require_admin=False,
         handle_safe_area=True,
         config={

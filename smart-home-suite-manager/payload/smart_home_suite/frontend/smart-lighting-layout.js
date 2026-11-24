@@ -16,7 +16,7 @@
  * optional global_actions object is ignored by older builds if rolled back.
  */
 
-import "./smart-lighting-panel.js?v=103-suite1150a5-base";
+import "./smart-lighting-panel.js?v=103-suite1150a7-base";
 
 const SMART_LIGHTING_LAYOUT_RUNTIME_VERSION = "1.2.0";
 const SMART_LIGHTING_ORDERING_RUNTIME_VERSION = "1.1.0";

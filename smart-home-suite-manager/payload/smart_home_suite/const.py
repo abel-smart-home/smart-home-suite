@@ -3,7 +3,7 @@
 from typing import Final
 
 DOMAIN: Final = "smart_home_suite"
-VERSION: Final = "1.15.0-alpha.6"
+VERSION: Final = "1.15.0-alpha.7"
 SIGNAL_SUITE_HEALTH_UPDATE: Final = f"{DOMAIN}_health_update"
 
 # Client Mode (alpha). Options live in config_entry.options["client_mode"].
@@ -12,7 +12,7 @@ CLIENT_MODE_ISSUE_NO_CLIENTS: Final = "client_mode_no_client_users"
 CLIENT_MODE_STATUS_COMMAND: Final = f"{DOMAIN}/client_mode/status"
 CLIENT_MODE_STATIC_URL: Final = "/smart_home_suite_static"
 CLIENT_MODE_LANDING_JS: Final = "smart-home-client-landing.js"
-CLIENT_MODE_LANDING_JS_VERSION: Final = "101-suite1150a4"
+CLIENT_MODE_LANDING_JS_VERSION: Final = "102-suite1150a7"
 # Panels a non-administrator can be sent to when they open "/" or a hidden panel.
 CLIENT_MODE_LANDING_CHOICES: Final = ("smart-home", "lighting", "energy-advanced")
 CLIENT_MODE_DEFAULT_LANDING: Final = "smart-home"

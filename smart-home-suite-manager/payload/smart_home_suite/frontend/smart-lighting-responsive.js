@@ -23,7 +23,7 @@
  * Custom max widths other than the known legacy 520/760 values are respected.
  */
 
-import "./smart-lighting-layout.js?v=120-module130-suite1150a5";
+import "./smart-lighting-layout.js?v=120-module130-suite1150a7";
 
 const SMART_LIGHTING_RESPONSIVE_RUNTIME_VERSION = "1.1.0";
 const SMART_LIGHTING_EFFECTIVE_VERSION = "1.4.1";

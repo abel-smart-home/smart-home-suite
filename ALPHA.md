@@ -1,4 +1,4 @@
-# Smart Home Suite · rama ALPHA (1.15.0-alpha.6)
+# Smart Home Suite · rama ALPHA (1.15.0-alpha.7)
 
 Esta rama prueba el **Modo cliente**: el instalador (administrador) ve todo Home Assistant; el cliente (usuario no administrador) solo ve los paneles que tú decidas.
 
@@ -27,7 +27,7 @@ Esta rama prueba el **Modo cliente**: el instalador (administrador) ve todo Home
 
 La integración usa el mismo dominio `smart_home_suite` que la versión actual, así que **reemplaza** a la instalada. Haz un respaldo de Home Assistant antes.
 
-1. Descomprime `smart_home_suite-1.15.0-alpha.6-custom_component.zip` en la carpeta de configuración de HA (donde está `configuration.yaml`). Debe quedar `config/custom_components/smart_home_suite/manifest.json`.
+1. Descomprime `smart_home_suite-1.15.0-alpha.7-custom_component.zip` en la carpeta de configuración de HA (donde está `configuration.yaml`). Debe quedar `config/custom_components/smart_home_suite/manifest.json`.
    - Con el add-on *Samba share* o *File editor/Studio Code Server*; o por SSH.
    - Si ya tenías la Suite instalada, bórrala primero o deja que se sobrescriba.
 2. Reinicia Home Assistant completo.
@@ -45,11 +45,18 @@ La integración usa el mismo dominio `smart_home_suite` que la versión actual, 
 - [ ] Sin usuarios no administradores y modo activo: aparece la reparación "Modo cliente sin cuentas".
 - [ ] Reiniciar HA con el modo activo: los paneles siguen ocultos al cliente (también los integrados que cargan tarde).
 - [ ] Ajustes → Dispositivos y servicios → Smart Home Suite → Diagnóstico: aparece la sección `client_mode`.
-- [ ] Sensor "Versión" muestra `1.15.0-alpha.6` y el atributo `client_mode`.
+- [ ] Sensor "Versión" muestra `1.15.0-alpha.7` y el atributo `client_mode`.
 
 ### Paso recomendado del instalador: panel predeterminado del sistema
 
 Desde HA 2025.12 el panel de inicio es un ajuste del sistema (y cada usuario puede cambiarlo en su perfil). Para que HA aterrice en Smart Home sin redirección ni parpadeo: Ajustes → Paneles de control → Smart Home → ⋮ → **Establecer como predeterminado** (si aparece en la lista). El script de aterrizaje queda como respaldo. Pendiente: automatizar este paso.
+
+### Prueba: botón Energía de Soporte con ruta antigua (alpha.7)
+
+- [ ] En `/support`, el botón **Energía** (guardado con la ruta antigua `/smart-energy-advanced`) abre Energía avanzada.
+- [ ] Si un cliente abre a mano `/smart-energy-advanced`, termina en `/energy-advanced` (no en Smart Home) cuando ese panel no está oculto.
+- [ ] En Personalización de Soporte, al guardar, la ruta del botón ya aparece como `/energy-advanced`.
+- [ ] En Iluminación, si activas el botón **Energía** guardado con la ruta antigua, también abre `/energy-advanced`.
 
 ### Prueba: el cliente no queda atrapado en /support (alpha.6)
 

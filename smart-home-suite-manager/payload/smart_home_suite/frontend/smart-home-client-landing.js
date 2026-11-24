@@ -22,6 +22,9 @@
   const STATUS = { type: "smart_home_suite/client_mode/status" };
   // Panels that exist for everyone but are never a valid place for a client.
   const NEVER_ALLOWED = ["notfound"];
+  // Paths saved in older configurations that never existed as panels (alpha.4 and earlier
+  // shipped "/smart-energy-advanced" as a default navigation target).
+  const LEGACY_PANEL_PATHS = { "smart-energy-advanced": "energy-advanced" };
   const MAX_REDIRECTS = 5; // loop guard if HA keeps bouncing the user back
   const MAX_WAIT_MS = 60000;
   const POLL_MS = 250;
@@ -35,6 +38,8 @@
     const denied = new Set([...NEVER_ALLOWED, ...(Array.isArray(blocked) ? blocked : [])]);
     const usable = (k) => Boolean(k) && Boolean(panels[k]) && !denied.has(k);
     if (usable(currentSegment)) return null; // allowed panel
+    const legacy = LEGACY_PANEL_PATHS[currentSegment];
+    if (legacy && usable(legacy)) return legacy; // old saved link: send to the real panel
     const fallbacks = [homePanel, ...Object.keys(panels).filter((k) => k !== "profile")];
     const target = fallbacks.find(usable);
     if (!target || target === currentSegment) return null; // nowhere safe to go: do nothing
