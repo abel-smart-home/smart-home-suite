@@ -10,7 +10,12 @@ from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import selector
 
 from .client_mode import client_mode_config
-from .const import CLIENT_MODE_OPTION, CLIENT_MODE_PANEL_CHOICES, DOMAIN
+from .const import (
+    CLIENT_MODE_LANDING_CHOICES,
+    CLIENT_MODE_OPTION,
+    CLIENT_MODE_PANEL_CHOICES,
+    DOMAIN,
+)
 from .module_catalog import MODULE_CATALOG
 
 
@@ -53,6 +58,7 @@ class SmartHomeSuiteOptionsFlow(config_entries.OptionsFlow):
                         "hidden_panels": list(
                             user_input.get("client_hidden_panels", [])
                         ),
+                        "home_panel": user_input.get("client_home_panel"),
                         "allow_support_authorization": bool(
                             user_input.get("client_allow_support", True)
                         ),
@@ -69,6 +75,16 @@ class SmartHomeSuiteOptionsFlow(config_entries.OptionsFlow):
 
         client = client_mode_config(self.config_entry)
         schema[vol.Required("client_mode_enabled", default=client["enabled"])] = bool
+        schema[
+            vol.Required("client_home_panel", default=client["home_panel"])
+        ] = selector.SelectSelector(
+            selector.SelectSelectorConfig(
+                options=list(CLIENT_MODE_LANDING_CHOICES),
+                multiple=False,
+                mode=selector.SelectSelectorMode.DROPDOWN,
+                translation_key="client_home_panel",
+            )
+        )
         schema[
             vol.Required(
                 "client_allow_support", default=client["allow_support_authorization"]

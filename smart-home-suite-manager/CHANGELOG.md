@@ -1,5 +1,31 @@
 # Changelog
 
+## 1.15.0-alpha.4 - 2026-11-23 · ALPHA
+
+alpha.3 no se publicó en GitHub; alpha.4 la incluye completa más esta corrección.
+
+- **Corrección del aterrizaje del cliente.** Prueba en HA real: el cliente quedaba en `/notfound/0` ("Sin acceso") y no se le redirigía. Causa: cuando una ruta no existe para el usuario, el frontend cae en el panel predeterminado del sistema, luego en `home` y por último en `notfound`; `notfound` está registrado como panel para todos, así que el script lo trataba como destino permitido.
+- `notfound` ya nunca cuenta como destino válido para el cliente.
+- El comando `smart_home_suite/client_mode/status` devuelve además `blocked_panels` (los paneles ocultos configurados). El script no deja al cliente en ninguno, aunque HA todavía lo liste.
+- Protección contra bucles: máximo 5 redirecciones por carga de página si HA insiste en devolver al usuario.
+- Nueva versión del script (`101-suite1150a4`) para evitar la copia en caché del navegador.
+- Probado: el script de alpha.3 falla en el caso de la captura; el de alpha.4 lo resuelve.
+- Recomendado además (paso del instalador): fijar Smart Home como panel predeterminado del sistema (Ajustes → Paneles de control, HA 2025.12 o superior). Así HA aterriza ahí sin redirección ni parpadeo y el script queda como respaldo.
+
+
+## 1.15.0-alpha.3 - 2026-11-23 · ALPHA
+
+Corrección de la prueba en Home Assistant real: al abrir `/history`, el cliente caía en `/home/overview`, una vista nativa de HA que no pertenece a su interfaz.
+
+- **Aterrizaje del cliente**: nuevo script global `smart-home-client-landing.js` (cargado con `frontend.add_extra_js_url`). Para usuarios **no administradores** con Modo cliente activo, cualquier ruta que HA no les liste (Home, Resumen, Historial, marcadores viejos, `/`) los lleva al panel de inicio del cliente (Smart Home por defecto).
+- Nuevo comando WebSocket `smart_home_suite/client_mode/status` (abierto a todos los usuarios, solo lectura): devuelve `enabled` y `home_panel`. Es lo que decide si el script actúa.
+- Nueva opción **Panel de inicio del cliente** (Smart Home, Iluminación o Energía avanzada).
+- Los paneles nativos **Home** (`home`) y **Resumen** (`lovelace`) se agregan a la lista de ocultos por defecto del Modo cliente.
+- Fail-safe: los administradores no se tocan nunca; si el comando falla o el Modo cliente está apagado, el script no hace nada. Con el modo apagado, el comportamiento es el de 1.14.2.
+- Si guardaste opciones en alpha.1/alpha.2, **marca Home y Resumen** en la lista de paneles ocultos: tus opciones guardadas no los incluyen.
+- Limitación: el panel de inicio de HA (ajuste del sistema desde 2025.12) no se modifica; el script redirige en el navegador. Puede verse un parpadeo breve antes del redireccionamiento.
+
+
 ## 1.15.0-alpha.2 - 2026-11-22 · ALPHA
 
 - **El cliente puede autorizar el acceso remoto de soporte** (Smart Support 1.3.0), sin poder iniciar sesión como soporte ni cambiar su configuración.

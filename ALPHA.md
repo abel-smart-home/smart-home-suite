@@ -1,4 +1,4 @@
-# Smart Home Suite · rama ALPHA (1.15.0-alpha.2)
+# Smart Home Suite · rama ALPHA (1.15.0-alpha.4)
 
 Esta rama prueba el **Modo cliente**: el instalador (administrador) ve todo Home Assistant; el cliente (usuario no administrador) solo ve los paneles que tú decidas.
 
@@ -7,8 +7,9 @@ Esta rama prueba el **Modo cliente**: el instalador (administrador) ve todo Home
 ## Qué hace
 
 - Oculta de la barra lateral los paneles elegidos a los usuarios **no administradores**.
-- Paneles configurables: Bitácora, Historial, Mapa, Energía (HA), Multimedia, Tareas, Calendario, Iluminación, Energía avanzada, Automatizaciones y Soporte.
-- Por defecto oculta todos menos Smart Home, Iluminación, Energía avanzada y Soporte.
+- Paneles configurables: Home, Resumen, Bitácora, Historial, Mapa, Energía (HA), Multimedia, Tareas, Calendario, Iluminación, Energía avanzada, Automatizaciones y Soporte.
+- Por defecto oculta los paneles nativos de HA (Home, Resumen, Historial, Bitácora, Mapa, Energía, Multimedia, Tareas, Calendario) y Automatizaciones; deja Smart Home, Iluminación, Energía avanzada y Soporte.
+- **Aterrizaje del cliente** (alpha.4): el cliente abre en Smart Home (configurable). Si intenta entrar a `/history`, `/home/overview` o `/`, se le redirige ahí. Los administradores no se tocan.
 - Desactivado por defecto. Se activa en *Configurar* de la integración.
 - Si está activo y no existe ningún usuario cliente (activo y no administrador), crea una reparación avisándote.
 - **Soporte remoto autorizado por el cliente** (alpha.2): el cliente puede *Permitir*, *Extender* y *Finalizar* el acceso temporal de una cuenta de soporte externa. No puede iniciar sesión como esa cuenta, ni cambiar su ID, límites o verificación.
@@ -16,7 +17,7 @@ Esta rama prueba el **Modo cliente**: el instalador (administrador) ve todo Home
 ## Qué NO hace (todavía)
 
 - No es una barrera de seguridad: un usuario no administrador sigue pudiendo llamar APIs de HA. Lo que protege es que sea no administrador (no puede abrir Ajustes ni Herramientas de desarrollo, ni guardar configuración de la Suite).
-- No fija el panel de inicio del cliente: en cada dispositivo, Perfil → Panel predeterminado → Smart Home.
+- No cambia el panel predeterminado de HA (ajuste del sistema desde 2025.12): la redirección es en el navegador y puede verse un parpadeo breve. Pendiente: fijar el valor del sistema/usuario cuando se confirme su forma en tu versión.
 - Durante la ventana que el cliente autoriza, la cuenta de soporte es **administrador completa** (no hay un rol reducido). La protección es el límite de horas y que el cliente pueda cerrarla.
 - Depende de Spook (`homeassistant.enable_user` / `disable_user`), como antes.
 - No hay licencias ni aprovisionamiento por casa.
@@ -25,7 +26,7 @@ Esta rama prueba el **Modo cliente**: el instalador (administrador) ve todo Home
 
 La integración usa el mismo dominio `smart_home_suite` que la versión actual, así que **reemplaza** a la instalada. Haz un respaldo de Home Assistant antes.
 
-1. Descomprime `smart_home_suite-1.15.0-alpha.2-custom_component.zip` en la carpeta de configuración de HA (donde está `configuration.yaml`). Debe quedar `config/custom_components/smart_home_suite/manifest.json`.
+1. Descomprime `smart_home_suite-1.15.0-alpha.4-custom_component.zip` en la carpeta de configuración de HA (donde está `configuration.yaml`). Debe quedar `config/custom_components/smart_home_suite/manifest.json`.
    - Con el add-on *Samba share* o *File editor/Studio Code Server*; o por SSH.
    - Si ya tenías la Suite instalada, bórrala primero o deja que se sobrescriba.
 2. Reinicia Home Assistant completo.
@@ -37,13 +38,33 @@ La integración usa el mismo dominio `smart_home_suite` que la versión actual, 
 ### Checklist de aceptación
 
 - [ ] Administrador: ve la barra lateral completa como antes.
-- [ ] Cliente: solo ve Resumen, Smart Home y los paneles que dejaste visibles.
-- [ ] Cliente: `/history`, `/logbook`, `/config` no aparecen ni abren.
+- [ ] Cliente: solo ve Smart Home y los paneles que dejaste visibles (no ve Resumen ni Home nativos).
+- [ ] Cliente: `/history`, `/logbook`, `/config` no aparecen en la barra lateral y, al abrirlos, lo llevan a Smart Home.
 - [ ] Desactivar el modo y guardar: el cliente recupera los paneles (sin reiniciar).
 - [ ] Sin usuarios no administradores y modo activo: aparece la reparación "Modo cliente sin cuentas".
 - [ ] Reiniciar HA con el modo activo: los paneles siguen ocultos al cliente (también los integrados que cargan tarde).
 - [ ] Ajustes → Dispositivos y servicios → Smart Home Suite → Diagnóstico: aparece la sección `client_mode`.
-- [ ] Sensor "Versión" muestra `1.15.0-alpha.2` y el atributo `client_mode`.
+- [ ] Sensor "Versión" muestra `1.15.0-alpha.4` y el atributo `client_mode`.
+
+### Paso recomendado del instalador: panel predeterminado del sistema
+
+Desde HA 2025.12 el panel de inicio es un ajuste del sistema (y cada usuario puede cambiarlo en su perfil). Para que HA aterrice en Smart Home sin redirección ni parpadeo: Ajustes → Paneles de control → Smart Home → ⋮ → **Establecer como predeterminado** (si aparece en la lista). El script de aterrizaje queda como respaldo. Pendiente: automatizar este paso.
+
+### Prueba del aterrizaje del cliente (alpha.4)
+
+Si guardaste opciones antes, entra a *Configurar* y **marca Home y Resumen** en paneles ocultos. Después de reiniciar HA, recarga el navegador del cliente con Ctrl+F5.
+
+- [ ] Cliente abre `/` y `/home/overview`: termina en `/smart-home` (no en `/notfound/0` ni en "Sin acceso").
+- [ ] Cliente abre `/history` o `/logbook`: termina en `/smart-home`.
+- [ ] Cliente: la barra lateral no muestra Home/Resumen/Historial; sí Smart Home, Perfil y lo que dejaste visible.
+- [ ] Administrador: abre `/home/overview` y `/history` sin redirección y ve todo.
+- [ ] Modo cliente apagado y guardado: el cliente vuelve a ver Home y no es redirigido (recarga el navegador).
+- [ ] Cambiar *Panel de inicio del cliente* a Iluminación: el cliente aterriza ahí.
+- [ ] Si algo no redirige, en la consola del navegador **del cliente** ejecuta estas tres líneas y envíame los resultados:
+  - `window.__smartHomeClientLanding` (debe ser `true`: el script cargó)
+  - `await document.querySelector("home-assistant").hass.callWS({type:"smart_home_suite/client_mode/status"})`
+  - `Object.keys(document.querySelector("home-assistant").hass.panels)`
+- [ ] Opcional, para el siguiente paso: como administrador, `await document.querySelector("home-assistant").hass.callWS({type:"frontend/get_system_data", key:"core"})` y envíame el resultado.
 
 ### Prueba específica de soporte remoto (alpha.2)
 

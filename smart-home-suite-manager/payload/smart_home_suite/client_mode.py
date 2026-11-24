@@ -26,7 +26,8 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from homeassistant.components import frontend
+import voluptuous as vol
+from homeassistant.components import frontend, websocket_api
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import CALLBACK_TYPE, Event, HomeAssistant, callback
 from homeassistant.helpers import issue_registry as ir
@@ -34,8 +35,14 @@ from homeassistant.helpers.start import async_at_started
 
 from .const import (
     CLIENT_MODE_DEFAULT_HIDDEN_PANELS,
+    CLIENT_MODE_DEFAULT_LANDING,
     CLIENT_MODE_ISSUE_NO_CLIENTS,
+    CLIENT_MODE_LANDING_CHOICES,
+    CLIENT_MODE_LANDING_JS,
+    CLIENT_MODE_LANDING_JS_VERSION,
     CLIENT_MODE_OPTION,
+    CLIENT_MODE_STATIC_URL,
+    CLIENT_MODE_STATUS_COMMAND,
     DOMAIN,
 )
 
@@ -54,8 +61,12 @@ def client_mode_config(entry: ConfigEntry) -> dict[str, Any]:
     hidden = raw.get("hidden_panels")
     if not isinstance(hidden, list):
         hidden = list(CLIENT_MODE_DEFAULT_HIDDEN_PANELS)
+    home_panel = raw.get("home_panel")
+    if home_panel not in CLIENT_MODE_LANDING_CHOICES:
+        home_panel = CLIENT_MODE_DEFAULT_LANDING
     return {
         "enabled": bool(raw.get("enabled", False)),
+        "home_panel": home_panel,
         "hidden_panels": [str(path) for path in hidden if str(path).strip()],
         # Clients may open/extend/close the remote-support window, never log in
         # as the support account nor change its configuration.
@@ -66,7 +77,14 @@ def client_mode_config(entry: ConfigEntry) -> dict[str, Any]:
 def _runtime(hass: HomeAssistant) -> dict[str, Any]:
     return hass.data.setdefault(DOMAIN, {}).setdefault(
         RUNTIME_KEY,
-        {"hidden": set(), "restricted": {}, "unsubs": [], "enabled": False, "allow_support": False},
+        {
+            "hidden": set(),
+            "restricted": {},
+            "unsubs": [],
+            "enabled": False,
+            "allow_support": False,
+            "home_panel": CLIENT_MODE_DEFAULT_LANDING,
+        },
     )
 
 
@@ -156,6 +174,46 @@ async def _async_check_client_accounts(hass: HomeAssistant, enabled: bool) -> No
     )
 
 
+@websocket_api.websocket_command({vol.Required("type"): CLIENT_MODE_STATUS_COMMAND})
+@callback
+def _ws_client_mode_status(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Tell the landing script whether to redirect. Open to every user.
+
+    Returns only non-sensitive values (mode, landing panel, hidden panel ids)
+    and changes nothing.
+    """
+    runtime = hass.data.get(DOMAIN, {}).get(RUNTIME_KEY, {})
+    connection.send_result(
+        msg["id"],
+        {
+            "enabled": bool(runtime.get("enabled")),
+            "home_panel": runtime.get("home_panel", CLIENT_MODE_DEFAULT_LANDING),
+            # Defense in depth: never a valid destination even if still listed.
+            "blocked_panels": sorted(runtime.get("hidden", ())),
+        },
+    )
+
+
+@callback
+def _async_register_landing(hass: HomeAssistant, runtime: dict[str, Any]) -> None:
+    """Register the status command and the landing script once per HA run.
+
+    Both stay registered while the integration is loaded; when Client Mode is
+    off the status reports ``enabled: false`` and the script does nothing.
+    """
+    if runtime.get("landing_registered"):
+        return
+    websocket_api.async_register_command(hass, _ws_client_mode_status)
+    frontend.add_extra_js_url(
+        hass,
+        f"{CLIENT_MODE_STATIC_URL}/{CLIENT_MODE_LANDING_JS}"
+        f"?v={CLIENT_MODE_LANDING_JS_VERSION}",
+    )
+    runtime["landing_registered"] = True
+
+
 def _cancel(unsub: CALLBACK_TYPE) -> None:
     try:
         unsub()
@@ -170,6 +228,8 @@ async def async_setup_client_mode(hass: HomeAssistant, entry: ConfigEntry) -> No
     runtime["hidden"] = set(config["hidden_panels"])
     runtime["enabled"] = config["enabled"]
     runtime["allow_support"] = config["allow_support_authorization"]
+    runtime["home_panel"] = config["home_panel"]
+    _async_register_landing(hass, runtime)
 
     await _async_check_client_accounts(hass, config["enabled"])
     if not config["enabled"]:
@@ -202,6 +262,7 @@ async def async_unload_client_mode(hass: HomeAssistant, entry: ConfigEntry) -> N
     runtime["hidden"] = set()
     runtime["enabled"] = False
     runtime["allow_support"] = False
+    runtime["home_panel"] = CLIENT_MODE_DEFAULT_LANDING
     ir.async_delete_issue(hass, DOMAIN, CLIENT_MODE_ISSUE_NO_CLIENTS)
 
 
@@ -211,6 +272,7 @@ def client_mode_status(hass: HomeAssistant, entry: ConfigEntry) -> dict[str, Any
     runtime = hass.data.get(DOMAIN, {}).get(RUNTIME_KEY, {})
     return {
         "enabled": config["enabled"],
+        "home_panel": config["home_panel"],
         "configured_hidden_panels": config["hidden_panels"],
         "allow_support_authorization": config["allow_support_authorization"],
         "restricted_panels": sorted(runtime.get("restricted", {})),

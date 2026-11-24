@@ -218,6 +218,9 @@ def validate() -> None:
             "require_admin=False",
             "EVENT_PANELS_UPDATED",
             "CLIENT_MODE_ISSUE_NO_CLIENTS",
+            "add_extra_js_url",
+            "_ws_client_mode_status",
+            "blocked_panels",
         ),
         "client_mode.py",
     )
@@ -241,6 +244,14 @@ def validate() -> None:
         ("may_authorize_support", "_assert_not_self_authorization", "Unauthorized"),
         "smart_support/__init__.py",
     )
+    landing = PAYLOAD / "frontend" / "smart-home-client-landing.js"
+    if not landing.is_file():
+        fail("frontend/smart-home-client-landing.js is missing")
+    require_tokens(
+        landing,
+        ("smart_home_suite/client_mode/status", "is_admin", "landingTarget", "location-changed", "notfound", "MAX_REDIRECTS"),
+        "smart-home-client-landing.js",
+    )
     require_tokens(
         PAYLOAD / "frontend" / "smart-support-panel.js",
         ("client_can_authorize", 'PANEL_VERSION = "1.3.0"'),
@@ -249,7 +260,12 @@ def validate() -> None:
     for language in ("en", "es"):
         translation = read_json(PAYLOAD / "translations" / f"{language}.json")
         init_data = translation.get("options", {}).get("step", {}).get("init", {}).get("data", {})
-        for key in ("client_mode_enabled", "client_hidden_panels", "client_allow_support"):
+        for key in (
+            "client_mode_enabled",
+            "client_hidden_panels",
+            "client_allow_support",
+            "client_home_panel",
+        ):
             if not init_data.get(key):
                 fail(f"{language}: options label for {key} is missing")
         if not translation.get("selector", {}).get("client_hidden_panels", {}).get("options"):
